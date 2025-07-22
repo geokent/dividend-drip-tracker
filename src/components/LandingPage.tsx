@@ -29,9 +29,9 @@ export const LandingPage = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <img 
-                src="/lovable-uploads/ac15c95d-aa0a-4c0f-aa1c-6ac92b6889fa.png" 
+                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
                 alt="DivTrkr Logo" 
-                className="h-10 w-auto mr-3"
+                className="h-16 w-auto mr-3"
               />
             </div>
             <Button onClick={() => navigate('/auth')} className="px-6">
@@ -228,9 +228,9 @@ export const LandingPage = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
               <img 
-                src="/lovable-uploads/ac15c95d-aa0a-4c0f-aa1c-6ac92b6889fa.png" 
+                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
                 alt="DivTrkr Logo" 
-                className="h-8 w-auto mr-3"
+                className="h-12 w-auto mr-3"
               />
             </div>
             <p className="text-muted-foreground text-center md:text-right">
