@@ -128,9 +128,9 @@ export const DividendDashboard = () => {
               <img 
                 src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
                 alt="DivTrkr Logo" 
-                className="h-16 w-auto mr-3"
+                className="h-12 w-auto mr-4"
               />
-              <span className="text-lg text-muted-foreground">Dashboard</span>
+              <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
             </div>
             <div className="flex items-center gap-4">
               {user?.email && (
@@ -151,18 +151,8 @@ export const DividendDashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        {/* Welcome Section - Landing Page Style */}
-        <section className="py-12 lg:py-16">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Your Dividend Portfolio
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Track, analyze, and grow your passive income
-            </p>
-          </div>
-
-          {/* Stats Grid */}
+        {/* Stats Grid */}
+        <section className="py-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatsCard
               title="Annual Dividends"
