@@ -3,6 +3,11 @@ import { Card, CardContent } from "./ui/card";
 import { useAuth } from "./AuthProvider";
 import { ArrowRight, DollarSign, TrendingUp, Shield, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import whatdivImage from "../assets/whatdiv.jpg";
+import snowballImage from "../assets/snowball.jpg";
+import fireImage from "../assets/fire.jpg";
+import syncImage from "../assets/sync.jpg";
+import futureImage from "../assets/future.jpg";
 
 export const LandingPage = () => {
   const { user } = useAuth();
@@ -38,14 +43,15 @@ export const LandingPage = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-6">
-            The Truly Automatic
-            <span className="text-primary block">Dividend Tracker</span>
+            Track Your Dividends
+            <span className="text-primary block">Your Way</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
-            Stop managing spreadsheets.
+            Automatic portfolio sync or manual tracking - both free to start.
           </p>
           <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Securely link your accounts once for a live, always up-to-date view of your dividend income.
+            Link your brokerage accounts for automatic updates, or manually add your dividend stocks. 
+            Either way, get a clear view of your passive income growth.
           </p>
           <Button size="lg" onClick={handleGetStarted} className="px-8 py-6 text-lg">
             Start Tracking for Free
@@ -75,13 +81,12 @@ export const LandingPage = () => {
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 h-80 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="h-12 w-12 text-primary" />
-                </div>
-                <p className="text-muted-foreground">Company profits → Dividend payments → Your passive income</p>
-              </div>
+            <div className="rounded-2xl overflow-hidden">
+              <img 
+                src={whatdivImage} 
+                alt="Illustration showing how companies pay dividends to shareholders"
+                className="w-full h-80 object-cover"
+              />
             </div>
           </div>
         </div>
@@ -101,13 +106,12 @@ export const LandingPage = () => {
                 this cycle creates a compounding effect, like a snowball rolling downhill, getting bigger and faster.
               </p>
             </div>
-            <div className="lg:order-1 bg-gradient-to-br from-accent/10 to-primary/10 rounded-2xl p-8 h-80 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="h-12 w-12 text-accent" />
-                </div>
-                <p className="text-muted-foreground">Reinvest → More shares → More dividends → Compound growth</p>
-              </div>
+            <div className="lg:order-1 rounded-2xl overflow-hidden">
+              <img 
+                src={snowballImage} 
+                alt="Illustration of the dividend snowball effect showing compound growth"
+                className="w-full h-80 object-cover"
+              />
             </div>
           </div>
         </div>
@@ -127,13 +131,12 @@ export const LandingPage = () => {
                 of dividend income is a cornerstone of this strategy.
               </p>
             </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 h-80 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="h-12 w-12 text-primary" />
-                </div>
-                <p className="text-muted-foreground">Financial Independence → Retire Early → Live freely</p>
-              </div>
+            <div className="rounded-2xl overflow-hidden">
+              <img 
+                src={fireImage} 
+                alt="Illustration representing financial independence and early retirement"
+                className="w-full h-80 object-cover"
+              />
             </div>
           </div>
         </div>
@@ -151,32 +154,46 @@ export const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="p-8 hover:shadow-lg transition-shadow">
-              <CardContent className="p-0">
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div className="space-y-8">
+              <div>
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
                   <TrendingUp className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-4">True Portfolio Sync</h3>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-6">
                   Stop exporting CSV files. Securely link your accounts once with Plaid, and get a live, 
                   always up-to-date view of your holdings.
                 </p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-8 hover:shadow-lg transition-shadow">
-              <CardContent className="p-0">
+                <div className="rounded-xl overflow-hidden">
+                  <img 
+                    src={syncImage} 
+                    alt="Illustration of automated portfolio syncing"
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-8">
+              <div>
                 <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-6">
                   <BarChart3 className="h-8 w-8 text-accent" />
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-4">Project Future Income</h3>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-6">
                   Our projection tools help you visualize your dividend growth potential and plan your 
                   financial independence journey.
                 </p>
-              </CardContent>
-            </Card>
+                <div className="rounded-xl overflow-hidden">
+                  <img 
+                    src={futureImage} 
+                    alt="Illustration of income projection charts"
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
