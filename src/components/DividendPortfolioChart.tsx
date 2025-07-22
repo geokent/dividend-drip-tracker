@@ -81,10 +81,10 @@ export const DividendPortfolioChart = ({
 
   if (trackedStocks.length === 0) {
     return (
-      <div className="text-center p-12 bg-muted/30 rounded-xl border-2 border-dashed border-muted-foreground/20">
-        <TrendingUp className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-        <h3 className="text-xl font-semibold text-muted-foreground mb-2">No Stocks Tracked Yet</h3>
-        <p className="text-muted-foreground">
+      <div className="text-center p-8 bg-muted/30 rounded-lg border border-dashed border-muted-foreground/20">
+        <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+        <h3 className="text-lg font-semibold text-muted-foreground mb-2">No Stocks Tracked Yet</h3>
+        <p className="text-sm text-muted-foreground">
           Add your first dividend stock above to start building your portfolio visualization
         </p>
       </div>
@@ -92,20 +92,19 @@ export const DividendPortfolioChart = ({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Portfolio Overview */}
-      <Card className="p-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10">
+    <div className="space-y-3">
+      {/* Compact Portfolio Overview */}
+      <Card className="p-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold mb-1">Portfolio Overview</h3>
-            <p className="text-2xl font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
-            <p className="text-sm text-muted-foreground">Total Portfolio Value</p>
+            <p className="text-lg font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
+            <p className="text-xs text-muted-foreground">Total Portfolio Value</p>
           </div>
           <div className="text-right">
             <p className="text-lg font-semibold text-accent">
               {formatCurrency(trackedStocks.reduce((sum, stock) => sum + calculateAnnualIncome(stock), 0))}
             </p>
-            <p className="text-sm text-muted-foreground">Annual Dividend Income</p>
+            <p className="text-xs text-muted-foreground">Annual Dividend Income</p>
           </div>
         </div>
       </Card>
@@ -121,52 +120,50 @@ export const DividendPortfolioChart = ({
             const valueProgress = maxPortfolioValue > 0 ? (portfolioValue / maxPortfolioValue) * 100 : 0;
 
             return (
-              <Card key={stock.symbol} className="p-6 hover:shadow-md transition-shadow">
-                {/* Header Row */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="font-mono text-sm font-bold">
-                        {stock.symbol}
+              <Card key={stock.symbol} className="p-3 hover:shadow-md transition-shadow">
+                {/* Compact Header Row */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="font-mono text-xs font-bold">
+                      {stock.symbol}
+                    </Badge>
+                    {stock.dividendYield && (
+                      <Badge 
+                        variant={stock.dividendYield >= 4 ? "default" : "secondary"}
+                        className="text-xs px-1 py-0"
+                      >
+                        {formatPercentage(stock.dividendYield)}
                       </Badge>
-                      {stock.dividendYield && (
-                        <Badge 
-                          variant={stock.dividendYield >= 4 ? "default" : "secondary"}
-                          className="text-xs"
-                        >
-                          {formatPercentage(stock.dividendYield)} yield
-                        </Badge>
-                      )}
-                    </div>
+                    )}
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onRemoveStock(stock.symbol)}
-                    className="text-muted-foreground hover:text-destructive"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
 
-                {/* Company Name */}
-                <h4 className="font-semibold text-lg mb-3 leading-tight">
+                {/* Company Name - Compact */}
+                <h4 className="font-medium text-sm mb-2 leading-tight line-clamp-1">
                   {stock.companyName || stock.symbol}
                 </h4>
 
-                {/* Key Metrics Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Current Price</p>
-                    <p className="font-semibold">{formatCurrency(stock.currentPrice)}</p>
+                {/* Compact Metrics Grid */}
+                <div className="grid grid-cols-4 gap-2 mb-2 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Price</p>
+                    <p className="font-medium">{formatCurrency(stock.currentPrice)}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Shares Owned</p>
+                  <div>
+                    <p className="text-muted-foreground">Shares</p>
                     {editingShares === stock.symbol ? (
                       <Input
                         type="number"
                         defaultValue={stock.shares}
-                        className="h-8 w-20"
+                        className="h-6 w-full text-xs"
                         onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -177,56 +174,30 @@ export const DividendPortfolioChart = ({
                       />
                     ) : (
                       <p 
-                        className="font-semibold cursor-pointer hover:text-primary"
+                        className="font-medium cursor-pointer hover:text-primary"
                         onClick={() => setEditingShares(stock.symbol)}
                       >
                         {stock.shares.toLocaleString()}
                       </p>
                     )}
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Portfolio Value</p>
-                    <p className="font-semibold text-primary">{formatCurrency(portfolioValue)}</p>
+                  <div>
+                    <p className="text-muted-foreground">Value</p>
+                    <p className="font-medium text-primary">{formatCurrency(portfolioValue)}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Annual Income</p>
-                    <p className="font-semibold text-accent">{formatCurrency(annualIncome)}</p>
+                  <div>
+                    <p className="text-muted-foreground">Income</p>
+                    <p className="font-medium text-accent">{formatCurrency(annualIncome)}</p>
                   </div>
                 </div>
 
-                {/* Portfolio Allocation Bar */}
-                <div className="space-y-2 mb-4">
+                {/* Compact Progress Bar */}
+                <div className="space-y-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-muted-foreground">Portfolio Allocation</span>
+                    <span className="text-xs text-muted-foreground">Allocation</span>
                     <span className="text-xs font-medium">{portfolioPercentage.toFixed(1)}%</span>
                   </div>
-                  <Progress value={valueProgress} className="h-2" />
-                </div>
-
-                {/* Additional Info */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-3 border-t border-muted/50">
-                  {stock.sector && (
-                    <div className="flex items-center space-x-2">
-                      <Building className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{stock.sector}</span>
-                    </div>
-                  )}
-                  {stock.exDividendDate && (
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        Ex-div: {new Date(stock.exDividendDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                  {stock.marketCap && (
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        {formatMarketCap(stock.marketCap)} cap
-                      </span>
-                    </div>
-                  )}
+                  <Progress value={valueProgress} className="h-1.5" />
                 </div>
               </Card>
             );

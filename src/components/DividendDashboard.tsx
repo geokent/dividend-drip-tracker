@@ -69,8 +69,8 @@ export const DividendDashboard = () => {
         description: `Updated dividend data for ${stockData.symbol}`,
       });
     } else {
-      // Add new stock
-      setTrackedStocks(prev => [...prev, { ...stockData, shares: 0 }]);
+      // Add new stock to the top of the list
+      setTrackedStocks(prev => [{ ...stockData, shares: 0 }, ...prev]);
       toast({
         title: "Stock Added!",
         description: `${stockData.symbol} is now being tracked`,
@@ -120,13 +120,13 @@ export const DividendDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header with Sign Out */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold">Welcome back!</h2>
+      <div className="max-w-6xl mx-auto space-y-4">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Divtrkr Dashboard</h1>
             {user?.email && (
-              <span className="text-muted-foreground">({user.email})</span>
+              <p className="text-muted-foreground text-sm mt-1">{user.email}</p>
             )}
           </div>
           <Button 
@@ -139,27 +139,8 @@ export const DividendDashboard = () => {
           </Button>
         </div>
 
-        {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl mb-8">
-          <div
-            className="h-64 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-accent/90 flex items-center justify-center">
-              <div className="text-center text-white">
-                <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                  Dividend Tracker
-                </h1>
-                <p className="text-lg md:text-xl opacity-90">
-                  Track and manage your dividend income with ease
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatsCard
             title="Annual Dividends"
             value={`$${stats.totalAnnualDividends.toFixed(2)}`}
@@ -187,7 +168,7 @@ export const DividendDashboard = () => {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="stocks" className="space-y-6">
+        <Tabs defaultValue="stocks" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="stocks" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
