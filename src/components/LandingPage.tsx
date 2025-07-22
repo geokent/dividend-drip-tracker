@@ -28,8 +28,11 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-primary mr-2" />
-              <span className="text-2xl font-bold text-primary">divtrkr</span>
+              <img 
+                src="/lovable-uploads/ac15c95d-aa0a-4c0f-aa1c-6ac92b6889fa.png" 
+                alt="DivTrkr Logo" 
+                className="h-10 w-auto mr-3"
+              />
             </div>
             <Button onClick={() => navigate('/auth')} className="px-6">
               Login / Sign Up
@@ -224,8 +227,11 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
-              <DollarSign className="h-6 w-6 text-primary mr-2" />
-              <span className="text-xl font-bold text-primary">divtrkr</span>
+              <img 
+                src="/lovable-uploads/ac15c95d-aa0a-4c0f-aa1c-6ac92b6889fa.png" 
+                alt="DivTrkr Logo" 
+                className="h-8 w-auto mr-3"
+              />
             </div>
             <p className="text-muted-foreground text-center md:text-right">
               © 2024 DivTrkr. Building wealth through dividend investing.

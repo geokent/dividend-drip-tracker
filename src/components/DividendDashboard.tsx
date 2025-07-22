@@ -119,53 +119,77 @@ export const DividendDashboard = () => {
   const stats = calculateStats();
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="max-w-6xl mx-auto space-y-4">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Divtrkr Dashboard</h1>
-            {user?.email && (
-              <p className="text-muted-foreground text-sm mt-1">{user.email}</p>
-            )}
+    <div className="min-h-screen bg-background">
+      {/* Header - Match Landing Page Style */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <img 
+                src="/lovable-uploads/ac15c95d-aa0a-4c0f-aa1c-6ac92b6889fa.png" 
+                alt="DivTrkr Logo" 
+                className="h-10 w-auto mr-3"
+              />
+              <span className="text-lg text-muted-foreground">Dashboard</span>
+            </div>
+            <div className="flex items-center gap-4">
+              {user?.email && (
+                <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+              )}
+              <Button 
+                variant="outline" 
+                onClick={signOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={signOut}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
         </div>
+      </header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatsCard
-            title="Annual Dividends"
-            value={`$${stats.totalAnnualDividends.toFixed(2)}`}
-            subtitle="Projected yearly income"
-            trend="up"
-          />
-          <StatsCard
-            title="Quarterly Dividends"
-            value={`$${stats.totalQuarterlyDividends.toFixed(2)}`}
-            subtitle="Projected quarterly income"
-            trend="up"
-          />
-          <StatsCard
-            title="Monthly Estimate"
-            value={`$${stats.totalMonthlyDividends.toFixed(2)}`}
-            subtitle="Average monthly income"
-            trend="neutral"
-          />
-          <StatsCard
-            title="Portfolio"
-            value={stats.uniqueStocks.toString()}
-            subtitle="Tracked dividend stocks"
-            trend="neutral"
-          />
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        {/* Welcome Section - Landing Page Style */}
+        <section className="py-12 lg:py-16">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Your Dividend Portfolio
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Track, analyze, and grow your passive income
+            </p>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <StatsCard
+              title="Annual Dividends"
+              value={`$${stats.totalAnnualDividends.toFixed(2)}`}
+              subtitle="Projected yearly income"
+              trend="up"
+            />
+            <StatsCard
+              title="Quarterly Dividends"
+              value={`$${stats.totalQuarterlyDividends.toFixed(2)}`}
+              subtitle="Projected quarterly income"
+              trend="up"
+            />
+            <StatsCard
+              title="Monthly Estimate"
+              value={`$${stats.totalMonthlyDividends.toFixed(2)}`}
+              subtitle="Average monthly income"
+              trend="neutral"
+            />
+            <StatsCard
+              title="Portfolio"
+              value={stats.uniqueStocks.toString()}
+              subtitle="Tracked dividend stocks"
+              trend="neutral"
+            />
+          </div>
+        </section>
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="stocks" className="space-y-4">

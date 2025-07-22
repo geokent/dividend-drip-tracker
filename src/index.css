@@ -17,7 +17,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 210 11% 15%;
 
-    --primary: 162 63% 41%;
+    --primary: 200 100% 40%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 100% 97%;
@@ -26,7 +26,7 @@ All colors MUST be HSL.
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 142 86% 28%;
+    --accent: 200 100% 35%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,17 +34,18 @@ All colors MUST be HSL.
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 162 63% 41%;
+    --ring: 200 100% 40%;
 
-    /* Custom financial colors */
+    /* Custom financial colors that complement the blue logo */
+    --financial-blue: 200 100% 40%;
+    --financial-blue-light: 200 100% 50%;
     --financial-green: 142 86% 28%;
-    --financial-green-light: 142 76% 36%;
-    --financial-blue: 217 91% 60%;
     --financial-gray: 210 11% 71%;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(162 63% 41%), hsl(142 86% 28%));
+    /* Updated gradients with blue theme */
+    --gradient-primary: linear-gradient(135deg, hsl(200 100% 40%), hsl(200 100% 35%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 100% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(200 100% 40% / 0.1), hsl(200 100% 35% / 0.05));
     
     /* Shadows */
     --shadow-card: 0 4px 6px -1px hsl(210 11% 15% / 0.1), 0 2px 4px -1px hsl(210 11% 15% / 0.06);

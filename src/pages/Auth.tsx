@@ -132,19 +132,36 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            {isSignUp ? 'Create Account' : 'Welcome Back'}
-          </CardTitle>
-          <CardDescription className="text-center">
-            {isSignUp 
-              ? 'Sign up to start tracking your dividends' 
-              : 'Sign in to your dividend tracker account'
-            }
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen bg-background">
+      {/* Header - Match Landing Page Style */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <img 
+                src="/lovable-uploads/ac15c95d-aa0a-4c0f-aa1c-6ac92b6889fa.png" 
+                alt="DivTrkr Logo" 
+                className="h-10 w-auto mr-3"
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Auth Form */}
+      <div className="flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 min-h-[calc(100vh-4rem)] p-4">
+        <Card className="w-full max-w-md shadow-card">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-3xl font-bold text-foreground">
+              {isSignUp ? 'Join DivTrkr' : 'Welcome Back'}
+            </CardTitle>
+            <CardDescription className="text-lg text-muted-foreground">
+              {isSignUp 
+                ? 'Start tracking your dividend income today' 
+                : 'Continue building your dividend portfolio'
+              }
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
             {isSignUp && (
@@ -216,7 +233,8 @@ const Auth = () => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };
