@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
-import { StockDividendCard } from "./StockDividendCard";
+import { DividendPortfolioChart } from "./DividendPortfolioChart";
 // import { PlaidLinkButton } from "./PlaidLinkButton";
 // import { PlaidAccountsList } from "./PlaidAccountsList";
 import { Button } from "./ui/button";
@@ -202,30 +202,14 @@ export const DividendDashboard = () => {
             {/* Add Stock Form */}
             <StockSymbolForm onStockFound={handleStockFound} />
 
-            {/* Tracked Stocks */}
+            {/* Portfolio Chart */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Your Dividend Stocks</h3>
-              {trackedStocks.length === 0 ? (
-                <div className="text-center p-8 bg-muted/50 rounded-lg">
-                  <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No stocks tracked yet</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Add a stock symbol above to start tracking dividend information
-                  </p>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {trackedStocks.map((stock) => (
-                    <StockDividendCard
-                      key={stock.symbol}
-                      stockData={stock}
-                      shares={stock.shares}
-                      onRemove={handleRemoveStock}
-                      onUpdateShares={handleUpdateShares}
-                    />
-                  ))}
-                </div>
-              )}
+              <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
+              <DividendPortfolioChart
+                trackedStocks={trackedStocks}
+                onRemoveStock={handleRemoveStock}
+                onUpdateShares={handleUpdateShares}
+              />
             </div>
           </TabsContent>
 
