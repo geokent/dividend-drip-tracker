@@ -84,30 +84,25 @@ export const StockSymbolForm = ({ onStockFound }: StockSymbolFormProps) => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Search className="h-5 w-5" />
-          Add Stock to Track
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="flex items-center gap-2 justify-center">
+      <CardContent className="py-4">
+        <form onSubmit={handleSubmit} className="flex items-center gap-3 justify-center">
+          <span className="text-sm font-medium text-muted-foreground">Add Stock to Track:</span>
           <Input
             type="text"
             placeholder="AAPL"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             disabled={loading}
-            className="w-20 text-center"
+            className="w-20 text-center text-sm"
             maxLength={5}
           />
-          <Button type="submit" disabled={loading || !symbol.trim()}>
+          <Button type="submit" disabled={loading || !symbol.trim()} size="sm">
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Search className="h-4 w-4" />
+              <Search className="h-3 w-3" />
             )}
-            {loading ? 'Searching...' : 'Search'}
+            <span className="ml-1 text-sm">{loading ? 'Searching...' : 'Search'}</span>
           </Button>
         </form>
       </CardContent>
