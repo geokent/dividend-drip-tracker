@@ -86,7 +86,7 @@ export const StockSymbolForm = ({ onStockFound }: StockSymbolFormProps) => {
     <Card>
       <CardContent className="py-4">
         <form onSubmit={handleSubmit} className="flex items-center gap-3 justify-center">
-          <span className="text-sm font-medium text-muted-foreground">Add Stock to Track:</span>
+          <span className="text-sm font-medium text-foreground">Add Stock to Track:</span>
           <Input
             type="text"
             placeholder="AAPL"
