@@ -197,7 +197,11 @@ export const DividendDashboard = () => {
 
           <TabsContent value="stocks" className="space-y-6">
             {/* Add Stock Form */}
-            <StockSymbolForm onStockFound={handleStockFound} />
+            <div className="flex justify-center">
+              <div className="w-full max-w-md">
+                <StockSymbolForm onStockFound={handleStockFound} />
+              </div>
+            </div>
 
             {/* Portfolio Chart */}
             <div className="space-y-4">
