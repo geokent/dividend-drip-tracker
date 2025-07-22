@@ -102,9 +102,15 @@ export const DividendPortfolioChart = ({
           </div>
           <div className="text-right">
             <p className="text-lg font-semibold text-accent">
-              {formatCurrency(trackedStocks.reduce((sum, stock) => sum + calculateAnnualIncome(stock), 0))}
+              {totalPortfolioValue > 0 ? 
+                formatPercentage((trackedStocks.reduce((sum, stock) => {
+                  const stockValue = calculatePortfolioValue(stock);
+                  return sum + (stockValue * (stock.dividendYield || 0) / 100);
+                }, 0) / totalPortfolioValue) * 100) : 
+                "0.00%"
+              }
             </p>
-            <p className="text-xs text-muted-foreground">Annual Dividend Income</p>
+            <p className="text-xs text-muted-foreground">Weighted Avg Yield</p>
           </div>
         </div>
       </Card>
