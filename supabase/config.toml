@@ -56,3 +56,6 @@ enable_confirmations = false
 [edge_functions]
 enabled = true
 ip_version = "ipv4"
+
+[functions.get-dividend-data]
+verify_jwt = false

@@ -1,77 +1,117 @@
 import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
-import { AddDividendForm } from "./AddDividendForm";
-import { DividendList } from "./DividendList";
+import { StockSymbolForm } from "./StockSymbolForm";
+import { StockDividendCard } from "./StockDividendCard";
+import { PlaidLinkButton } from "./PlaidLinkButton";
+import { PlaidAccountsList } from "./PlaidAccountsList";
 import { Button } from "./ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut } from "lucide-react";
+import { LogOut, TrendingUp } from "lucide-react";
 import heroImage from "@/assets/dividend-hero.jpg";
 
-interface Dividend {
-  id: string;
+interface StockData {
   symbol: string;
-  company: string;
-  amount: number;
-  date: string;
+  companyName: string;
+  currentPrice: number | null;
+  dividendYield: number | null;
+  dividendPerShare: number | null;
+  annualDividend: number | null;
+  exDividendDate: string | null;
+  dividendDate: string | null;
+  sector: string | null;
+  industry: string | null;
+  marketCap: string | null;
+  peRatio: string | null;
+}
+
+interface TrackedStock extends StockData {
+  shares: number;
 }
 
 export const DividendDashboard = () => {
-  const [dividends, setDividends] = useState<Dividend[]>([]);
+  const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
 
-  // Load dividends from localStorage on component mount
+  // Load tracked stocks from localStorage on component mount
   useEffect(() => {
-    const saved = localStorage.getItem('dividends');
+    const saved = localStorage.getItem('trackedStocks');
     if (saved) {
       try {
-        setDividends(JSON.parse(saved));
+        setTrackedStocks(JSON.parse(saved));
       } catch (e) {
-        console.error('Failed to parse saved dividends:', e);
+        console.error('Failed to parse saved tracked stocks:', e);
       }
     }
   }, []);
 
-  // Save to localStorage whenever dividends change
+  // Save to localStorage whenever tracked stocks change
   useEffect(() => {
-    localStorage.setItem('dividends', JSON.stringify(dividends));
-  }, [dividends]);
+    localStorage.setItem('trackedStocks', JSON.stringify(trackedStocks));
+  }, [trackedStocks]);
 
-  const handleAddDividend = (dividendData: Omit<Dividend, 'id'>) => {
-    const newDividend: Dividend = {
-      ...dividendData,
-      id: Date.now().toString()
-    };
-    setDividends(prev => [...prev, newDividend]);
+  const handleStockFound = (stockData: StockData) => {
+    const existingIndex = trackedStocks.findIndex(stock => stock.symbol === stockData.symbol);
+    
+    if (existingIndex >= 0) {
+      // Update existing stock data
+      setTrackedStocks(prev => 
+        prev.map((stock, index) => 
+          index === existingIndex 
+            ? { ...stockData, shares: stock.shares }
+            : stock
+        )
+      );
+      toast({
+        title: "Stock Updated!",
+        description: `Updated dividend data for ${stockData.symbol}`,
+      });
+    } else {
+      // Add new stock
+      setTrackedStocks(prev => [...prev, { ...stockData, shares: 0 }]);
+      toast({
+        title: "Stock Added!",
+        description: `${stockData.symbol} is now being tracked`,
+      });
+    }
+  };
+
+  const handleRemoveStock = (symbol: string) => {
+    setTrackedStocks(prev => prev.filter(stock => stock.symbol !== symbol));
     toast({
-      title: "Dividend Added!",
-      description: `$${dividendData.amount.toFixed(2)} from ${dividendData.symbol} has been recorded.`,
+      title: "Stock Removed",
+      description: `${symbol} has been removed from tracking`,
     });
   };
 
+  const handleUpdateShares = (symbol: string, shares: number) => {
+    setTrackedStocks(prev => 
+      prev.map(stock => 
+        stock.symbol === symbol 
+          ? { ...stock, shares }
+          : stock
+      )
+    );
+  };
+
   const calculateStats = () => {
-    const totalIncome = dividends.reduce((sum, div) => sum + div.amount, 0);
+    const totalAnnualDividends = trackedStocks.reduce((sum, stock) => {
+      if (stock.annualDividend && stock.shares > 0) {
+        return sum + (stock.annualDividend * stock.shares);
+      }
+      return sum;
+    }, 0);
     
-    const currentYear = new Date().getFullYear();
-    const yearlyIncome = dividends
-      .filter(div => new Date(div.date).getFullYear() === currentYear)
-      .reduce((sum, div) => sum + div.amount, 0);
-    
-    const uniqueStocks = new Set(dividends.map(div => div.symbol)).size;
-    
-    const currentMonth = new Date().getMonth();
-    const monthlyIncome = dividends
-      .filter(div => {
-        const date = new Date(div.date);
-        return date.getFullYear() === currentYear && date.getMonth() === currentMonth;
-      })
-      .reduce((sum, div) => sum + div.amount, 0);
+    const totalQuarterlyDividends = totalAnnualDividends / 4;
+    const totalMonthlyDividends = totalAnnualDividends / 12;
+    const uniqueStocks = trackedStocks.length;
 
     return {
-      totalIncome,
-      yearlyIncome,
-      monthlyIncome,
+      totalAnnualDividends,
+      totalQuarterlyDividends,
+      totalMonthlyDividends,
       uniqueStocks
     };
   };
@@ -121,38 +161,89 @@ export const DividendDashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatsCard
-            title="Total Income"
-            value={`$${stats.totalIncome.toFixed(2)}`}
-            subtitle="All time earnings"
+            title="Annual Dividends"
+            value={`$${stats.totalAnnualDividends.toFixed(2)}`}
+            subtitle="Projected yearly income"
             trend="up"
           />
           <StatsCard
-            title="This Year"
-            value={`$${stats.yearlyIncome.toFixed(2)}`}
-            subtitle={`${new Date().getFullYear()} earnings`}
+            title="Quarterly Dividends"
+            value={`$${stats.totalQuarterlyDividends.toFixed(2)}`}
+            subtitle="Projected quarterly income"
             trend="up"
           />
           <StatsCard
-            title="This Month"
-            value={`$${stats.monthlyIncome.toFixed(2)}`}
-            subtitle="Current month"
+            title="Monthly Estimate"
+            value={`$${stats.totalMonthlyDividends.toFixed(2)}`}
+            subtitle="Average monthly income"
             trend="neutral"
           />
           <StatsCard
             title="Portfolio"
             value={stats.uniqueStocks.toString()}
-            subtitle="Dividend stocks"
+            subtitle="Tracked dividend stocks"
             trend="neutral"
           />
         </div>
 
-        {/* Add Dividend Form */}
-        <div className="mb-6">
-          <AddDividendForm onAddDividend={handleAddDividend} />
-        </div>
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="stocks" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="stocks" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Stock Tracker
+            </TabsTrigger>
+            <TabsTrigger value="accounts" className="flex items-center gap-2">
+              Bank Accounts
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Dividend List */}
-        <DividendList dividends={dividends} />
+          <TabsContent value="stocks" className="space-y-6">
+            {/* Add Stock Form */}
+            <StockSymbolForm onStockFound={handleStockFound} />
+
+            {/* Tracked Stocks */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Your Dividend Stocks</h3>
+              {trackedStocks.length === 0 ? (
+                <div className="text-center p-8 bg-muted/50 rounded-lg">
+                  <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No stocks tracked yet</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Add a stock symbol above to start tracking dividend information
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {trackedStocks.map((stock) => (
+                    <StockDividendCard
+                      key={stock.symbol}
+                      stockData={stock}
+                      shares={stock.shares}
+                      onRemove={handleRemoveStock}
+                      onUpdateShares={handleUpdateShares}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="accounts" className="space-y-6">
+            {/* Plaid Integration */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Connect Your Bank Account</h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Automatically track dividend payments from your investment accounts
+                </p>
+                <PlaidLinkButton onSuccess={() => window.location.reload()} />
+              </div>
+              
+              <PlaidAccountsList />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
