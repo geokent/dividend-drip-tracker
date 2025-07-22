@@ -91,14 +91,14 @@ export const StockSymbolForm = ({ onStockFound }: StockSymbolFormProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2 justify-center">
           <Input
             type="text"
             placeholder="AAPL"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             disabled={loading}
-            className="w-24 text-center"
+            className="w-20 text-center"
             maxLength={5}
           />
           <Button type="submit" disabled={loading || !symbol.trim()}>

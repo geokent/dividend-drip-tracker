@@ -198,7 +198,7 @@ export const DividendDashboard = () => {
           <TabsContent value="stocks" className="space-y-6">
             {/* Add Stock Form */}
             <div className="flex justify-center">
-              <div className="w-full max-w-md">
+              <div className="w-full max-w-sm">
                 <StockSymbolForm onStockFound={handleStockFound} />
               </div>
             </div>
