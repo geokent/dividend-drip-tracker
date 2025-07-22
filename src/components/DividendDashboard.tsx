@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { AddDividendForm } from "./AddDividendForm";
 import { DividendList } from "./DividendList";
+import { Button } from "./ui/button";
+import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
+import { LogOut } from "lucide-react";
 import heroImage from "@/assets/dividend-hero.jpg";
 
 interface Dividend {
@@ -16,6 +19,7 @@ interface Dividend {
 export const DividendDashboard = () => {
   const [dividends, setDividends] = useState<Dividend[]>([]);
   const { toast } = useToast();
+  const { signOut, user } = useAuth();
 
   // Load dividends from localStorage on component mount
   useEffect(() => {
@@ -77,6 +81,24 @@ export const DividendDashboard = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header with Sign Out */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">Welcome back!</h2>
+            {user?.email && (
+              <span className="text-muted-foreground">({user.email})</span>
+            )}
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={signOut}
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
+
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-2xl mb-8">
           <div
