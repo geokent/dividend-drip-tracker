@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
       peRatio,
     }
 
-    console.log('Dividend data result:', result)
+    console.log('Final result being returned:', JSON.stringify(result, null, 2));
 
     return new Response(
       JSON.stringify(result),

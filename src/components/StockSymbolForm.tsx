@@ -45,9 +45,13 @@ export const StockSymbolForm = ({ onStockFound }: StockSymbolFormProps) => {
     setLoading(true);
     
     try {
+      console.log('Calling edge function with symbol:', symbol.trim().toUpperCase());
+      
       const { data, error } = await supabase.functions.invoke('get-dividend-data', {
         body: { symbol: symbol.trim().toUpperCase() }
       });
+
+      console.log('Edge function response:', { data, error });
 
       if (error) {
         throw error;
@@ -57,6 +61,7 @@ export const StockSymbolForm = ({ onStockFound }: StockSymbolFormProps) => {
         throw new Error(data.error);
       }
 
+      console.log('Stock data received:', data);
       onStockFound(data);
       
       toast({
