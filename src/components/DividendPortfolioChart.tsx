@@ -120,31 +120,36 @@ export const DividendPortfolioChart = ({
             const valueProgress = maxPortfolioValue > 0 ? (portfolioValue / maxPortfolioValue) * 100 : 0;
 
             return (
-              <Card key={stock.symbol} className="p-4 hover:shadow-md transition-shadow">
-                {/* Single line layout with all information */}
+              <Card key={stock.symbol} className="p-6 hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20">
                 <div className="flex items-center justify-between">
-                  {/* Left section - Stock info */}
-                  <div className="flex items-center gap-6 flex-1">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-mono text-sm font-bold min-w-16 justify-center">
+                  {/* Left section - Primary stock identification */}
+                  <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-4">
+                      <Badge variant="outline" className="font-mono text-lg font-bold px-3 py-1 min-w-20 justify-center bg-primary/5">
                         {stock.symbol}
                       </Badge>
-                      <span className="font-medium text-base max-w-40 truncate">{stock.companyName}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="text-center">
-                        <p className="text-muted-foreground text-xs">Price</p>
-                        <p className="font-medium">{formatCurrency(stock.currentPrice)}</p>
+                      <div>
+                        <h3 className="font-semibold text-lg text-foreground leading-tight">
+                          {stock.companyName}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {formatCurrency(stock.currentPrice)} per share
+                        </p>
                       </div>
-                      
-                      <div className="text-center min-w-16">
-                        <p className="text-muted-foreground text-xs">Shares</p>
+                    </div>
+                  </div>
+
+                  {/* Center section - Financial metrics with visual separation */}
+                  <div className="flex items-center gap-12">
+                    {/* Holdings group */}
+                    <div className="flex items-center gap-6 px-4 py-2 bg-muted/30 rounded-lg">
+                      <div className="text-center">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Shares</p>
                         {editingShares === stock.symbol ? (
                           <Input
                             type="number"
                             defaultValue={stock.shares}
-                            className="h-7 w-16 text-xs text-center"
+                            className="h-8 w-20 text-sm text-center font-medium"
                             onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
@@ -155,7 +160,7 @@ export const DividendPortfolioChart = ({
                           />
                         ) : (
                           <p 
-                            className="font-medium cursor-pointer hover:text-primary"
+                            className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors"
                             onClick={() => setEditingShares(stock.symbol)}
                           >
                             {stock.shares.toLocaleString()}
@@ -164,45 +169,63 @@ export const DividendPortfolioChart = ({
                       </div>
                       
                       <div className="text-center">
-                        <p className="text-muted-foreground text-xs">Value</p>
-                        <p className="font-medium text-primary">{formatCurrency(portfolioValue)}</p>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Value</p>
+                        <p className="text-lg font-bold text-primary">{formatCurrency(portfolioValue)}</p>
                       </div>
-                      
+                    </div>
+
+                    {/* Dividend group */}
+                    <div className="flex items-center gap-6 px-4 py-2 bg-accent/10 rounded-lg">
                       <div className="text-center">
-                        <p className="text-muted-foreground text-xs">Dividend Income</p>
-                        <p className="font-medium text-accent">{formatCurrency(annualIncome)}</p>
-                      </div>
-                      
-                      <div className="text-center">
-                        <p className="text-muted-foreground text-xs">Dividend Yield</p>
-                        <p className="font-medium">{formatPercentage(stock.dividendYield)}</p>
-                      </div>
-                      
-                      <div className="text-center">
-                        <p className="text-muted-foreground text-xs">Ex-Dividend</p>
-                        <p className="font-medium text-xs">
-                          {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString() : "N/A"}
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Yield</p>
+                        <p className="text-lg font-semibold text-accent">
+                          {formatPercentage(stock.dividendYield)}
                         </p>
                       </div>
                       
                       <div className="text-center">
-                        <p className="text-muted-foreground text-xs">Last Dividend</p>
-                        <p className="font-medium text-xs">
-                          {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString() : "N/A"}
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
+                        <p className="text-lg font-bold text-accent">{formatCurrency(annualIncome)}</p>
+                      </div>
+                    </div>
+
+                    {/* Dates group */}
+                    <div className="flex items-center gap-6 px-4 py-2 bg-secondary/20 rounded-lg">
+                      <div className="text-center">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Ex-Dividend</p>
+                        <p className="text-sm font-medium">
+                          {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric',
+                            year: '2-digit'
+                          }) : "N/A"}
+                        </p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Last Dividend</p>
+                        <p className="text-sm font-medium">
+                          {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric',
+                            year: '2-digit'
+                          }) : "N/A"}
                         </p>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Right section - Remove button */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveStock(stock.symbol)}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {/* Right section - Actions */}
+                  <div className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveStock(stock.symbol)}
+                      className="h-10 w-10 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             );
