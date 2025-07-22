@@ -29,60 +29,84 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get company overview for basic info
-    const overviewResponse = await fetch(
-      `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${apiKey}`
-    )
-    const overviewData = await overviewResponse.json()
+    console.log(`Fetching data for symbol: ${symbol}`);
+    
+    // Fetch multiple endpoints in parallel for comprehensive data
+    const [overviewResponse, priceResponse] = await Promise.all([
+      fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${apiKey}`),
+      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`)
+    ]);
 
-    if (overviewData.Note || overviewData['Error Message']) {
+    const [overviewData, priceData] = await Promise.all([
+      overviewResponse.json(),
+      priceResponse.json()
+    ]);
+
+    console.log('Overview data:', JSON.stringify(overviewData, null, 2));
+    console.log('Price data:', JSON.stringify(priceData, null, 2));
+
+    // Check for API errors in any response
+    if (overviewData['Error Message'] || priceData['Error Message']) {
+      const errorMsg = overviewData['Error Message'] || priceData['Error Message'];
+      console.log('API Error:', errorMsg);
       return new Response(
-        JSON.stringify({ 
-          error: overviewData.Note || overviewData['Error Message'] || 'Failed to fetch company data' 
-        }),
+        JSON.stringify({ error: errorMsg }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    // Get dividend data
-    const dividendResponse = await fetch(
-      `https://www.alphavantage.co/query?function=CASH_FLOW&symbol=${symbol}&apikey=${apiKey}`
-    )
-    const dividendData = await dividendResponse.json()
-
-    // Get current stock price
-    const priceResponse = await fetch(
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
-    )
-    const priceData = await priceResponse.json()
-
-    const currentPrice = priceData['Global Quote']?.['05. price'] || null
-
-    // Extract dividend information
-    const dividendYield = overviewData.DividendYield || null
-    const dividendPerShare = overviewData.DividendPerShare || null
-    const exDividendDate = overviewData.ExDividendDate || null
-    const dividendDate = overviewData.DividendDate || null
-
-    // Calculate annual dividend estimate
-    let annualDividend = null
-    if (dividendPerShare && !isNaN(parseFloat(dividendPerShare))) {
-      annualDividend = parseFloat(dividendPerShare)
+    // Check for rate limiting
+    if (overviewData.Note || priceData.Note) {
+      const noteMsg = overviewData.Note || priceData.Note;
+      console.log('API Note (rate limit):', noteMsg);
+      return new Response(
+        JSON.stringify({ error: 'API rate limit reached. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    // Extract price data
+    const quote = priceData['Global Quote'];
+    const currentPrice = quote?.['05. price'] ? parseFloat(quote['05. price']) : null;
+
+    // Extract company information (handle case where overview data might be incomplete)
+    const companyName = overviewData.Name || 
+                       (overviewData.Symbol ? `${overviewData.Symbol} ETF` : `${symbol.toUpperCase()}`);
+    
+    // Parse dividend data with better handling
+    const dividendYield = overviewData.DividendYield ? 
+      parseFloat(overviewData.DividendYield) * 100 : null; // Convert to percentage
+    
+    const dividendPerShare = overviewData.DividendPerShare ? 
+      parseFloat(overviewData.DividendPerShare) : null;
+    
+    // For ETFs and some stocks, annual dividend might be in different format
+    let annualDividend = null;
+    if (dividendPerShare && !isNaN(dividendPerShare)) {
+      // Most dividends are quarterly, so multiply by 4
+      annualDividend = dividendPerShare * 4;
+    }
+
+    // Extract other company data
+    const exDividendDate = overviewData.ExDividendDate !== 'None' ? overviewData.ExDividendDate : null;
+    const sector = overviewData.Sector !== 'None' ? overviewData.Sector : null;
+    const industry = overviewData.Industry !== 'None' ? overviewData.Industry : null;
+    const marketCap = overviewData.MarketCapitalization !== 'None' ? overviewData.MarketCapitalization : null;
+    const peRatio = overviewData.PERatio !== 'None' ? overviewData.PERatio : null;
 
     const result = {
       symbol: symbol.toUpperCase(),
-      companyName: overviewData.Name || 'Unknown Company',
-      currentPrice: currentPrice ? parseFloat(currentPrice) : null,
-      dividendYield: dividendYield ? parseFloat(dividendYield) : null,
-      dividendPerShare: dividendPerShare ? parseFloat(dividendPerShare) : null,
+      companyName,
+      currentPrice,
+      dividendYield,
+      dividendPerShare,
       annualDividend,
       exDividendDate,
-      dividendDate,
-      sector: overviewData.Sector || null,
-      industry: overviewData.Industry || null,
-      marketCap: overviewData.MarketCapitalization || null,
-      peRatio: overviewData.PERatio || null,
+      dividendDate: exDividendDate, // Using ex-dividend date as dividend date
+      sector,
+      industry,
+      marketCap,
+      peRatio,
     }
 
     console.log('Dividend data result:', result)
