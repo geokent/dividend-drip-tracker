@@ -183,22 +183,14 @@ export const DividendPortfolioChart = ({
                     <p className="text-lg font-bold text-accent">{formatCurrency(annualIncome)}</p>
                   </div>
 
-                  {/* Ex-Dividend Date - 1 column */}
-                  <div className="col-span-1 text-center px-2 py-2 bg-secondary/20 rounded-lg">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ex-Div</p>
+                  {/* Ex-Dividend Date - 1.5 columns */}
+                  <div className="col-span-2 text-center px-2 py-2 bg-secondary/20 rounded-lg">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ex-Div / Last Div</p>
                     <p className="text-sm font-medium">
                       {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
                         month: 'short', 
                         day: 'numeric'
-                      }) : "N/A"}
-                    </p>
-                  </div>
-
-                  {/* Last Dividend Date - 1 column */}
-                  <div className="col-span-1 text-center px-2 py-2 bg-secondary/20 rounded-lg">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Last Div</p>
-                    <p className="text-sm font-medium">
-                      {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString('en-US', { 
+                      }) : "N/A"} / {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString('en-US', { 
                         month: 'short', 
                         day: 'numeric'
                       }) : "N/A"}
@@ -206,7 +198,7 @@ export const DividendPortfolioChart = ({
                   </div>
                   
                   {/* Actions - 1 column */}
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-end pr-2">
                     <Button
                       variant="ghost"
                       size="sm"
