@@ -93,9 +93,9 @@ export const DividendPortfolioChart = ({
 
   return (
     <div className="space-y-3">
-      {/* Main Portfolio Metrics */}
+      {/* Portfolio Metrics with Premium Features */}
       <Card className="p-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10">
-        <div className="flex items-center justify-center gap-12">
+        <div className="flex items-center justify-center gap-8">
           <div className="text-center">
             <p className="text-lg font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
             <p className="text-xs text-muted-foreground">Total Portfolio Value</p>
@@ -125,29 +125,25 @@ export const DividendPortfolioChart = ({
             </p>
             <p className="text-xs text-muted-foreground">Avg Yield on Cost</p>
           </div>
-        </div>
-      </Card>
-
-      {/* Premium Features Preview */}
-      <Card className="p-4 bg-gradient-to-r from-muted/50 to-muted/30 border-muted">
-        <div className="flex items-center justify-center gap-8">
+          
+          {/* Premium Features */}
           <div className="text-center opacity-60">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Lock className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Lock className="h-3 w-3 text-muted-foreground" />
               <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
             </div>
             <p className="text-xs text-muted-foreground">Dividend Growth Rate</p>
           </div>
           <div className="text-center opacity-60">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Lock className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Lock className="h-3 w-3 text-muted-foreground" />
               <p className="text-sm font-medium text-muted-foreground">Premium</p>
             </div>
             <p className="text-xs text-muted-foreground">Dividend Safety Score</p>
           </div>
           <div className="text-center opacity-60">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Lock className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Lock className="h-3 w-3 text-muted-foreground" />
               <p className="text-sm font-medium text-muted-foreground">Pro Feature</p>
             </div>
             <p className="text-xs text-muted-foreground">Tax Efficiency Score</p>
