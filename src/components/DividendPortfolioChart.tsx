@@ -120,84 +120,89 @@ export const DividendPortfolioChart = ({
             const valueProgress = maxPortfolioValue > 0 ? (portfolioValue / maxPortfolioValue) * 100 : 0;
 
             return (
-              <Card key={stock.symbol} className="p-3 hover:shadow-md transition-shadow">
-                {/* Compact Header Row */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className="font-mono text-xs font-bold">
-                      {stock.symbol}
-                    </Badge>
-                    {stock.dividendYield && (
-                      <Badge 
-                        variant={stock.dividendYield >= 4 ? "default" : "secondary"}
-                        className="text-xs px-1 py-0"
-                      >
-                        {formatPercentage(stock.dividendYield)}
+              <Card key={stock.symbol} className="p-4 hover:shadow-md transition-shadow">
+                {/* Single line layout with all information */}
+                <div className="flex items-center justify-between">
+                  {/* Left section - Stock info */}
+                  <div className="flex items-center gap-6 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="font-mono text-sm font-bold min-w-16 justify-center">
+                        {stock.symbol}
                       </Badge>
-                    )}
+                      <span className="font-medium text-base max-w-40 truncate">{stock.companyName}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="text-center">
+                        <p className="text-muted-foreground text-xs">Price</p>
+                        <p className="font-medium">{formatCurrency(stock.currentPrice)}</p>
+                      </div>
+                      
+                      <div className="text-center min-w-16">
+                        <p className="text-muted-foreground text-xs">Shares</p>
+                        {editingShares === stock.symbol ? (
+                          <Input
+                            type="number"
+                            defaultValue={stock.shares}
+                            className="h-7 w-16 text-xs text-center"
+                            onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSharesChange(stock.symbol, e.currentTarget.value);
+                              }
+                            }}
+                            autoFocus
+                          />
+                        ) : (
+                          <p 
+                            className="font-medium cursor-pointer hover:text-primary"
+                            onClick={() => setEditingShares(stock.symbol)}
+                          >
+                            {stock.shares.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="text-center">
+                        <p className="text-muted-foreground text-xs">Value</p>
+                        <p className="font-medium text-primary">{formatCurrency(portfolioValue)}</p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <p className="text-muted-foreground text-xs">Dividend Income</p>
+                        <p className="font-medium text-accent">{formatCurrency(annualIncome)}</p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <p className="text-muted-foreground text-xs">Dividend Yield</p>
+                        <p className="font-medium">{formatPercentage(stock.dividendYield)}</p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <p className="text-muted-foreground text-xs">Ex-Dividend</p>
+                        <p className="font-medium text-xs">
+                          {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString() : "N/A"}
+                        </p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <p className="text-muted-foreground text-xs">Last Dividend</p>
+                        <p className="font-medium text-xs">
+                          {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString() : "N/A"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
+                  
+                  {/* Right section - Remove button */}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onRemoveStock(stock.symbol)}
-                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                </div>
-
-                {/* Company Name - Compact */}
-                <h4 className="font-medium text-sm mb-2 leading-tight line-clamp-1">
-                  {stock.companyName || stock.symbol}
-                </h4>
-
-                {/* Compact Metrics Grid */}
-                <div className="grid grid-cols-4 gap-2 mb-2 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">Price</p>
-                    <p className="font-medium">{formatCurrency(stock.currentPrice)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Shares</p>
-                    {editingShares === stock.symbol ? (
-                      <Input
-                        type="number"
-                        defaultValue={stock.shares}
-                        className="h-6 w-full text-xs"
-                        onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            handleSharesChange(stock.symbol, e.currentTarget.value);
-                          }
-                        }}
-                        autoFocus
-                      />
-                    ) : (
-                      <p 
-                        className="font-medium cursor-pointer hover:text-primary"
-                        onClick={() => setEditingShares(stock.symbol)}
-                      >
-                        {stock.shares.toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Value</p>
-                    <p className="font-medium text-primary">{formatCurrency(portfolioValue)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Income</p>
-                    <p className="font-medium text-accent">{formatCurrency(annualIncome)}</p>
-                  </div>
-                </div>
-
-                {/* Compact Progress Bar */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-muted-foreground">Allocation</span>
-                    <span className="text-xs font-medium">{portfolioPercentage.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={valueProgress} className="h-1.5" />
                 </div>
               </Card>
             );
