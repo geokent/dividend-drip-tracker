@@ -91,14 +91,15 @@ export const StockSymbolForm = ({ onStockFound }: StockSymbolFormProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
           <Input
             type="text"
-            placeholder="Enter stock symbol (e.g., AAPL, MSFT)"
+            placeholder="AAPL"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             disabled={loading}
-            className="flex-1"
+            className="w-24 text-center"
+            maxLength={5}
           />
           <Button type="submit" disabled={loading || !symbol.trim()}>
             {loading ? (
