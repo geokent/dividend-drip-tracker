@@ -141,7 +141,7 @@ const Auth = () => {
               <img 
                 src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
                 alt="DivTrkr Logo" 
-                className="h-16 w-auto mr-3"
+                className="h-8 w-auto mr-3"
               />
             </div>
           </div>
