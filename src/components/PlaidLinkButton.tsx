@@ -120,7 +120,7 @@ export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
       ) : (
         <CreditCard className="mr-2 h-4 w-4" />
       )}
-      {loading ? 'Connecting...' : 'Connect Bank Account'}
+      {loading ? 'Connecting...' : 'Link Brokerage Account'}
     </Button>
   );
 };

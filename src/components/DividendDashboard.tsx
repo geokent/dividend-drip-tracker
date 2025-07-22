@@ -191,7 +191,7 @@ export const DividendDashboard = () => {
               Stock Tracker
             </TabsTrigger>
             <TabsTrigger value="accounts" className="flex items-center gap-2">
-              Bank Accounts
+              Brokerage Accounts
             </TabsTrigger>
           </TabsList>
 
@@ -218,9 +218,9 @@ export const DividendDashboard = () => {
             {/* Plaid Integration - Temporarily Disabled */}
             <div className="space-y-4">
               <div className="text-center p-8 bg-muted/50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2">Bank Account Integration</h3>
+                <h3 className="text-lg font-semibold mb-2">Brokerage Account Integration</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Bank account integration is temporarily disabled during build. 
+                  Brokerage account integration is temporarily disabled during build. 
                   This will be available once deployed.
                 </p>
                 <p className="text-xs text-muted-foreground">
