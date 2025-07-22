@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { StockDividendCard } from "./StockDividendCard";
-import { PlaidLinkButton } from "./PlaidLinkButton";
-import { PlaidAccountsList } from "./PlaidAccountsList";
+// import { PlaidLinkButton } from "./PlaidLinkButton";
+// import { PlaidAccountsList } from "./PlaidAccountsList";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./AuthProvider";
@@ -230,17 +230,18 @@ export const DividendDashboard = () => {
           </TabsContent>
 
           <TabsContent value="accounts" className="space-y-6">
-            {/* Plaid Integration */}
+            {/* Plaid Integration - Temporarily Disabled */}
             <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Connect Your Bank Account</h3>
+              <div className="text-center p-8 bg-muted/50 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Bank Account Integration</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Automatically track dividend payments from your investment accounts
+                  Bank account integration is temporarily disabled during build. 
+                  This will be available once deployed.
                 </p>
-                <PlaidLinkButton onSuccess={() => window.location.reload()} />
+                <p className="text-xs text-muted-foreground">
+                  You can still track dividends manually using the Stock Tracker tab.
+                </p>
               </div>
-              
-              <PlaidAccountsList />
             </div>
           </TabsContent>
         </Tabs>
