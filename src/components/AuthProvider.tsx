@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
       
       // Force page reload for a clean state
-      window.location.href = '/auth';
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
     }
