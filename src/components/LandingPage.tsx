@@ -1,7 +1,7 @@
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { useAuth } from "./AuthProvider";
-import { ArrowRight, DollarSign, TrendingUp, Shield, BarChart3 } from "lucide-react";
+import { ArrowRight, DollarSign, TrendingUp, Shield, BarChart3, Snowflake, Flame } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import whatdivImage from "../assets/whatdiv.jpg";
 import snowballImage from "../assets/snowball.jpg";
@@ -102,6 +102,9 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="lg:order-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
+                <Snowflake className="h-8 w-8 text-primary" />
+              </div>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
                 Harness the Power of the Dividend Snowball
               </h2>
@@ -127,6 +130,9 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
+                <Flame className="h-8 w-8 text-primary" />
+              </div>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
                 A Key to the FIRE Movement
               </h2>
