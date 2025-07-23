@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -138,11 +139,13 @@ const Auth = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                alt="DivTrkr Logo" 
-                className="h-8 w-auto mr-3"
-              />
+              <Link to="/">
+                <img 
+                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                  alt="DivTrkr Logo" 
+                  className="h-8 w-auto mr-3 hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
           </div>
         </div>

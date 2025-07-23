@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut, TrendingUp, CreditCard } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/dividend-hero.jpg";
 
 interface StockData {
@@ -125,11 +126,13 @@ export const DividendDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                alt="DivTrkr Logo" 
-                className="h-8 w-auto"
-              />
+              <Link to="/">
+                <img 
+                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                  alt="DivTrkr Logo" 
+                  className="h-8 w-auto hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               {user?.email && (

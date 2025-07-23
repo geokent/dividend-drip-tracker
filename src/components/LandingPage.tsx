@@ -2,7 +2,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { useAuth } from "./AuthProvider";
 import { ArrowRight, DollarSign, TrendingUp, Shield, BarChart3 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import whatdivImage from "../assets/whatdiv.jpg";
 import snowballImage from "../assets/snowball.jpg";
 import fireImage from "../assets/fire.jpg";
@@ -28,11 +28,13 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                alt="DivTrkr Logo" 
-                className="h-8 w-auto mr-3"
-              />
+              <Link to="/">
+                <img 
+                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                  alt="DivTrkr Logo" 
+                  className="h-8 w-auto mr-3 hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <Button onClick={() => navigate('/auth')} className="px-6">
               Login / Sign Up
@@ -227,11 +229,13 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
-              <img 
-                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                alt="DivTrkr Logo" 
-                className="h-6 w-auto mr-3"
-              />
+              <Link to="/">
+                <img 
+                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                  alt="DivTrkr Logo" 
+                  className="h-6 w-auto mr-3 hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <p className="text-muted-foreground text-center md:text-right">
               © 2024 DivTrkr. Building wealth through dividend investing.
