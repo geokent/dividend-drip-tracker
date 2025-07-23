@@ -713,6 +713,17 @@ const LandingPageV2 = () => {
                 className="h-6 w-auto"
               />
             </div>
+            <div className="flex justify-center space-x-8 mb-4">
+              <Link to="/terms" className="text-muted-foreground hover:text-primary transition-smooth">
+                Terms of Service
+              </Link>
+              <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-smooth">
+                Privacy Policy
+              </Link>
+              <Link to="/learn-dividends" className="text-muted-foreground hover:text-primary transition-smooth">
+                Learn Dividends
+              </Link>
+            </div>
             <p className="text-muted-foreground mb-4">
               © 2024 Divtrkr. Building wealth through intelligent dividend investing.
             </p>

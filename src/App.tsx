@@ -7,6 +7,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import { LearnDividends } from "./pages/LearnDividends";
 import { DividendDashboard } from "@/components/DividendDashboard";
@@ -29,6 +31,8 @@ const App = () => (
             } />
             <Route path="/" element={<Index />} />
             <Route path="/learn-dividends" element={<LearnDividends />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
