@@ -344,9 +344,11 @@ export const LandingPage = () => {
                 it can share a portion of those earnings with its shareholders. This payment is a dividend. It's real cash 
                 paid directly into your brokerage account, creating a stream of passive income from the stocks you own.
               </p>
-              <Button variant="outline" className="group">
-                Want to learn more?
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              <Button variant="outline" className="group" asChild>
+                <a href="https://divtrkr.com/learn-dividends" target="_blank" rel="noopener noreferrer">
+                  Want to learn more?
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </a>
               </Button>
             </div>
             <div className="rounded-2xl overflow-hidden">
