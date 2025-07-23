@@ -10,8 +10,6 @@ import { Eye, EyeOff, TrendingUp, DollarSign, PieChart, Target, Shield, Zap, Arr
 import { Link } from "react-router-dom";
 
 // Import images
-import dashboardScreenshot from "@/assets/dashboard-screenshot.jpg";
-import dividendHero from "@/assets/dividend-hero.jpg";
 import snowball from "@/assets/snowball.jpg";
 import fire from "@/assets/fire.jpg";
 import sync from "@/assets/sync.jpg";
@@ -31,7 +29,7 @@ const LandingPageV2 = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    document.title = "DividendTracker - Track Your Dividend Income & Build Wealth";
+    document.title = "Divtrkr - Track Your Dividend Income & Build Wealth";
     
     // Add meta tags for SEO
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -60,7 +58,7 @@ const LandingPageV2 = () => {
     if (!ogTitle) {
       const meta = document.createElement('meta');
       meta.setAttribute('property', 'og:title');
-      meta.content = 'DividendTracker - Your Path to Financial Independence';
+      meta.content = 'Divtrkr - Your Path to Financial Independence';
       document.head.appendChild(meta);
     }
 
@@ -183,7 +181,7 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <TrendingUp className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold gradient-text">DividendTracker</span>
+            <span className="text-2xl font-bold gradient-text">Divtrkr</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/learn-dividends" className="text-foreground/80 hover:text-primary transition-smooth story-link">
@@ -348,7 +346,7 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
-              Your Command Center for 
+              Your Command Center for
               <span className="gradient-text block">Dividend Success</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -360,8 +358,8 @@ const LandingPageV2 = () => {
           <div className="relative max-w-6xl mx-auto hover-scale">
             <div className="absolute inset-0 gradient-primary rounded-3xl blur-3xl opacity-20"></div>
             <img 
-              src={dashboardScreenshot} 
-              alt="DividendTracker Dashboard - Portfolio Overview and Analytics"
+              src="/lovable-uploads/ac4c76f1-85e1-4a10-aea3-ef432a91a3a6.png" 
+              alt="Divtrkr Dashboard - Portfolio Overview and Analytics"
               className="relative rounded-3xl shadow-elegant w-full border border-border/20"
             />
           </div>
@@ -680,7 +678,7 @@ const LandingPageV2 = () => {
               <span className="block">Dividend Empire Today</span>
             </h2>
             <p className="text-xl text-white/90 mb-12 max-w-3xl mx-auto">
-              Join thousands of investors who are already using DividendTracker to build 
+              Join thousands of investors who are already using Divtrkr to build 
               their path to financial independence. Your future self will thank you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -705,10 +703,10 @@ const LandingPageV2 = () => {
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-6">
               <TrendingUp className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">DividendTracker</span>
+              <span className="text-xl font-bold">Divtrkr</span>
             </div>
             <p className="text-muted-foreground mb-4">
-              © 2024 DividendTracker. Building wealth through intelligent dividend investing.
+              © 2024 Divtrkr. Building wealth through intelligent dividend investing.
             </p>
             <p className="text-sm text-muted-foreground/70 max-w-2xl mx-auto">
               Disclaimer: Past performance does not guarantee future results. All investments 
