@@ -177,11 +177,16 @@ const LandingPageV2 = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
-      <header className="border-b border-border/5 backdrop-blur-lg bg-background/80 sticky top-0 z-50">
+      <header className="border-b border-border/5 backdrop-blur-lg bg-white/95 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <TrendingUp className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold gradient-text">Divtrkr</span>
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                alt="DivTrkr Logo" 
+                className="h-8 w-auto hover:opacity-80 transition-opacity"
+              />
+            </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/learn-dividends" className="text-foreground/80 hover:text-primary transition-smooth story-link">
@@ -702,8 +707,11 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-6">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">Divtrkr</span>
+              <img 
+                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                alt="DivTrkr Logo" 
+                className="h-6 w-auto"
+              />
             </div>
             <p className="text-muted-foreground mb-4">
               © 2024 Divtrkr. Building wealth through intelligent dividend investing.
