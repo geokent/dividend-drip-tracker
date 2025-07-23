@@ -174,6 +174,27 @@ export const LandingPage = () => {
         </div>
       </header>
 
+      {/* Dashboard Preview Section */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              See Your Portfolio Like Never Before
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Get instant insights into your dividend income with our beautiful, easy-to-use dashboard.
+            </p>
+          </div>
+          <div className="rounded-2xl overflow-hidden shadow-2xl border">
+            <img 
+              src="/lovable-uploads/ac4c76f1-85e1-4a10-aea3-ef432a91a3a6.png" 
+              alt="DivTrkr dashboard showing dividend tracking, portfolio analytics, and income projections"
+              className="w-full h-auto"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
@@ -304,27 +325,6 @@ export const LandingPage = () => {
               </div>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Dashboard Preview Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              See Your Portfolio Like Never Before
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Get instant insights into your dividend income with our beautiful, easy-to-use dashboard.
-            </p>
-          </div>
-          <div className="rounded-2xl overflow-hidden shadow-2xl border">
-            <img 
-              src="/lovable-uploads/ac4c76f1-85e1-4a10-aea3-ef432a91a3a6.png" 
-              alt="DivTrkr dashboard showing dividend tracking, portfolio analytics, and income projections"
-              className="w-full h-auto"
-            />
-          </div>
         </div>
       </section>
 
