@@ -1,4 +1,4 @@
-import { LandingPage } from "@/components/LandingPage";
+import { LandingPageV2 } from "@/components/LandingPageV2";
 import { useAuth } from "@/components/AuthProvider";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ const Index = () => {
   }, [user, navigate]);
   
   // Show landing page for non-authenticated users
-  return <LandingPage />;
+  return <LandingPageV2 />;
 };
 
 export default Index;
