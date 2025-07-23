@@ -1,8 +1,13 @@
+import { useState } from "react";
 import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { useAuth } from "./AuthProvider";
 import { ArrowRight, DollarSign, TrendingUp, Shield, BarChart3, Snowflake, Flame } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import whatdivImage from "../assets/whatdiv.jpg";
 import snowballImage from "../assets/snowball.jpg";
 import fireImage from "../assets/fire.jpg";
@@ -12,12 +17,136 @@ import futureImage from "../assets/future.jpg";
 export const LandingPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleGetStarted = () => {
     if (user) {
       navigate('/dashboard');
     } else {
       navigate('/auth');
+    }
+  };
+
+  const cleanupAuthState = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      cleanupAuthState();
+      
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            display_name: displayName
+          }
+        }
+      });
+
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive"
+          });
+          setIsSignUp(false);
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Success!",
+          description: "Please check your email to confirm your account."
+        });
+        
+        if (data.user) {
+          window.location.href = '/dashboard';
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong during sign up",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      cleanupAuthState();
+      
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast({
+            title: "Invalid credentials",
+            description: "Please check your email and password and try again.",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
+        }
+      } else if (data.user) {
+        toast({
+          title: "Welcome back!",
+          description: "You have been signed in successfully."
+        });
+        window.location.href = '/dashboard';
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong during sign in",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,9 +165,11 @@ export const LandingPage = () => {
                 />
               </Link>
             </div>
-            <Button onClick={() => navigate('/auth')} className="px-6">
-              Login / Sign Up
-            </Button>
+{user && (
+              <Button onClick={() => navigate('/dashboard')} className="px-6">
+                Dashboard
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -46,22 +177,137 @@ export const LandingPage = () => {
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-6">
-            Track Your Dividends
-            <span className="text-primary block">Your Way</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
-            Automatic portfolio sync or manual tracking - both free to start.
-          </p>
-          <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Link your brokerage accounts for automatic updates, or manually add your dividend stocks. 
-            Either way, get a clear view of your passive income growth.
-          </p>
-          <Button size="lg" onClick={handleGetStarted} className="px-8 py-6 text-lg">
-            Start Tracking for Free
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {user ? (
+            // Existing user view
+            <div className="text-center">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-6">
+                Welcome Back!
+                <span className="text-primary block">Ready to Grow?</span>
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Continue tracking your dividend journey and watch your passive income compound.
+              </p>
+              <Button size="lg" onClick={() => navigate('/dashboard')} className="px-8 py-6 text-lg">
+                Go to Dashboard
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          ) : (
+            // New user view with auth form
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div className="text-center lg:text-left">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
+                  Turn Your Stocks Into
+                  <span className="text-primary block">Passive Income</span>
+                </h1>
+                <p className="text-xl text-muted-foreground mb-6">
+                  Stop wondering if your dividend strategy is working. Get crystal-clear insights into your passive income growth and take control of your financial future.
+                </p>
+                <div className="space-y-4 text-lg text-muted-foreground">
+                  <div className="flex items-center gap-3 justify-center lg:justify-start">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    <span>Track dividends from 1,000+ stocks automatically</span>
+                  </div>
+                  <div className="flex items-center gap-3 justify-center lg:justify-start">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    <span>See exactly when your next payments arrive</span>
+                  </div>
+                  <div className="flex items-center gap-3 justify-center lg:justify-start">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    <span>Project your path to financial independence</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-center lg:justify-end">
+                <Card className="w-full max-w-md shadow-lg">
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl font-bold text-center">
+                      {isSignUp ? 'Start Building Wealth' : 'Welcome Back'}
+                    </CardTitle>
+                    <CardDescription className="text-center">
+                      {isSignUp 
+                        ? 'Create your free account and see your first dividend insights in minutes' 
+                        : 'Sign in to continue tracking your dividend growth'
+                      }
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
+                      {isSignUp && (
+                        <div className="space-y-2">
+                          <Label htmlFor="displayName">Display Name</Label>
+                          <Input
+                            id="displayName"
+                            type="text"
+                            placeholder="Enter your display name"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            required={isSignUp}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          minLength={6}
+                        />
+                      </div>
+                      
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={loading}
+                      >
+                        {loading 
+                          ? (isSignUp ? 'Creating Account...' : 'Signing In...') 
+                          : (isSignUp ? 'Start Tracking for Free' : 'Sign In')
+                        }
+                      </Button>
+                    </form>
+                    
+                    <div className="mt-4 text-center">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setIsSignUp(!isSignUp);
+                          setEmail('');
+                          setPassword('');
+                          setDisplayName('');
+                        }}
+                        className="text-sm"
+                      >
+                        {isSignUp 
+                          ? 'Already have an account? Sign In' 
+                          : "Don't have an account? Sign Up"
+                        }
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
