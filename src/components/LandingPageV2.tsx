@@ -232,13 +232,13 @@ const LandingPageV2 = () => {
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <div className="relative">
-                  <Button variant="outline" size="lg" className="px-8 py-4 text-lg opacity-50 cursor-not-allowed" disabled>
+                <Button variant="outline" size="lg" className="px-8 py-4 text-lg opacity-50 cursor-not-allowed flex flex-col" disabled>
+                  <div className="flex items-center">
                     <Play className="mr-2 h-5 w-5" />
                     Watch Demo
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-1 text-center">Coming Soon</p>
-                </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground mt-1">Coming Soon</span>
+                </Button>
               </div>
 
               {/* Trust Indicators */}
@@ -524,13 +524,13 @@ const LandingPageV2 = () => {
                   <div className="text-sm text-muted-foreground">30-Year Total</div>
                 </div>
               </div>
-              <div className="relative">
-                <Button variant="gradient" size="lg" className="px-8 opacity-50 cursor-not-allowed" disabled>
+              <Button variant="gradient" size="lg" className="px-8 opacity-50 cursor-not-allowed flex flex-col" disabled>
+                <div className="flex items-center">
                   Calculate Your Snowball
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1 text-center">Coming Soon</p>
-              </div>
+                </div>
+                <span className="text-xs text-muted-foreground mt-1">Coming Soon</span>
+              </Button>
             </div>
           </div>
         </div>
@@ -580,13 +580,13 @@ const LandingPageV2 = () => {
                   </div>
                 </div>
               </div>
-              <div className="relative">
-                <Button variant="outline" size="lg" className="px-8 opacity-50 cursor-not-allowed" disabled>
+              <Button variant="outline" size="lg" className="px-8 opacity-50 cursor-not-allowed flex flex-col" disabled>
+                <div className="flex items-center">
                   Learn FIRE Strategy
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1 text-center">Coming Soon</p>
-              </div>
+                </div>
+                <span className="text-xs text-muted-foreground mt-1">Coming Soon</span>
+              </Button>
             </div>
             <div className="hover-scale">
               <img 
@@ -673,13 +673,13 @@ const LandingPageV2 = () => {
                   <div className="text-xs text-muted-foreground">Long-term</div>
                 </div>
               </div>
-              <div className="relative">
-                <Button variant="gradient" size="lg" className="px-8 opacity-50 cursor-not-allowed" disabled>
+              <Button variant="gradient" size="lg" className="px-8 opacity-50 cursor-not-allowed flex flex-col" disabled>
+                <div className="flex items-center">
                   Try Projection Tool
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1 text-center">Coming Soon</p>
-              </div>
+                </div>
+                <span className="text-xs text-muted-foreground mt-1">Coming Soon</span>
+              </Button>
             </div>
           </div>
         </div>
@@ -703,12 +703,10 @@ const LandingPageV2 = () => {
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <div className="relative">
-                <Button size="lg" variant="outline" className="px-8 py-4 text-lg border-white text-white hover:bg-white/10 opacity-50 cursor-not-allowed" disabled>
-                  Schedule Demo
-                </Button>
-                <p className="text-xs text-white/70 mt-1 text-center">Coming Soon</p>
-              </div>
+              <Button size="lg" variant="outline" className="px-8 py-4 text-lg border-white text-white hover:bg-white/10 opacity-50 cursor-not-allowed flex flex-col" disabled>
+                <span>Schedule Demo</span>
+                <span className="text-xs text-white/70 mt-1">Coming Soon</span>
+              </Button>
             </div>
             <p className="text-white/70 mt-6 text-sm">
               No credit card required • Cancel anytime
