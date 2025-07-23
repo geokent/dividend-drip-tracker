@@ -99,21 +99,18 @@ export const LearnDividends = () => {
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
             Start Your Journey with This Essential Video
           </h2>
-          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-muted group hover-scale">
+          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-muted">
             <iframe
               className="w-full h-full"
-              src="https://www.youtube.com/embed/4NV3SVmnfu4"
+              src="https://www.youtube.com/embed/4NV3SVmnfu4?rel=0&enablejsapi=1"
               title="Dividend Investing for Beginners - Complete Guide"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <Play className="h-16 w-16 text-white" />
-            </div>
           </div>
           <p className="text-muted-foreground mt-4 text-lg">
-            Warren Buffett explains the power of dividend investing in under 10 minutes
+            Learn the fundamentals of dividend investing step by step
           </p>
         </div>
       </section>
@@ -146,10 +143,10 @@ export const LearnDividends = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/Aobr2naZcm0"
+                    src="https://www.youtube.com/embed/Aobr2naZcm0?rel=0&enablejsapi=1"
                     title="What Are Dividends Explained"
                     frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
                 </div>
@@ -294,10 +291,10 @@ export const LearnDividends = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/v7GR9wO8s0w"
+                    src="https://www.youtube.com/embed/v7GR9wO8s0w?rel=0&enablejsapi=1"
                     title="Building Passive Income with Dividends"
                     frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
                 </div>
