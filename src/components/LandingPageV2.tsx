@@ -698,17 +698,11 @@ const LandingPageV2 = () => {
               Join thousands of investors who are already using Divtrkr to build 
               their path to financial independence. Your future self will thank you.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button size="lg" variant="secondary" className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90">
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <div className="flex flex-col items-center">
-                <Button size="lg" variant="outline" className="px-8 py-4 text-lg border-white text-white hover:bg-white/10 opacity-50 cursor-not-allowed" disabled>
-                  Schedule Demo
-                </Button>
-                <p className="text-xs text-white/70 mt-1">Coming Soon</p>
-              </div>
             </div>
             <p className="text-white/70 mt-6 text-sm">
               No credit card required • Cancel anytime
