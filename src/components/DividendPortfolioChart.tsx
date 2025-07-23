@@ -112,18 +112,12 @@ export const DividendPortfolioChart = ({
             </p>
             <p className="text-xs text-muted-foreground">Weighted Avg Yield</p>
           </div>
-          <div className="text-center">
-            <p className="text-lg font-semibold text-secondary">
-              {totalPortfolioValue > 0 ? 
-                formatPercentage((trackedStocks.reduce((sum, stock) => {
-                  const annualIncome = calculateAnnualIncome(stock);
-                  const stockValue = calculatePortfolioValue(stock);
-                  return sum + (stockValue > 0 ? (annualIncome / stockValue) * 100 : 0);
-                }, 0) / trackedStocks.filter(stock => calculatePortfolioValue(stock) > 0).length) || 0) : 
-                "0.00%"
-              }
-            </p>
-            <p className="text-xs text-muted-foreground">Current Avg Yield</p>
+          <div className="text-center opacity-60">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Lock className="h-3 w-3 text-muted-foreground" />
+              <p className="text-sm font-medium text-muted-foreground">Premium</p>
+            </div>
+            <p className="text-xs text-muted-foreground">Yield on Cost</p>
           </div>
           
           {/* Premium Features */}
