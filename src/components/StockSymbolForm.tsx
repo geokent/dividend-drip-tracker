@@ -93,10 +93,10 @@ export const StockSymbolForm = ({ onStockFound }: StockSymbolFormProps) => {
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             disabled={loading}
-            className="w-16 h-8 text-center text-xs px-2"
+            className="w-16 h-7 text-center text-xs px-2"
             maxLength={5}
           />
-          <Button type="submit" disabled={loading || !symbol.trim()} size="sm" className="h-8 px-3">
+          <Button type="submit" disabled={loading || !symbol.trim()} size="sm" className="h-7 px-2">
             {loading ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
