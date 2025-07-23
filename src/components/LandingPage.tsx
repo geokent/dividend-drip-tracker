@@ -295,7 +295,7 @@ export const LandingPage = () => {
                       >
                         {isSignUp 
                           ? 'Already have an account? Sign In' 
-                          : "Don't have an account? Sign Up"
+                          : "Don't have an account? Sign up FOR FREE today!"
                         }
                       </Button>
                     </div>
