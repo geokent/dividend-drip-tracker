@@ -198,25 +198,21 @@ export const LandingPage = () => {
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div className="text-center lg:text-left">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-                  Turn Your Stocks Into
+                  Turn Stocks Into
                   <span className="text-primary block">Passive Income</span>
                 </h1>
                 <p className="text-xl text-muted-foreground mb-6">
-                  Stop wondering if your dividend strategy is working. Get crystal-clear insights into your passive income growth and take control of your financial future.
+                  Passive income from stocks comes through dividends - regular cash payments companies make to shareholders. 
+                  It's money that flows to you automatically, just for owning quality dividend-paying stocks.
                 </p>
-                <div className="space-y-4 text-lg text-muted-foreground">
-                  <div className="flex items-center gap-3 justify-center lg:justify-start">
-                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                    <span>Track dividends from 1,000+ stocks automatically</span>
-                  </div>
-                  <div className="flex items-center gap-3 justify-center lg:justify-start">
-                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                    <span>See exactly when your next payments arrive</span>
-                  </div>
-                  <div className="flex items-center gap-3 justify-center lg:justify-start">
-                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                    <span>Project your path to financial independence</span>
-                  </div>
+                <p className="text-lg text-muted-foreground mb-6">
+                  DivTrkr makes it effortless to track your dividend income across all your holdings. 
+                  See your passive income grow month by month, completely free.
+                </p>
+                <div className="bg-primary/10 rounded-lg p-4 mb-6">
+                  <p className="text-lg font-semibold text-foreground">
+                    🎉 Sign up today for FREE and start tracking your investment income!
+                  </p>
                 </div>
               </div>
               
@@ -224,11 +220,11 @@ export const LandingPage = () => {
                 <Card className="w-full max-w-md shadow-lg">
                   <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold text-center">
-                      {isSignUp ? 'Start Building Wealth' : 'Welcome Back'}
+                      {isSignUp ? 'Sign Up FOR FREE' : 'Welcome Back'}
                     </CardTitle>
                     <CardDescription className="text-center">
                       {isSignUp 
-                        ? 'Create your free account and see your first dividend insights in minutes' 
+                        ? 'Start tracking your dividend income completely free - no credit card required' 
                         : 'Sign in to continue tracking your dividend growth'
                       }
                     </CardDescription>
