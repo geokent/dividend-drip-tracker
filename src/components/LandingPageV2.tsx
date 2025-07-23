@@ -229,7 +229,7 @@ const LandingPageV2 = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
                 <Button size="lg" className="px-8 py-4 text-lg" onClick={() => setIsSignUp(true)}>
-                  Start Free Trial
+                  Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
@@ -696,7 +696,7 @@ const LandingPageV2 = () => {
               </Button>
             </div>
             <p className="text-white/70 mt-6 text-sm">
-              No credit card required • 14-day free trial • Cancel anytime
+              No credit card required • Cancel anytime
             </p>
           </div>
         </div>

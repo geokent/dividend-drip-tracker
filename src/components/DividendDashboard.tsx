@@ -122,7 +122,7 @@ export const DividendDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Match Landing Page Style */}
-      <header className="border-b bg-white backdrop-blur supports-[backdrop-filter]:bg-white sticky top-0 z-50">
+      <header className="border-b border-border/5 backdrop-blur-lg bg-white/95 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
