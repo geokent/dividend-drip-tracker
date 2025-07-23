@@ -238,6 +238,31 @@ const Auth = () => {
         </CardContent>
         </Card>
       </div>
+
+      {/* Footer */}
+      <footer className="py-8 border-t bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="flex items-center">
+              <Link to="/">
+                <img 
+                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                  alt="DivTrkr Logo" 
+                  className="h-6 w-auto mr-3 hover:opacity-80 transition-opacity"
+                />
+              </Link>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-muted-foreground mb-2">
+                © 2024 DivTrkr. Building wealth through dividend investing.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                This is not investment advice. We are not investment professionals. All data is provided for educational and entertainment purposes only.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

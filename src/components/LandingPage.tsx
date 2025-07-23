@@ -498,8 +498,8 @@ export const LandingPage = () => {
       {/* Footer */}
       <footer className="py-12 border-t bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="flex items-center">
               <Link to="/">
                 <img 
                   src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
@@ -508,9 +508,14 @@ export const LandingPage = () => {
                 />
               </Link>
             </div>
-            <p className="text-muted-foreground text-center md:text-right">
-              © 2024 DivTrkr. Building wealth through dividend investing.
-            </p>
+            <div className="text-center md:text-right">
+              <p className="text-muted-foreground mb-2">
+                © 2024 DivTrkr. Building wealth through dividend investing.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                This is not investment advice. We are not investment professionals. All data is provided for educational and entertainment purposes only.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
