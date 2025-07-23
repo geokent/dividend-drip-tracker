@@ -13,7 +13,6 @@ import snowballImage from "../assets/snowball.jpg";
 import fireImage from "../assets/fire.jpg";
 import syncImage from "../assets/sync.jpg";
 import futureImage from "../assets/future.jpg";
-import dashboardImage from "../assets/dashboard-screenshot.jpg";
 
 export const LandingPage = () => {
   const { user } = useAuth();
@@ -321,7 +320,7 @@ export const LandingPage = () => {
           </div>
           <div className="rounded-2xl overflow-hidden shadow-2xl border">
             <img 
-              src={dashboardImage} 
+              src="/lovable-uploads/ac4c76f1-85e1-4a10-aea3-ef432a91a3a6.png" 
               alt="DivTrkr dashboard showing dividend tracking, portfolio analytics, and income projections"
               className="w-full h-auto"
             />
