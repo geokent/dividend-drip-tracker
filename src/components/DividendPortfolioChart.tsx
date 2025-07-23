@@ -123,7 +123,7 @@ export const DividendPortfolioChart = ({
                 "0.00%"
               }
             </p>
-            <p className="text-xs text-muted-foreground">Avg Yield on Cost</p>
+            <p className="text-xs text-muted-foreground">Current Avg Yield</p>
           </div>
           
           {/* Premium Features */}
