@@ -112,10 +112,14 @@ const LandingPageV2 = () => {
         });
       } else {
         toast({
-          title: "Welcome!",
-          description: "Account created successfully. Please check your email to verify your account.",
+          title: "Check your email!",
+          description: "We've sent you a verification link. Please check your email and click the link to verify your account, then sign in below.",
         });
-        navigate('/dashboard');
+        // Switch to sign-in form instead of redirecting
+        setIsSignUp(false);
+        // Clear the form
+        setPassword('');
+        setDisplayName('');
       }
     } catch (error) {
       console.error('Sign up error:', error);
