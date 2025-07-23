@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +24,7 @@ const LandingPageV2 = () => {
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
   
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -111,12 +113,9 @@ const LandingPageV2 = () => {
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Check your email!",
-          description: "We've sent you a verification link. Please check your email and click the link to verify your account, then sign in below.",
-        });
-        // Switch to sign-in form instead of redirecting
+        // Switch to sign-in form and show verification message
         setIsSignUp(false);
+        setShowEmailVerification(true);
         // Clear the form
         setPassword('');
         setDisplayName('');
@@ -276,8 +275,16 @@ const LandingPageV2 = () => {
                     }
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
+                 <CardContent>
+                   {showEmailVerification && !isSignUp && (
+                     <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
+                       <AlertDescription>
+                         <strong>Check your email!</strong> We've sent you a verification link. 
+                         Please check your email and click the link to verify your account, then sign in below.
+                       </AlertDescription>
+                     </Alert>
+                   )}
+                   <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
                     {isSignUp && (
                       <div>
                         <Input
@@ -335,17 +342,20 @@ const LandingPageV2 = () => {
                     </Button>
                   </form>
                   
-                  <div className="text-center mt-6">
-                    <button
-                      onClick={() => setIsSignUp(!isSignUp)}
-                      className="text-primary hover:underline transition-smooth"
-                    >
-                      {isSignUp 
-                        ? "Already have an account? Sign in" 
-                        : "Need an account? Sign up free"
-                      }
-                    </button>
-                  </div>
+                   <div className="text-center mt-6">
+                     <button
+                       onClick={() => {
+                         setIsSignUp(!isSignUp);
+                         setShowEmailVerification(false);
+                       }}
+                       className="text-primary hover:underline transition-smooth"
+                     >
+                       {isSignUp 
+                         ? "Already have an account? Sign in" 
+                         : "Need an account? Sign up free"
+                       }
+                     </button>
+                   </div>
                 </CardContent>
               </Card>
             </div>
