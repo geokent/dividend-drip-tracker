@@ -156,18 +156,18 @@ export const DividendPortfolioChart = ({
             const valueProgress = maxPortfolioValue > 0 ? (portfolioValue / maxPortfolioValue) * 100 : 0;
 
             return (
-              <Card key={stock.symbol} className="p-6 hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20">
-                <div className="grid grid-cols-12 gap-4 items-center">
+              <Card key={stock.symbol} className="p-3 hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20">
+                <div className="grid grid-cols-12 gap-3 items-center">
                   {/* Stock identification - 3 columns */}
-                  <div className="col-span-3 flex items-center gap-3">
-                    <Badge variant="outline" className="font-mono text-lg font-bold px-3 py-1 w-20 justify-center bg-primary/5">
+                  <div className="col-span-3 flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono text-sm font-bold px-2 py-1 w-16 justify-center bg-primary/5">
                       {stock.symbol}
                     </Badge>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-base text-foreground leading-tight truncate">
+                      <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
                         {stock.companyName}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {formatCurrency(stock.currentPrice)}
                       </p>
                     </div>
@@ -175,12 +175,12 @@ export const DividendPortfolioChart = ({
 
                   {/* Shares - 1 column */}
                   <div className="col-span-1 text-center">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Shares</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Shares</p>
                     {editingShares === stock.symbol ? (
                       <Input
                         type="number"
                         defaultValue={stock.shares}
-                        className="h-8 w-full text-sm text-center font-medium"
+                        className="h-6 w-full text-xs text-center font-medium"
                         onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -191,7 +191,7 @@ export const DividendPortfolioChart = ({
                       />
                     ) : (
                       <p 
-                        className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors"
+                        className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors"
                         onClick={() => setEditingShares(stock.symbol)}
                       >
                         {stock.shares.toLocaleString()}
@@ -200,29 +200,29 @@ export const DividendPortfolioChart = ({
                   </div>
 
                   {/* Value - 1.5 columns */}
-                  <div className="col-span-2 text-center px-3 py-2 bg-muted/30 rounded-lg">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Value</p>
-                    <p className="text-lg font-bold text-primary">{formatCurrency(portfolioValue)}</p>
+                  <div className="col-span-2 text-center px-2 py-1 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Value</p>
+                    <p className="text-sm font-bold text-primary">{formatCurrency(portfolioValue)}</p>
                   </div>
 
                   {/* Yield - 1 column */}
-                  <div className="col-span-1 text-center px-3 py-2 bg-accent/10 rounded-lg">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Yield</p>
-                    <p className="text-lg font-semibold text-accent">
+                  <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Yield</p>
+                    <p className="text-sm font-semibold text-accent">
                       {formatPercentage(stock.dividendYield)}
                     </p>
                   </div>
 
                   {/* Annual Income - 1.5 columns */}
-                  <div className="col-span-2 text-center px-3 py-2 bg-accent/10 rounded-lg">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Annual Income</p>
-                    <p className="text-lg font-bold text-accent">{formatCurrency(annualIncome)}</p>
+                  <div className="col-span-2 text-center px-2 py-1 bg-accent/10 rounded-lg">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
+                    <p className="text-sm font-bold text-accent">{formatCurrency(annualIncome)}</p>
                   </div>
 
                   {/* Ex-Dividend Date - 1.5 columns */}
-                  <div className="col-span-2 text-center px-2 py-2 bg-secondary/20 rounded-lg">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ex-Div / Last Div</p>
-                    <p className="text-sm font-medium">
+                  <div className="col-span-2 text-center px-2 py-1 bg-secondary/20 rounded-lg">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
+                    <p className="text-xs font-medium">
                       {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
                         month: 'short', 
                         day: 'numeric'
@@ -234,14 +234,14 @@ export const DividendPortfolioChart = ({
                   </div>
                   
                   {/* Actions - 1 column */}
-                  <div className="col-span-1 flex justify-end pr-2">
+                  <div className="col-span-1 flex justify-end pr-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onRemoveStock(stock.symbol)}
-                      className="h-10 w-10 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
