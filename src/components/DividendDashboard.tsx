@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, TrendingUp } from "lucide-react";
+import { LogOut, TrendingUp, CreditCard } from "lucide-react";
 import heroImage from "@/assets/dividend-hero.jpg";
 
 interface StockData {
@@ -191,7 +191,8 @@ export const DividendDashboard = () => {
               Stock Tracker
             </TabsTrigger>
             <TabsTrigger value="accounts" className="flex items-center gap-2">
-              Brokerage Accounts
+              <CreditCard className="h-4 w-4" />
+              Link Brokerage Account
             </TabsTrigger>
           </TabsList>
 
@@ -218,13 +219,14 @@ export const DividendDashboard = () => {
             {/* Plaid Integration - Temporarily Disabled */}
             <div className="space-y-4">
               <div className="text-center p-8 bg-muted/50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2">Brokerage Account Integration</h3>
+                <CreditCard className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Connect Your Brokerage Account</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Brokerage account integration is temporarily disabled during build. 
-                  This will be available once deployed.
+                  Automatically sync your dividend-paying stocks and track your portfolio performance. 
+                  Account linking is temporarily disabled during development.
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  You can still track dividends manually using the Stock Tracker tab.
+                  For now, you can manually add stocks using the Stock Tracker tab above.
                 </p>
               </div>
             </div>
