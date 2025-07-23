@@ -345,10 +345,10 @@ export const LandingPage = () => {
                 paid directly into your brokerage account, creating a stream of passive income from the stocks you own.
               </p>
               <Button variant="outline" className="group" asChild>
-                <a href="https://divtrkr.com/learn-dividends" target="_blank" rel="noopener noreferrer">
+                <Link to="/learn-dividends">
                   Want to learn more?
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </a>
+                </Link>
               </Button>
             </div>
             <div className="rounded-2xl overflow-hidden">
