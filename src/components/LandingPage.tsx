@@ -13,6 +13,7 @@ import snowballImage from "../assets/snowball.jpg";
 import fireImage from "../assets/fire.jpg";
 import syncImage from "../assets/sync.jpg";
 import futureImage from "../assets/future.jpg";
+import dashboardImage from "../assets/dashboard-screenshot.jpg";
 
 export const LandingPage = () => {
   const { user } = useAuth();
@@ -304,6 +305,27 @@ export const LandingPage = () => {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Dashboard Preview Section */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              See Your Portfolio Like Never Before
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Get instant insights into your dividend income with our beautiful, easy-to-use dashboard.
+            </p>
+          </div>
+          <div className="rounded-2xl overflow-hidden shadow-2xl border">
+            <img 
+              src={dashboardImage} 
+              alt="DivTrkr dashboard showing dividend tracking, portfolio analytics, and income projections"
+              className="w-full h-auto"
+            />
+          </div>
         </div>
       </section>
 
