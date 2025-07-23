@@ -13,11 +13,11 @@ export const StatsCard = ({ title, value, subtitle, trend, className = "" }: Sta
   
   return (
     <Card className={`shadow-card hover:shadow-hover transition-smooth gradient-card ${className}`}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+      <CardHeader className="pb-1">
+        <CardTitle className="text-xs font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-foreground">{value}</div>
+      <CardContent className="pt-1">
+        <div className="text-lg font-bold text-foreground">{value}</div>
         {subtitle && (
           <p className={`text-xs mt-1 ${trendColor}`}>
             {subtitle}
