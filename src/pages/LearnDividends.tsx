@@ -102,8 +102,8 @@ export const LearnDividends = () => {
           <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-muted group hover-scale">
             <iframe
               className="w-full h-full"
-              src="https://www.youtube.com/embed/D7K_ZnM3Zqg"
-              title="Dividend Investing for Beginners"
+              src="https://www.youtube.com/embed/4NV3SVmnfu4"
+              title="Dividend Investing for Beginners - Complete Guide"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -146,7 +146,7 @@ export const LearnDividends = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/G3JkzPKyBnI"
+                    src="https://www.youtube.com/embed/Aobr2naZcm0"
                     title="What Are Dividends Explained"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -294,7 +294,7 @@ export const LearnDividends = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/7RtxNUKZ4bc"
+                    src="https://www.youtube.com/embed/v7GR9wO8s0w"
                     title="Building Passive Income with Dividends"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
