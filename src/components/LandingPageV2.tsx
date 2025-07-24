@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, TrendingUp, DollarSign, PieChart, Target, Shield, Zap, ArrowRight, Play, Star, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
 
 // Import images
 import snowball from "@/assets/snowball.jpg";
@@ -200,6 +201,7 @@ const LandingPageV2 = () => {
                 Dashboard
               </Link>
             )}
+            <PWAInstallButton />
             <Button variant="outline" size="sm" onClick={() => setIsSignUp(false)}>
               Sign In
             </Button>
