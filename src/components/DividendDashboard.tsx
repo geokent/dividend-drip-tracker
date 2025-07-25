@@ -136,10 +136,28 @@ export const DividendDashboard = () => {
             </div>
             <div className="flex items-center gap-4">
               <Link 
+                to="/future-income-projects" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Projections
+              </Link>
+              <Link 
                 to="/learn-dividends" 
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Learn
+                Dividends
+              </Link>
+              <Link 
+                to="/learn-fire" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                FIRE
+              </Link>
+              <Link 
+                to="/learn-dividend-snowball" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Snowball
               </Link>
               {user?.email && (
                 <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>

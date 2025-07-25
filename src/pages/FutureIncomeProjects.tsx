@@ -189,7 +189,7 @@ export const FutureIncomeProjects = () => {
                 to="/learn-dividends" 
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Learn
+                Dividends
               </Link>
               <Link 
                 to="/learn-fire" 

@@ -67,12 +67,38 @@ export const LearnDividends = () => {
                 />
               </Link>
             </div>
-            <Button variant="outline" asChild className="hover-scale">
-              <Link to="/" className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Home
+            <div className="flex items-center gap-4">
+              <Link 
+                to="/dashboard" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dashboard
               </Link>
-            </Button>
+              <Link 
+                to="/future-income-projects" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Projections
+              </Link>
+              <Link 
+                to="/learn-fire" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                FIRE
+              </Link>
+              <Link 
+                to="/learn-dividend-snowball" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Snowball
+              </Link>
+              <Button variant="outline" asChild className="hover-scale">
+                <Link to="/" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Home
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
