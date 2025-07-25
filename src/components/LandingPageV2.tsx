@@ -199,13 +199,13 @@ const LandingPageV2 = () => {
               </button>
               <div className="absolute top-full left-0 mt-2 w-64 bg-card border border-border rounded-lg shadow-elegant opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="p-2 space-y-1">
-                  <Link to="/learn-dividends" className="block px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
+                  <Link to="/learn-dividends" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
                     Learn About Dividends
                   </Link>
-                  <Link to="/learn-dividend-snowball" className="block px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
+                  <Link to="/learn-dividend-snowball" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
                     Dividend Snowball Strategy
                   </Link>
-                  <Link to="/learn-fire" className="block px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
+                  <Link to="/learn-fire" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
                     FIRE Movement
                   </Link>
                 </div>
