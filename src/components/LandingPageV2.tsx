@@ -556,7 +556,7 @@ const LandingPageV2 = () => {
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <Button variant="gradient" size="lg" className="px-8 hover-scale" asChild>
+                <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
                   <Link to="/learn-dividend-snowball">
                     Learn Dividend Snowball
                     <ArrowRight className="ml-2 h-5 w-5" />
