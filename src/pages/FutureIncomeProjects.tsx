@@ -522,8 +522,8 @@ export const FutureIncomeProjects = () => {
         <div className="text-center">
           <Card className="bg-gradient-primary shadow-elegant">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4 text-white">Want to Optimize Your Portfolio?</h3>
-              <p className="text-white/95 mb-6 text-lg">
+              <h3 className="text-2xl font-bold mb-4 text-slate-900">Want to Optimize Your Portfolio?</h3>
+              <p className="text-slate-800 mb-6 text-lg">
                 Add more dividend stocks to your portfolio to improve these projections.
               </p>
               <Button variant="secondary" size="lg" className="px-8" asChild>
