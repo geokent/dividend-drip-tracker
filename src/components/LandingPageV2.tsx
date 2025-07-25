@@ -707,11 +707,12 @@ const LandingPageV2 = () => {
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <Button variant="gradient" size="lg" className="px-8 opacity-50 cursor-not-allowed" disabled>
-                  Try Projection Tool
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button variant="gradient" size="lg" className="px-8 hover-scale" asChild>
+                  <Link to="/future-income-projects">
+                    Try Projection Tool
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-                <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
               </div>
             </div>
           </div>
