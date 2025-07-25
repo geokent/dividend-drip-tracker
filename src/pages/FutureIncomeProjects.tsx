@@ -166,20 +166,42 @@ export const FutureIncomeProjects = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       {/* Header */}
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2 hover-scale">
-                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <DollarSign className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-xl font-bold gradient-text">DividendTracker</span>
+      <header className="border-b border-border/5 backdrop-blur-lg bg-white/95 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link to="/">
+                <img 
+                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
+                  alt="DivTrkr Logo" 
+                  className="h-8 w-auto hover:opacity-80 transition-opacity"
+                />
               </Link>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
+            <div className="flex items-center gap-4">
+              <Link 
+                to="/dashboard" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Dashboard
+              </Link>
+              <Link 
+                to="/learn-dividends" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Learn
+              </Link>
+              <Link 
+                to="/learn-fire" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                FIRE
+              </Link>
+              <Link 
+                to="/learn-dividend-snowball" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Snowball
               </Link>
               {user?.email && (
                 <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
