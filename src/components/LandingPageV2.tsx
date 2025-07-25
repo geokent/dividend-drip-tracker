@@ -647,6 +647,7 @@ const LandingPageV2 = () => {
               <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-6">
                 Automatic Portfolio Syncing
               </h3>
+              <p className="text-xs text-muted-foreground mb-4 font-medium">Coming Soon</p>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 Connect your brokerage accounts securely and let our platform automatically 
                 track your dividend payments, portfolio performance, and tax implications. 
