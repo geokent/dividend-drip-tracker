@@ -644,7 +644,7 @@ const LandingPageV2 = () => {
 
           <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
             <div className="animate-fade-in">
-              <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+              <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-2 text-center">
                 Automatic Portfolio Syncing
               </h3>
               <p className="text-xs text-muted-foreground mb-6 font-medium text-center">Coming Soon</p>
