@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, TrendingUp, DollarSign, PieChart, Target, Shield, Zap, ArrowRight, Play, Star, CheckCircle } from "lucide-react";
+import { Header } from "@/components/Header";
 import { Link } from "react-router-dom";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 
@@ -180,43 +181,7 @@ const LandingPageV2 = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      {/* Header */}
-      <header className="border-b border-border/5 backdrop-blur-lg bg-white/95 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Link to="/">
-              <img 
-                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                alt="DivTrkr Logo" 
-                className="h-8 w-auto hover:opacity-80 transition-opacity"
-              />
-            </Link>
-          </div>
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/learn-dividends" className="text-foreground/80 hover:text-primary transition-smooth">
-              Dividends
-            </Link>
-            <Link to="/learn-fire" className="text-foreground/80 hover:text-primary transition-smooth">
-              FIRE
-            </Link>
-            <Link to="/learn-dividend-snowball" className="text-foreground/80 hover:text-primary transition-smooth">
-              Snowball
-            </Link>
-            <Link to="/future-income-projects" className="text-foreground/80 hover:text-primary transition-smooth">
-              Income Projections
-            </Link>
-            {user && (
-              <Link to="/dashboard" className="text-foreground/80 hover:text-primary transition-smooth story-link">
-                Dashboard
-              </Link>
-            )}
-            <PWAInstallButton />
-            <Button variant="outline" size="sm" onClick={() => setIsSignUp(false)}>
-              Sign In
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">

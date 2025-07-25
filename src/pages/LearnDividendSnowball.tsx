@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Snowflake, TrendingUp, RefreshCw, Target, BarChart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { Header } from "@/components/Header";
 
 export const LearnDividendSnowball = () => {
   useEffect(() => {
@@ -54,54 +55,7 @@ export const LearnDividendSnowball = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/5 backdrop-blur-lg bg-white/95 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/">
-                <img 
-                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                  alt="DivTrkr Logo" 
-                  className="h-8 w-auto hover:opacity-80 transition-opacity"
-                />
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link 
-                to="/dashboard" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Dashboard
-              </Link>
-              <Link 
-                to="/future-income-projects" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Projections
-              </Link>
-              <Link 
-                to="/learn-dividends" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Dividends
-              </Link>
-              <Link 
-                to="/learn-fire" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                FIRE
-              </Link>
-              <Button variant="outline" asChild className="hover-scale">
-                <Link to="/" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
