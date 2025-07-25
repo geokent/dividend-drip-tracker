@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -20,37 +21,147 @@ import {
   BarChart3,
   Zap,
   Star,
-  Home
+  Home,
+  LogOut
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { useAuth } from "@/components/AuthProvider";
+
+interface StockData {
+  symbol: string;
+  companyName: string;
+  currentPrice: number | null;
+  dividendYield: number | null;
+  dividendPerShare: number | null;
+  annualDividend: number | null;
+  exDividendDate: string | null;
+  dividendDate: string | null;
+  sector: string | null;
+  industry: string | null;
+  marketCap: string | null;
+  peRatio: string | null;
+}
+
+interface TrackedStock extends StockData {
+  shares: number;
+}
 
 export const FutureIncomeProjects = () => {
-  const [currentAge, setCurrentAge] = useState('');
-  const [retirementAge, setRetirementAge] = useState('');
-  const [monthlyInvestment, setMonthlyInvestment] = useState('');
-  const [currentPortfolio, setCurrentPortfolio] = useState('');
-  const [riskTolerance, setRiskTolerance] = useState('');
-  const [projectionGenerated, setProjectionGenerated] = useState(false);
+  const { user, signOut } = useAuth();
+  const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
+  const [monthlyInvestment, setMonthlyInvestment] = useState(1000);
+  const [dividendGrowthRate, setDividendGrowthRate] = useState(5);
+  const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
+  const [reinvestDividends, setReinvestDividends] = useState(true);
 
-  const handleGenerateProjection = () => {
-    if (currentAge && retirementAge && monthlyInvestment && currentPortfolio && riskTolerance) {
-      setProjectionGenerated(true);
+  // Load tracked stocks from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('trackedStocks');
+    if (saved) {
+      try {
+        setTrackedStocks(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse saved tracked stocks:', e);
+      }
     }
+  }, []);
+
+  // Calculate current portfolio metrics
+  const calculateCurrentMetrics = () => {
+    const totalAnnualDividends = trackedStocks.reduce((sum, stock) => {
+      if (stock.annualDividend && stock.shares > 0) {
+        return sum + (stock.annualDividend * stock.shares);
+      }
+      return sum;
+    }, 0);
+    
+    const totalPortfolioValue = trackedStocks.reduce((sum, stock) => {
+      if (stock.currentPrice && stock.shares > 0) {
+        return sum + (stock.currentPrice * stock.shares);
+      }
+      return sum;
+    }, 0);
+
+    const averageYield = totalPortfolioValue > 0 ? (totalAnnualDividends / totalPortfolioValue) * 100 : 0;
+
+    return {
+      totalAnnualDividends,
+      totalPortfolioValue,
+      averageYield,
+      uniqueStocks: trackedStocks.length
+    };
   };
 
-  // Mock projection data - in real app this would come from AI analysis
-  const projectionData = {
-    tenYear: { income: '$2,340', portfolio: '$125,000' },
-    twentyYear: { income: '$4,850', portfolio: '$285,000' },
-    retirement: { income: '$8,920', portfolio: '$520,000' },
-    confidence: 85,
-    riskLevel: 'Moderate',
-    recommendedAdjustments: [
-      'Consider increasing allocation to dividend growth stocks',
-      'Add international dividend exposure for diversification',
-      'Maintain 3-6 month emergency fund alongside investments'
-    ]
+  // Generate projection data for charts
+  const generateProjectionData = () => {
+    const currentMetrics = calculateCurrentMetrics();
+    const data = [];
+    
+    let currentPortfolioValue = currentMetrics.totalPortfolioValue;
+    let currentAnnualDividends = currentMetrics.totalAnnualDividends;
+    
+    // Use current yield or default to 4% if no stocks
+    const assumedYield = currentMetrics.averageYield > 0 ? currentMetrics.averageYield / 100 : 0.04;
+    
+    for (let year = 0; year <= 15; year++) {
+      // Add monthly investments
+      const yearlyInvestment = monthlyInvestment * 12 + additionalYearlyContribution;
+      currentPortfolioValue += yearlyInvestment;
+      
+      // Add dividend reinvestment if enabled
+      if (reinvestDividends && year > 0) {
+        currentPortfolioValue += currentAnnualDividends;
+      }
+      
+      // Apply market growth (7% average)
+      if (year > 0) {
+        currentPortfolioValue *= 1.07;
+      }
+      
+      // Calculate new annual dividends with growth
+      currentAnnualDividends = currentPortfolioValue * assumedYield;
+      if (year > 0) {
+        currentAnnualDividends *= Math.pow(1 + dividendGrowthRate / 100, year);
+      }
+
+      data.push({
+        year,
+        portfolioValue: Math.round(currentPortfolioValue),
+        annualDividends: Math.round(currentAnnualDividends),
+        monthlyIncome: Math.round(currentAnnualDividends / 12),
+        quarterlyIncome: Math.round(currentAnnualDividends / 4)
+      });
+    }
+    
+    return data;
   };
+
+  const projectionData = generateProjectionData();
+  const currentMetrics = calculateCurrentMetrics();
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle>Sign In Required</CardTitle>
+            <CardDescription>
+              Please sign in to access your dividend projections
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/">
+                Go to Home Page
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
@@ -66,10 +177,22 @@ export const FutureIncomeProjects = () => {
                 <span className="text-xl font-bold gradient-text">DividendTracker</span>
               </Link>
             </div>
-            <Link to="/" className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors">
-              <Home className="h-4 w-4" />
-              <span>Back to Home</span>
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
+                Dashboard
+              </Link>
+              {user?.email && (
+                <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+              )}
+              <Button 
+                variant="outline" 
+                onClick={signOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -82,322 +205,330 @@ export const FutureIncomeProjects = () => {
             <span>AI-Powered Analysis</span>
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Future Income 
-            <span className="gradient-text block">Projections</span>
+            Future Dividend 
+            <span className="gradient-text block">Income Projections</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Our AI-powered algorithms analyze your current portfolio and market trends to project 
-            your future dividend income. Plan your retirement and financial goals with confidence 
-            using our advanced modeling tools.
+            AI-powered projections based on your current portfolio of {currentMetrics.uniqueStocks} dividend stocks. 
+            Customize parameters below to see how different strategies affect your long-term income.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Input Section */}
+        {/* Current Portfolio Summary */}
+        {trackedStocks.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 animate-fade-in">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-primary mb-1">
+                  ${currentMetrics.totalPortfolioValue.toLocaleString()}
+                </div>
+                <div className="text-sm text-muted-foreground">Current Portfolio</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-green-600 mb-1">
+                  ${currentMetrics.totalAnnualDividends.toLocaleString()}
+                </div>
+                <div className="text-sm text-muted-foreground">Annual Dividends</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600 mb-1">
+                  {currentMetrics.averageYield.toFixed(2)}%
+                </div>
+                <div className="text-sm text-muted-foreground">Portfolio Yield</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-purple-600 mb-1">
+                  {currentMetrics.uniqueStocks}
+                </div>
+                <div className="text-sm text-muted-foreground">Dividend Stocks</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        <div className="grid lg:grid-cols-3 gap-8 mb-12">
+          {/* Parameter Controls */}
           <Card className="shadow-elegant hover-scale">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <Calculator className="h-5 w-5 text-primary" />
-                <CardTitle>Investment Profile</CardTitle>
+                <CardTitle>Projection Parameters</CardTitle>
               </div>
               <CardDescription>
-                Tell us about your current situation to generate personalized projections
+                Adjust these values to see how they impact your projections
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentAge">Current Age</Label>
-                  <Input
-                    id="currentAge"
-                    type="number"
-                    placeholder="35"
-                    value={currentAge}
-                    onChange={(e) => setCurrentAge(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="retirementAge">Retirement Age</Label>
-                  <Input
-                    id="retirementAge"
-                    type="number"
-                    placeholder="65"
-                    value={retirementAge}
-                    onChange={(e) => setRetirementAge(e.target.value)}
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="monthlyInvestment">Monthly Investment ($)</Label>
-                <Input
-                  id="monthlyInvestment"
-                  type="number"
-                  placeholder="1000"
-                  value={monthlyInvestment}
-                  onChange={(e) => setMonthlyInvestment(e.target.value)}
+                <Label htmlFor="monthlyInvestment">Monthly Investment: ${monthlyInvestment}</Label>
+                <Slider
+                  value={[monthlyInvestment]}
+                  onValueChange={([value]) => setMonthlyInvestment(value)}
+                  max={5000}
+                  min={0}
+                  step={100}
+                  className="w-full"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="currentPortfolio">Current Portfolio Value ($)</Label>
-                <Input
-                  id="currentPortfolio"
-                  type="number"
-                  placeholder="50000"
-                  value={currentPortfolio}
-                  onChange={(e) => setCurrentPortfolio(e.target.value)}
+                <Label htmlFor="dividendGrowth">Expected Dividend Growth: {dividendGrowthRate}%</Label>
+                <Slider
+                  value={[dividendGrowthRate]}
+                  onValueChange={([value]) => setDividendGrowthRate(value)}
+                  max={15}
+                  min={0}
+                  step={0.5}
+                  className="w-full"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="riskTolerance">Risk Tolerance</Label>
-                <Select value={riskTolerance} onValueChange={setRiskTolerance}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your risk tolerance" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="conservative">Conservative</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="aggressive">Aggressive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="yearlyContribution">Additional Yearly Investment: ${additionalYearlyContribution}</Label>
+                <Slider
+                  value={[additionalYearlyContribution]}
+                  onValueChange={([value]) => setAdditionalYearlyContribution(value)}
+                  max={50000}
+                  min={0}
+                  step={1000}
+                  className="w-full"
+                />
               </div>
 
-              <Button 
-                onClick={handleGenerateProjection}
-                className="w-full h-12" 
-                variant="gradient"
-                disabled={!currentAge || !retirementAge || !monthlyInvestment || !currentPortfolio || !riskTolerance}
-              >
-                <Brain className="mr-2 h-5 w-5" />
-                Generate AI Projection
-              </Button>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="reinvest"
+                  checked={reinvestDividends}
+                  onChange={(e) => setReinvestDividends(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <Label htmlFor="reinvest">Reinvest Dividends</Label>
+              </div>
             </CardContent>
           </Card>
 
-          {/* AI Features */}
-          <Card className="shadow-elegant hover-scale">
+          {/* Key Projections */}
+          <Card className="shadow-elegant lg:col-span-2">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <Zap className="h-5 w-5 text-primary" />
-                <CardTitle>AI-Powered Features</CardTitle>
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <CardTitle>Key Milestones</CardTitle>
               </div>
               <CardDescription>
-                Advanced algorithms for accurate projections
+                Based on your current portfolio and parameters
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Market Trend Analysis</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Real-time analysis of dividend trends and market conditions
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <BarChart3 className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Portfolio Optimization</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Personalized recommendations for dividend portfolio allocation
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Target className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Goal-Based Planning</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Scenario modeling for different retirement and income goals
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Star className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Risk Assessment</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Dynamic risk analysis with confidence intervals
-                  </p>
-                </div>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[1, 10, 15].map((targetYear) => {
+                  const yearData = projectionData[targetYear];
+                  return (
+                    <Card key={targetYear} className="bg-gradient-to-br from-primary/5 to-accent/5">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          <CardTitle className="text-lg">{targetYear} Year{targetYear > 1 ? 's' : ''}</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-primary mb-1">
+                          ${yearData?.monthlyIncome.toLocaleString() || 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground mb-3">Monthly Income</div>
+                        <div className="text-lg font-semibold text-foreground">
+                          ${yearData?.portfolioValue.toLocaleString() || 0}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Total Portfolio</div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Results Section */}
-        {projectionGenerated && (
-          <Card className="shadow-elegant animate-fade-in">
+        {/* Charts Section */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-12">
+          {/* Line Chart - Portfolio Growth */}
+          <Card className="shadow-elegant">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <PieChart className="h-5 w-5 text-primary" />
-                  <CardTitle>Your Dividend Income Projection</CardTitle>
-                </div>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {projectionData.confidence}% Confidence
-                </Badge>
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <CardTitle>Portfolio Growth Projection</CardTitle>
               </div>
               <CardDescription>
-                Based on your investment profile and current market conditions
+                Expected portfolio value and dividend income over time
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="timeline" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="timeline">Timeline View</TabsTrigger>
-                  <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
-                  <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="timeline" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-blue-500" />
-                          <CardTitle className="text-lg">10 Years</CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-blue-500 mb-1">
-                          {projectionData.tenYear.income}
-                        </div>
-                        <div className="text-sm text-muted-foreground mb-2">Monthly Income</div>
-                        <div className="text-lg font-semibold text-foreground">
-                          {projectionData.tenYear.portfolio}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Total Portfolio</div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-green-500" />
-                          <CardTitle className="text-lg">20 Years</CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-green-500 mb-1">
-                          {projectionData.twentyYear.income}
-                        </div>
-                        <div className="text-sm text-muted-foreground mb-2">Monthly Income</div>
-                        <div className="text-lg font-semibold text-foreground">
-                          {projectionData.twentyYear.portfolio}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Total Portfolio</div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-purple-500" />
-                          <CardTitle className="text-lg">Retirement</CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-purple-500 mb-1">
-                          {projectionData.retirement.income}
-                        </div>
-                        <div className="text-sm text-muted-foreground mb-2">Monthly Income</div>
-                        <div className="text-lg font-semibold text-foreground">
-                          {projectionData.retirement.portfolio}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Total Portfolio</div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="breakdown" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h4 className="font-semibold text-foreground">Risk Analysis</h4>
-                      <div className="space-y-3">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Risk Level</span>
-                            <span className="font-medium">{projectionData.riskLevel}</span>
-                          </div>
-                          <Progress value={60} className="h-2" />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Confidence</span>
-                            <span className="font-medium">{projectionData.confidence}%</span>
-                          </div>
-                          <Progress value={projectionData.confidence} className="h-2" />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <h4 className="font-semibold text-foreground">Key Assumptions</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Average Dividend Yield</span>
-                          <span className="font-medium">4.2%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Annual Growth Rate</span>
-                          <span className="font-medium">7.5%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Dividend Growth Rate</span>
-                          <span className="font-medium">5.8%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Inflation Rate</span>
-                          <span className="font-medium">2.5%</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="recommendations" className="space-y-4">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-foreground">AI Recommendations</h4>
-                    {projectionData.recommendedAdjustments.map((recommendation, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-4 bg-accent/50 rounded-lg">
-                        <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-foreground">{recommendation}</p>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-              </Tabs>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={projectionData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        `$${Number(value).toLocaleString()}`,
+                        name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
+                      ]}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="portfolioValue" 
+                      stroke="#8884d8" 
+                      strokeWidth={2}
+                      name="Portfolio Value"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="annualDividends" 
+                      stroke="#82ca9d" 
+                      strokeWidth={2}
+                      name="Annual Dividends"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
-        )}
+
+          {/* Bar Chart - Income Breakdown */}
+          <Card className="shadow-elegant">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                <CardTitle>Dividend Income Timeline</CardTitle>
+              </div>
+              <CardDescription>
+                Monthly dividend income projections by year
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={projectionData.filter((_, index) => index % 2 === 0)}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Monthly Income']}
+                    />
+                    <Bar dataKey="monthlyIncome" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Assumptions and Recommendations */}
+        <Card className="shadow-elegant mb-12">
+          <CardHeader>
+            <div className="flex items-center space-x-2">
+              <Brain className="h-5 w-5 text-primary" />
+              <CardTitle>Projection Assumptions & Recommendations</CardTitle>
+            </div>
+            <CardDescription>
+              Key assumptions used in calculations and suggestions for optimization
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="assumptions" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="assumptions">Key Assumptions</TabsTrigger>
+                <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="assumptions" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-foreground">Market Assumptions</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Average Portfolio Yield</span>
+                        <span className="font-medium">{currentMetrics.averageYield.toFixed(2)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Annual Market Growth</span>
+                        <span className="font-medium">7.0%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Dividend Growth Rate</span>
+                        <span className="font-medium">{dividendGrowthRate}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Inflation Rate</span>
+                        <span className="font-medium">2.5%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-foreground">Your Parameters</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Monthly Investment</span>
+                        <span className="font-medium">${monthlyInvestment}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Additional Yearly</span>
+                        <span className="font-medium">${additionalYearlyContribution}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Dividend Reinvestment</span>
+                        <span className="font-medium">{reinvestDividends ? 'Yes' : 'No'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Current Stocks</span>
+                        <span className="font-medium">{currentMetrics.uniqueStocks}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="recommendations" className="space-y-4">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-foreground">Optimization Suggestions</h4>
+                  {[
+                    'Consider increasing your monthly investment to accelerate growth',
+                    'Enable dividend reinvestment to leverage compound growth',
+                    'Add more dividend growth stocks to improve long-term yields',
+                    'Diversify across different sectors to reduce risk',
+                    'Consider adding international dividend exposure'
+                  ].map((recommendation, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-4 bg-accent/50 rounded-lg">
+                      <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-foreground">{recommendation}</p>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
 
         {/* CTA Section */}
-        <div className="text-center mt-12">
+        <div className="text-center">
           <Card className="bg-gradient-primary text-white shadow-elegant">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4">Ready to Start Building Your Future?</h3>
+              <h3 className="text-2xl font-bold mb-4">Want to Optimize Your Portfolio?</h3>
               <p className="text-white/90 mb-6 text-lg">
-                Connect your investment accounts and get real-time tracking of your dividend journey.
+                Add more dividend stocks to your portfolio to improve these projections.
               </p>
               <Button variant="secondary" size="lg" className="px-8" asChild>
                 <Link to="/dashboard">
-                  Get Started Today
+                  Manage Portfolio
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
