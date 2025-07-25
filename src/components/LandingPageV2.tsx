@@ -644,10 +644,10 @@ const LandingPageV2 = () => {
 
           <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
             <div className="animate-fade-in">
-              <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-6">
+              <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
                 Automatic Portfolio Syncing
               </h3>
-              <p className="text-xs text-muted-foreground mb-4 font-medium">Coming Soon</p>
+              <p className="text-xs text-muted-foreground mb-6 font-medium text-center">Coming Soon</p>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 Connect your brokerage accounts securely and let our platform automatically 
                 track your dividend payments, portfolio performance, and tax implications. 
