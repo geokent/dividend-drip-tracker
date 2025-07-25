@@ -193,27 +193,18 @@ const LandingPageV2 = () => {
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <div className="relative group">
-              <button className="text-foreground/80 hover:text-primary transition-smooth story-link">
-                Learn
-              </button>
-              <div className="absolute top-full left-0 mt-2 w-64 bg-card border border-border rounded-lg shadow-elegant opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className="p-2 space-y-1">
-                  <Link to="/learn-dividends" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
-                    Learn About Dividends
-                  </Link>
-                  <Link to="/learn-dividend-snowball" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
-                    Dividend Snowball Strategy
-                  </Link>
-                  <Link to="/learn-fire" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
-                    FIRE Movement
-                  </Link>
-                  <Link to="/future-income-projects" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
-                    Future Income Projections
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <Link to="/learn-dividends" className="text-foreground/80 hover:text-primary transition-smooth">
+              Dividends
+            </Link>
+            <Link to="/learn-fire" className="text-foreground/80 hover:text-primary transition-smooth">
+              FIRE
+            </Link>
+            <Link to="/learn-dividend-snowball" className="text-foreground/80 hover:text-primary transition-smooth">
+              Snowball
+            </Link>
+            <Link to="/future-income-projects" className="text-foreground/80 hover:text-primary transition-smooth">
+              Income Projections
+            </Link>
             {user && (
               <Link to="/dashboard" className="text-foreground/80 hover:text-primary transition-smooth story-link">
                 Dashboard
@@ -734,11 +725,12 @@ const LandingPageV2 = () => {
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <Button variant="gradient" size="lg" className="px-8 opacity-50 cursor-not-allowed" disabled>
-                  Try Projection Tool
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button variant="gradient" size="lg" className="px-8" asChild>
+                  <Link to="/future-income-projects">
+                    Try Projection Tool
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-                <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
               </div>
             </div>
           </div>
