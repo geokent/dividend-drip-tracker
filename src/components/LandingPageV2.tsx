@@ -208,6 +208,9 @@ const LandingPageV2 = () => {
                   <Link to="/learn-fire" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
                     FIRE Movement
                   </Link>
+                  <Link to="/future-income-projects" className="block w-full px-3 py-2 text-sm text-card-foreground hover:bg-accent/10 hover:text-accent rounded-md transition-colors">
+                    Future Income Projections
+                  </Link>
                 </div>
               </div>
             </div>
@@ -437,7 +440,8 @@ const LandingPageV2 = () => {
                 icon: DollarSign,
                 title: "Income Projections",
                 description: "Forecast your future dividend income with our AI-powered prediction algorithms.",
-                color: "text-yellow-500"
+                color: "text-yellow-500",
+                link: "/future-income-projects"
               },
               {
                 icon: Shield,
@@ -457,21 +461,43 @@ const LandingPageV2 = () => {
                 description: "Set and track your financial independence goals with personalized FIRE calculators.",
                 color: "text-indigo-500"
               }
-            ].map((feature, index) => (
-              <Card key={index} className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                  <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
-                    <feature.icon className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base leading-relaxed">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
+            ].map((feature, index) => {
+              if (feature.link) {
+                return (
+                  <Link key={index} to={feature.link}>
+                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer">
+                      <CardHeader>
+                        <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
+                          <feature.icon className="h-6 w-6" />
+                        </div>
+                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <CardDescription className="text-base leading-relaxed">
+                          {feature.description}
+                        </CardDescription>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              } else {
+                return (
+                  <Card key={index} className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm">
+                    <CardHeader>
+                      <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
+                        <feature.icon className="h-6 w-6" />
+                      </div>
+                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base leading-relaxed">
+                        {feature.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                );
+              }
+            })}
           </div>
         </div>
       </section>
