@@ -102,8 +102,8 @@ export const LearnFIRE = () => {
           <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-muted">
             <iframe
               className="w-full h-full"
-              src="https://www.youtube.com/embed/T71ibcZAX3I?rel=0&enablejsapi=1"
-              title="FIRE Movement - Complete Guide to Financial Independence"
+              src="https://www.youtube.com/embed/isqpzOsMluI?rel=0&enablejsapi=1"
+              title="Financial Independence Retire Early (FIRE) Explained - J.P. Morgan"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
@@ -147,8 +147,8 @@ export const LearnFIRE = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/zrEDqhSdCQ8?rel=0&enablejsapi=1"
-                    title="What is the FIRE Movement"
+                    src="https://www.youtube.com/embed/Kn0a9UZpWhM?rel=0&enablejsapi=1"
+                    title="Follow These Steps to Retire Early - Financial Independence for Beginners"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
@@ -308,8 +308,8 @@ export const LearnFIRE = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/8si7cqGUCWM?rel=0&enablejsapi=1"
-                    title="FIRE Movement Strategies"
+                    src="https://www.youtube.com/embed/TmVLKtHgrog?rel=0&enablejsapi=1"
+                    title="How to Retire Early: A 10-Year Plan to Go from $1,000 to FIRE"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
