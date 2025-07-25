@@ -193,9 +193,24 @@ const LandingPageV2 = () => {
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/learn-dividends" className="text-foreground/80 hover:text-primary transition-smooth story-link">
-              Learn
-            </Link>
+            <div className="relative group">
+              <button className="text-foreground/80 hover:text-primary transition-smooth story-link">
+                Learn
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-64 bg-background border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="p-2 space-y-1">
+                  <Link to="/learn-dividends" className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors">
+                    Learn About Dividends
+                  </Link>
+                  <Link to="/learn-dividend-snowball" className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors">
+                    Dividend Snowball Strategy
+                  </Link>
+                  <Link to="/learn-fire" className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors">
+                    FIRE Movement
+                  </Link>
+                </div>
+              </div>
+            </div>
             {user && (
               <Link to="/dashboard" className="text-foreground/80 hover:text-primary transition-smooth story-link">
                 Dashboard
@@ -541,11 +556,12 @@ const LandingPageV2 = () => {
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <Button variant="gradient" size="lg" className="px-8 opacity-50 cursor-not-allowed" disabled>
-                  Calculate Your Snowball
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button variant="gradient" size="lg" className="px-8 hover-scale" asChild>
+                  <Link to="/learn-dividend-snowball">
+                    Learn Dividend Snowball
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-                <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
               </div>
             </div>
           </div>
@@ -597,11 +613,12 @@ const LandingPageV2 = () => {
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <Button variant="outline" size="lg" className="px-8 opacity-50 cursor-not-allowed" disabled>
-                  Learn FIRE Strategy
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
+                  <Link to="/learn-fire">
+                    Learn FIRE Strategy
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-                <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
               </div>
             </div>
             <div className="hover-scale">
