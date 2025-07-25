@@ -139,7 +139,7 @@ export const DividendDashboard = () => {
                 to="/future-income-projects" 
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Projections
+                Income Projections
               </Link>
               <Link 
                 to="/learn-dividends" 
