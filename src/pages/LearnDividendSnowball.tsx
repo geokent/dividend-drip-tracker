@@ -102,8 +102,8 @@ export const LearnDividendSnowball = () => {
           <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-muted">
             <iframe
               className="w-full h-full"
-              src="https://www.youtube.com/embed/JI_2Ay1PvkU?rel=0&enablejsapi=1"
-              title="Dividend Snowball Strategy - Complete Guide"
+              src="https://www.youtube.com/embed/c7fWmCw4cOg?rel=0&enablejsapi=1"
+              title="Build a Dividend Snowball → Live Off Dividends (the fastest way!)"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
@@ -143,8 +143,8 @@ export const LearnDividendSnowball = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/XPJQGOFJz2A?rel=0&enablejsapi=1"
-                    title="Understanding Dividend Reinvestment"
+                    src="https://www.youtube.com/embed/1oANdVB_rtU?rel=0&enablejsapi=1"
+                    title="Why Dividend Snowballs Create Millionaire Investors"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
@@ -299,8 +299,8 @@ export const LearnDividendSnowball = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/hGckQkz8JE8?rel=0&enablejsapi=1"
-                    title="How to Start Dividend Investing"
+                    src="https://www.youtube.com/embed/4NV3SVmnfu4?rel=0&enablejsapi=1"
+                    title="Dividend Investing for Beginners – How You Can Retire from Stocks"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
