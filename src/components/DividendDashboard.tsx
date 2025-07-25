@@ -136,12 +136,6 @@ export const DividendDashboard = () => {
             </div>
             <div className="flex items-center gap-4">
               <Link 
-                to="/" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Home
-              </Link>
-              <Link 
                 to="/learn-dividends" 
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
