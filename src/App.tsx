@@ -11,6 +11,8 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import { LearnDividends } from "./pages/LearnDividends";
+import { LearnDividendSnowball } from "./pages/LearnDividendSnowball";
+import { LearnFIRE } from "./pages/LearnFIRE";
 import { DividendDashboard } from "@/components/DividendDashboard";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
             } />
             <Route path="/" element={<Index />} />
             <Route path="/learn-dividends" element={<LearnDividends />} />
+            <Route path="/learn-dividend-snowball" element={<LearnDividendSnowball />} />
+            <Route path="/learn-fire" element={<LearnFIRE />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
