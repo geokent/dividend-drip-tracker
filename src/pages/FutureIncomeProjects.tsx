@@ -520,10 +520,10 @@ export const FutureIncomeProjects = () => {
 
         {/* CTA Section */}
         <div className="text-center">
-          <Card className="bg-gradient-primary text-white shadow-elegant">
+          <Card className="bg-gradient-primary text-primary-foreground shadow-elegant">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4">Want to Optimize Your Portfolio?</h3>
-              <p className="text-white/90 mb-6 text-lg">
+              <h3 className="text-2xl font-bold mb-4 text-primary-foreground">Want to Optimize Your Portfolio?</h3>
+              <p className="text-primary-foreground/90 mb-6 text-lg">
                 Add more dividend stocks to your portfolio to improve these projections.
               </p>
               <Button variant="secondary" size="lg" className="px-8" asChild>
