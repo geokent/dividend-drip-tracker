@@ -41,6 +41,17 @@ export const LearningAcademy = () => {
       document.head.appendChild(meta);
     }
 
+    // Update canonical URL
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute('href', 'https://divtrkr.lovable.app/learning-academy');
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'canonical';
+      link.href = 'https://divtrkr.lovable.app/learning-academy';
+      document.head.appendChild(link);
+    }
+
     // Update Open Graph tags
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) {
@@ -60,6 +71,39 @@ export const LearningAcademy = () => {
       meta.setAttribute('property', 'og:description');
       meta.content = seoData.description;
       document.head.appendChild(meta);
+    }
+
+    // Add structured data for Learning Academy
+    const existingStructuredData = document.querySelector('script[type="application/ld+json"][data-page="learning-academy"]');
+    if (!existingStructuredData) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-page', 'learning-academy');
+      script.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": "DivTrkr Learning Academy",
+        "description": seoData.description,
+        "provider": {
+          "@type": "Organization",
+          "name": "DivTrkr",
+          "url": "https://divtrkr.lovable.app"
+        },
+        "educationalLevel": "Beginner to Advanced",
+        "about": [
+          "Dividend Investing",
+          "FIRE Strategy", 
+          "Financial Independence",
+          "Passive Income"
+        ],
+        "teaches": [
+          "Dividend yield calculations",
+          "FIRE methodology",
+          "Compound growth strategies",
+          "Portfolio allocation"
+        ]
+      });
+      document.head.appendChild(script);
     }
   }, []);
 
