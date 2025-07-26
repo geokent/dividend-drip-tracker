@@ -104,8 +104,7 @@ export const DividendPortfolioChart = ({
             <p className="text-lg font-semibold text-accent">
               {totalPortfolioValue > 0 ? 
                 formatPercentage((trackedStocks.reduce((sum, stock) => {
-                  const stockValue = calculatePortfolioValue(stock);
-                  return sum + (stockValue * (stock.dividendYield || 0) / 100);
+                  return sum + calculateAnnualIncome(stock);
                 }, 0) / totalPortfolioValue) * 100) : 
                 "0.00%"
               }
