@@ -84,12 +84,22 @@ export const FutureIncomeProjects = () => {
       return sum;
     }, 0);
 
-    const averageYield = totalPortfolioValue > 0 ? (totalAnnualDividends / totalPortfolioValue) * 100 : 0;
+    const portfolioYield = totalPortfolioValue > 0 ? (totalAnnualDividends / totalPortfolioValue) * 100 : 0;
+    
+    const weightedAvgYield = totalPortfolioValue > 0 ? 
+      (trackedStocks.reduce((sum, stock) => {
+        if (stock.currentPrice && stock.shares > 0 && stock.dividendYield) {
+          const stockValue = stock.currentPrice * stock.shares;
+          return sum + (stockValue * stock.dividendYield / 100);
+        }
+        return sum;
+      }, 0) / totalPortfolioValue) * 100 : 0;
 
     return {
       totalAnnualDividends,
       totalPortfolioValue,
-      averageYield,
+      portfolioYield,
+      weightedAvgYield,
       uniqueStocks: trackedStocks.length
     };
   };
@@ -102,8 +112,8 @@ export const FutureIncomeProjects = () => {
     let currentPortfolioValue = currentMetrics.totalPortfolioValue;
     let currentAnnualDividends = currentMetrics.totalAnnualDividends;
     
-    // Use current yield or default to 4% if no stocks
-    const assumedYield = currentMetrics.averageYield > 0 ? currentMetrics.averageYield / 100 : 0.04;
+    // Use current portfolio yield or default to 4% if no stocks
+    const assumedYield = currentMetrics.portfolioYield > 0 ? currentMetrics.portfolioYield / 100 : 0.04;
     
     for (let year = 0; year <= 15; year++) {
       // Add monthly investments
@@ -187,7 +197,7 @@ export const FutureIncomeProjects = () => {
 
         {/* Current Portfolio Summary */}
         {trackedStocks.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 animate-fade-in">
             <Card>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-primary mb-1">
@@ -207,9 +217,17 @@ export const FutureIncomeProjects = () => {
             <Card>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-blue-600 mb-1">
-                  {currentMetrics.averageYield.toFixed(2)}%
+                  {currentMetrics.portfolioYield.toFixed(2)}%
                 </div>
                 <div className="text-sm text-muted-foreground">Portfolio Yield</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-accent mb-1">
+                  {currentMetrics.weightedAvgYield.toFixed(2)}%
+                </div>
+                <div className="text-sm text-muted-foreground">Weighted Avg Yield</div>
               </CardContent>
             </Card>
             <Card>
@@ -426,8 +444,12 @@ export const FutureIncomeProjects = () => {
                     <h4 className="font-semibold text-foreground">Market Assumptions</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Average Portfolio Yield</span>
-                        <span className="font-medium">{currentMetrics.averageYield.toFixed(2)}%</span>
+                        <span className="text-muted-foreground">Portfolio Yield (Used in Projections)</span>
+                        <span className="font-medium">{currentMetrics.portfolioYield.toFixed(2)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Weighted Avg Yield</span>
+                        <span className="font-medium">{currentMetrics.weightedAvgYield.toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Annual Market Growth</span>

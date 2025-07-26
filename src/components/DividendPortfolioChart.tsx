@@ -95,13 +95,25 @@ export const DividendPortfolioChart = ({
     <div className="space-y-3">
       {/* Portfolio Metrics with Premium Features */}
       <Card className="p-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10">
-        <div className="flex items-center justify-center gap-8">
+        <div className="flex items-center justify-center gap-6">
           <div className="text-center">
             <p className="text-lg font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
-            <p className="text-xs text-muted-foreground">Total Portfolio Value</p>
+            <p className="text-xs text-muted-foreground">Total Value</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-semibold text-accent">
+              {totalPortfolioValue > 0 ? 
+                formatPercentage((trackedStocks.reduce((sum, stock) => {
+                  const stockValue = calculatePortfolioValue(stock);
+                  return sum + (stockValue * (stock.dividendYield || 0) / 100);
+                }, 0) / totalPortfolioValue) * 100) : 
+                "0.00%"
+              }
+            </p>
+            <p className="text-xs text-muted-foreground">Weighted Avg Yield</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-blue-600">
               {totalPortfolioValue > 0 ? 
                 formatPercentage((trackedStocks.reduce((sum, stock) => {
                   return sum + calculateAnnualIncome(stock);
@@ -109,7 +121,7 @@ export const DividendPortfolioChart = ({
                 "0.00%"
               }
             </p>
-            <p className="text-xs text-muted-foreground">Weighted Avg Yield</p>
+            <p className="text-xs text-muted-foreground">Portfolio Yield</p>
           </div>
           <div className="text-center opacity-60">
             <div className="flex items-center justify-center gap-1 mb-1">
