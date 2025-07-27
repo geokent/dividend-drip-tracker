@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,9 @@ import {
   Zap,
   Star,
   Home,
-  LogOut
+  LogOut,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
@@ -55,6 +58,7 @@ export const FutureIncomeProjects = () => {
   const [dividendGrowthRate, setDividendGrowthRate] = useState(5);
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
+  const [isCalculationOpen, setIsCalculationOpen] = useState(false);
 
   // Load tracked stocks from localStorage
   useEffect(() => {
@@ -241,118 +245,132 @@ export const FutureIncomeProjects = () => {
           </div>
         )}
 
-        {/* How These Numbers Are Calculated Section */}
-        <Card className="shadow-elegant mb-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/10">
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Brain className="h-5 w-5 text-primary" />
-              <CardTitle className="text-xl">How These Numbers Are Calculated</CardTitle>
-            </div>
-            <CardDescription>
-              Understanding the methodology behind your dividend income projections
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left Column - Core Calculations */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-foreground flex items-center gap-2">
-                  <Calculator className="h-4 w-4 text-primary" />
-                  Core Calculation Method
-                </h4>
-                <div className="space-y-3 text-sm">
-                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
-                    <div className="font-medium text-foreground mb-2">Year 0 (Current)</div>
-                    <ul className="space-y-1 text-muted-foreground">
-                      <li>• Portfolio Value = Current stock positions</li>
-                      <li>• Annual Dividends = Sum of (Shares × Annual Dividend per Share)</li>
-                      <li>• Portfolio Yield = Annual Dividends ÷ Portfolio Value</li>
-                    </ul>
+        {/* How These Numbers Are Calculated - Collapsible Section */}
+        <Collapsible open={isCalculationOpen} onOpenChange={setIsCalculationOpen} className="mb-8">
+          <Card className="shadow-elegant bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/10">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-primary/5 transition-colors rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Brain className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-xl">How These Numbers Are Calculated</CardTitle>
                   </div>
-                  <div className="bg-background/50 p-4 rounded-lg border border-border/50">
-                    <div className="font-medium text-foreground mb-2">Future Years (1-15)</div>
-                    <ul className="space-y-1 text-muted-foreground">
-                      <li>• Add monthly investments (${monthlyInvestment.toLocaleString()}/month)</li>
-                      <li>• Add yearly bonus (${additionalYearlyContribution.toLocaleString()})</li>
-                      <li>• {reinvestDividends ? 'Reinvest' : 'Do not reinvest'} all dividends</li>
-                      <li>• Apply 7% annual portfolio growth</li>
-                      <li>• Grow dividends by {dividendGrowthRate}% annually</li>
-                    </ul>
+                  {isCalculationOpen ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <CardDescription>
+                  Click to {isCalculationOpen ? 'hide' : 'view'} the methodology behind your dividend income projections
+                </CardDescription>
+              </CardHeader>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent>
+              <CardContent className="space-y-6 pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Column - Core Calculations */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-foreground flex items-center gap-2">
+                      <Calculator className="h-4 w-4 text-primary" />
+                      Core Calculation Method
+                    </h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                        <div className="font-medium text-foreground mb-2">Year 0 (Current)</div>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• Portfolio Value = Current stock positions</li>
+                          <li>• Annual Dividends = Sum of (Shares × Annual Dividend per Share)</li>
+                          <li>• Portfolio Yield = Annual Dividends ÷ Portfolio Value</li>
+                        </ul>
+                      </div>
+                      <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                        <div className="font-medium text-foreground mb-2">Future Years (1-15)</div>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• Add monthly investments (${monthlyInvestment.toLocaleString()}/month)</li>
+                          <li>• Add yearly bonus (${additionalYearlyContribution.toLocaleString()})</li>
+                          <li>• {reinvestDividends ? 'Reinvest' : 'Do not reinvest'} all dividends</li>
+                          <li>• Apply 7% annual portfolio growth</li>
+                          <li>• Grow dividends by {dividendGrowthRate}% annually</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Key Assumptions */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-foreground flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      Key Assumptions Explained
+                    </h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
+                          <span className="text-muted-foreground">Market Growth Rate</span>
+                          <span className="font-medium text-foreground">7% annually</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground px-3">
+                          Historical S&P 500 average return (includes price appreciation)
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
+                          <span className="text-muted-foreground">Dividend Growth</span>
+                          <span className="font-medium text-foreground">{dividendGrowthRate}% annually</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground px-3">
+                          Conservative estimate based on dividend aristocrats track record
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
+                          <span className="text-muted-foreground">Current Yield Used</span>
+                          <span className="font-medium text-foreground">
+                            {currentMetrics.portfolioYield > 0 ? `${currentMetrics.portfolioYield.toFixed(2)}%` : '4.0%'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground px-3">
+                          {currentMetrics.portfolioYield > 0 
+                            ? "Based on your actual portfolio's current yield" 
+                            : "Default conservative estimate (add stocks for accurate projections)"
+                          }
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Right Column - Key Assumptions */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-foreground flex items-center gap-2">
-                  <Target className="h-4 w-4 text-primary" />
-                  Key Assumptions Explained
-                </h4>
-                <div className="space-y-3 text-sm">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
-                      <span className="text-muted-foreground">Market Growth Rate</span>
-                      <span className="font-medium text-foreground">7% annually</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground px-3">
-                      Historical S&P 500 average return (includes price appreciation)
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
-                      <span className="text-muted-foreground">Dividend Growth</span>
-                      <span className="font-medium text-foreground">{dividendGrowthRate}% annually</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground px-3">
-                      Conservative estimate based on dividend aristocrats' track record
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
-                      <span className="text-muted-foreground">Current Yield Used</span>
-                      <span className="font-medium text-foreground">
-                        {currentMetrics.portfolioYield > 0 ? `${currentMetrics.portfolioYield.toFixed(2)}%` : '4.0%'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground px-3">
-                      {currentMetrics.portfolioYield > 0 
-                        ? "Based on your actual portfolio's current yield" 
-                        : "Default conservative estimate (add stocks for accurate projections)"
-                      }
-                    </p>
+                {/* Formula Breakdown */}
+                <div className="bg-background/50 p-4 rounded-lg border border-border/50">
+                  <h5 className="font-medium text-foreground mb-3">Simple Formula (for any given year):</h5>
+                  <div className="font-mono text-sm text-muted-foreground space-y-1">
+                    <div>Portfolio Value = Previous Year Value + Monthly Investments + {reinvestDividends ? 'Dividend Reinvestment + ' : ''}Market Growth</div>
+                    <div>Annual Dividends = Portfolio Value × Current Yield × (1 + Dividend Growth)^Year</div>
+                    <div>Monthly Income = Annual Dividends ÷ 12</div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Formula Breakdown */}
-            <div className="bg-background/50 p-4 rounded-lg border border-border/50">
-              <h5 className="font-medium text-foreground mb-3">Simple Formula (for any given year):</h5>
-              <div className="font-mono text-sm text-muted-foreground space-y-1">
-                <div>Portfolio Value = Previous Year Value + Monthly Investments + {reinvestDividends ? 'Dividend Reinvestment + ' : ''}Market Growth</div>
-                <div>Annual Dividends = Portfolio Value × Current Yield × (1 + Dividend Growth)^Year</div>
-                <div>Monthly Income = Annual Dividends ÷ 12</div>
-              </div>
-            </div>
-
-            {/* Important Notes */}
-            <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-              <h5 className="font-medium text-foreground mb-2 flex items-center gap-2">
-                <Zap className="h-4 w-4 text-yellow-600" />
-                Important Notes
-              </h5>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• These are projections, not guarantees - actual results may vary</li>
-                <li>• Market volatility, economic changes, and company decisions affect dividends</li>
-                <li>• Calculations assume consistent contributions and no withdrawals</li>
-                <li>• Tax implications are not included in these projections</li>
-                <li>• {trackedStocks.length === 0 && "Add your actual stocks for more accurate projections based on real dividend yields"}</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+                {/* Important Notes */}
+                <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <h5 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-yellow-600" />
+                    Important Notes
+                  </h5>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• These are projections, not guarantees - actual results may vary</li>
+                    <li>• Market volatility, economic changes, and company decisions affect dividends</li>
+                    <li>• Calculations assume consistent contributions and no withdrawals</li>
+                    <li>• Tax implications are not included in these projections</li>
+                    <li>• {trackedStocks.length === 0 && "Add your actual stocks for more accurate projections based on real dividend yields"}</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
           {/* Parameter Controls */}
