@@ -354,18 +354,40 @@ export const FutureIncomeProjects = () => {
                 </div>
 
                 {/* Important Notes */}
-                <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <h5 className="font-medium text-foreground mb-2 flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-yellow-600" />
-                    Important Notes
+                <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
+                  <h5 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-muted-foreground" />
+                    Important Disclaimers
                   </h5>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• These are projections, not guarantees - actual results may vary</li>
-                    <li>• Market volatility, economic changes, and company decisions affect dividends</li>
-                    <li>• Calculations assume consistent contributions and no withdrawals</li>
-                    <li>• Tax implications are not included in these projections</li>
-                    <li>• {trackedStocks.length === 0 && "Add your actual stocks for more accurate projections based on real dividend yields"}</li>
-                  </ul>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted-foreground">
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2">
+                        <span className="text-muted-foreground mt-1">•</span>
+                        <span>Projections are estimates, not guarantees</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-muted-foreground mt-1">•</span>
+                        <span>Assumes consistent contributions and no withdrawals</span>
+                      </li>
+                    </ul>
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2">
+                        <span className="text-muted-foreground mt-1">•</span>
+                        <span>Market volatility affects actual results</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-muted-foreground mt-1">•</span>
+                        <span>Tax implications not included</span>
+                      </li>
+                    </ul>
+                  </div>
+                  {trackedStocks.length === 0 && (
+                    <div className="mt-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                      <p className="text-sm text-primary font-medium">
+                        💡 Add your actual dividend stocks for more accurate projections based on real yields
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </CollapsibleContent>
