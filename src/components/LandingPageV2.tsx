@@ -207,10 +207,14 @@ const LandingPageV2 = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                <Button size="lg" className="px-8 py-4 text-lg" onClick={() => setIsSignUp(true)}>
-                  Get Started Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <div className="text-center lg:text-left">
+                  <p className="text-lg font-semibold text-foreground mb-2">
+                    Ready to start building wealth?
+                  </p>
+                  <p className="text-muted-foreground">
+                    Join thousands of investors tracking their dividend income
+                  </p>
+                </div>
                 <div className="flex flex-col items-center">
                   <Button variant="outline" size="lg" className="px-8 py-4 text-lg opacity-50 cursor-not-allowed" disabled>
                     <Play className="mr-2 h-5 w-5" />
@@ -716,7 +720,12 @@ const LandingPageV2 = () => {
               their path to financial independence. Your future self will thank you.
             </p>
             <div className="flex justify-center">
-              <Button size="lg" variant="secondary" className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90">
+              <Button 
+                size="lg" 
+                variant="secondary" 
+                className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90"
+                onClick={() => setIsSignUp(true)}
+              >
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
