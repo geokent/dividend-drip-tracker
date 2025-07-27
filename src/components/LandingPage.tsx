@@ -345,7 +345,7 @@ export const LandingPage = () => {
                 paid directly into your brokerage account, creating a stream of passive income from the stocks you own.
               </p>
               <Button variant="outline" className="group" asChild>
-                <Link to="/learn-dividends">
+                <Link to="/learning-academy">
                   Want to learn more?
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>

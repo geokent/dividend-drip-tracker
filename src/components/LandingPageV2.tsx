@@ -487,7 +487,7 @@ const LandingPageV2 = () => {
                   </div>
                 ))}
               </div>
-              <Link to="/learn-dividends">
+              <Link to="/learning-academy">
                 <Button variant="outline" size="lg" className="px-8">
                   Start Learning
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -539,7 +539,7 @@ const LandingPageV2 = () => {
               </div>
               <div className="flex flex-col items-center">
                 <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
-                  <Link to="/learn-dividend-snowball">
+                  <Link to="/learning-academy">
                     Learn Dividend Snowball
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -596,7 +596,7 @@ const LandingPageV2 = () => {
               </div>
               <div className="flex flex-col items-center">
                 <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
-                  <Link to="/learn-fire">
+                  <Link to="/learning-academy">
                     Learn FIRE Strategy
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -746,7 +746,7 @@ const LandingPageV2 = () => {
               <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-smooth">
                 Privacy Policy
               </Link>
-              <Link to="/learn-dividends" className="text-muted-foreground hover:text-primary transition-smooth">
+              <Link to="/learning-academy" className="text-muted-foreground hover:text-primary transition-smooth">
                 Learn Dividends
               </Link>
             </div>
