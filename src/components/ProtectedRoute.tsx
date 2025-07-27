@@ -10,7 +10,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   useEffect(() => {
     if (!user) {
-      window.location.href = '/';
+      window.location.href = '/auth';
     }
   }, [user]);
 

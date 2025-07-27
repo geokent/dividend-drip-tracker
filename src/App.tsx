@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import { Auth } from "./pages/Auth";
 
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -34,11 +35,28 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/" element={<Index />} />
-            <Route path="/learn-dividends" element={<LearnDividends />} />
-            <Route path="/learn-dividend-snowball" element={<LearnDividendSnowball />} />
-            <Route path="/learn-fire" element={<LearnFIRE />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/learn-dividends" element={
+              <ProtectedRoute>
+                <LearnDividends />
+              </ProtectedRoute>
+            } />
+            <Route path="/learn-dividend-snowball" element={
+              <ProtectedRoute>
+                <LearnDividendSnowball />
+              </ProtectedRoute>
+            } />
+            <Route path="/learn-fire" element={
+              <ProtectedRoute>
+                <LearnFIRE />
+              </ProtectedRoute>
+            } />
+            <Route path="/learning-academy" element={
+              <ProtectedRoute>
+                <LearningAcademy />
+              </ProtectedRoute>
+            } />
             <Route path="/future-income-projects" element={<FutureIncomeProjects />} />
-            <Route path="/learning-academy" element={<LearningAcademy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
