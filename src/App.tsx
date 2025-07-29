@@ -17,6 +17,7 @@ import { LearnFIRE } from "./pages/LearnFIRE";
 import { FutureIncomeProjects } from "./pages/FutureIncomeProjects";
 import { LearningAcademy } from "./pages/LearningAcademy";
 import { DividendDashboard } from "@/components/DividendDashboard";
+import Blog from "./pages/Blog";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/future-income-projects" element={<FutureIncomeProjects />} />
+            <Route path="/blog" element={<Blog />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -11,6 +11,7 @@ import { Eye, EyeOff, TrendingUp, DollarSign, PieChart, Target, Shield, Zap, Arr
 import { Header } from "@/components/Header";
 import { Link } from "react-router-dom";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
+import { FAQ } from "@/components/FAQ";
 
 // Import images
 import snowball from "@/assets/snowball.jpg";
@@ -736,6 +737,9 @@ const LandingPageV2 = () => {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FAQ />
 
       {/* Footer */}
       <footer className="bg-background border-t border-border/10 py-12">
