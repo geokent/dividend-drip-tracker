@@ -401,7 +401,7 @@ const LandingPageV2 = () => {
                 icon: DollarSign,
                 title: "Income Projections",
                 description: "Forecast your future dividend income with our AI-powered prediction algorithms.",
-                color: "text-yellow-500",
+                color: "text-muted-foreground",
                 link: "/future-income-projects"
               },
               {
