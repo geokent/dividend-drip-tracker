@@ -6,12 +6,14 @@ import { useNavigate } from 'react-router-dom';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  isSigningOut: boolean;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
+  isSigningOut: false,
   signOut: async () => {},
 });
 
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -54,6 +57,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signOut = async () => {
     try {
+      // Set signing out state to prevent ProtectedRoute redirect
+      setIsSigningOut(true);
+      
       // Clean up auth state
       Object.keys(localStorage).forEach((key) => {
         if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
@@ -75,12 +81,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
+      setIsSigningOut(false);
     }
   };
 
   const value = {
     user,
     session,
+    isSigningOut,
     signOut,
   };
 

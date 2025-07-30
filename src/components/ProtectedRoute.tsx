@@ -6,13 +6,13 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user } = useAuth();
+  const { user, isSigningOut } = useAuth();
 
   useEffect(() => {
-    if (!user) {
+    if (!user && !isSigningOut) {
       window.location.href = '/auth';
     }
-  }, [user]);
+  }, [user, isSigningOut]);
 
   if (!user) {
     return (
