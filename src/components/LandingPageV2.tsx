@@ -398,13 +398,6 @@ const LandingPageV2 = () => {
                 color: "text-green-500"
               },
               {
-                icon: DollarSign,
-                title: "Income Projections",
-                description: "Forecast your future dividend income with our AI-powered prediction algorithms.",
-                color: "text-muted-foreground",
-                link: "/future-income-projects"
-              },
-              {
                 icon: Shield,
                 title: "Bank-Level Security",
                 description: "Your financial data is protected with enterprise-grade encryption and security protocols.",
@@ -422,43 +415,84 @@ const LandingPageV2 = () => {
                 description: "Set and track your financial independence goals with personalized FIRE calculators.",
                 color: "text-indigo-500"
               }
-            ].map((feature, index) => {
-              if (feature.link) {
-                return (
-                  <div key={index} onClick={() => window.location.href = feature.link} className="cursor-pointer">
-                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer transition-colors hover:border-border/40 [&_*]:!text-foreground [&_.card-title]:!text-foreground [&_.card-description]:!text-muted-foreground">
-                      <CardHeader>
-                        <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
-                          <feature.icon className="h-6 w-6" />
-                        </div>
-                        <CardTitle className="text-xl text-foreground card-title">{feature.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className="text-base leading-relaxed text-muted-foreground card-description">
-                          {feature.description}
-                        </CardDescription>
-                      </CardContent>
-                    </Card>
+            ].map((feature, index) => (
+              <Card key={index} className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
+                    <feature.icon className="h-6 w-6" />
                   </div>
-                );
-              } else {
-                return (
-                  <Card key={index} className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm">
-                    <CardHeader>
-                      <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
-                        <feature.icon className="h-6 w-6" />
-                      </div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="text-base leading-relaxed">
-                        {feature.description}
-                      </CardDescription>
-                    </CardContent>
-                  </Card>
-                );
-              }
-            })}
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base leading-relaxed">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Income Projections Section (copied from FIRE pattern) */}
+      <section className="py-20 bg-background/50">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="animate-fade-in">
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
+                Plan Your Financial Future
+                <span className="gradient-text block">With AI Projections</span>
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                Our advanced AI algorithms analyze your current portfolio and market trends 
+                to project your future dividend income. Make informed decisions about your 
+                retirement and financial goals with confidence using our sophisticated modeling tools.
+              </p>
+              <div className="space-y-6 mb-8">
+                <div className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-4 mt-1">
+                    <span className="text-primary font-bold">1</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">Input Your Portfolio</h3>
+                    <p className="text-muted-foreground">Add your current dividend-paying stocks and investment amounts.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-4 mt-1">
+                    <span className="text-primary font-bold">2</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">AI Analysis</h3>
+                    <p className="text-muted-foreground">Our algorithms analyze historical data and market trends.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-4 mt-1">
+                    <span className="text-primary font-bold">3</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">Get Projections</h3>
+                    <p className="text-muted-foreground">See your projected income for 5, 10, and 25+ years ahead.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center">
+                <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
+                  <Link to="/future-income-projects">
+                    Try Projection Tool
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+            <div className="hover-scale">
+              <img 
+                src={future} 
+                alt="Future income projections and AI-powered portfolio analysis"
+                className="rounded-3xl shadow-elegant w-full"
+              />
+            </div>
           </div>
         </div>
       </section>
