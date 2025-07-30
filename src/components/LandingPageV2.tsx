@@ -401,7 +401,7 @@ const LandingPageV2 = () => {
                 icon: DollarSign,
                 title: "Income Projections",
                 description: "Forecast your future dividend income with our AI-powered prediction algorithms.",
-                color: "text-muted-foreground",
+                color: "text-yellow-500",
                 link: "/future-income-projects"
               },
               {
@@ -425,21 +425,21 @@ const LandingPageV2 = () => {
             ].map((feature, index) => {
               if (feature.link) {
                 return (
-                  <div key={index} onClick={() => window.location.href = feature.link} className="cursor-pointer">
-                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer transition-colors hover:border-border/40 [&_*]:!text-foreground [&_.card-title]:!text-foreground [&_.card-description]:!text-muted-foreground">
+                  <Link key={index} to={feature.link}>
+                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer">
                       <CardHeader>
                         <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
                           <feature.icon className="h-6 w-6" />
                         </div>
-                        <CardTitle className="text-xl text-foreground card-title">{feature.title}</CardTitle>
+                        <CardTitle className="text-xl">{feature.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-base leading-relaxed text-muted-foreground card-description">
+                        <CardDescription className="text-base leading-relaxed">
                           {feature.description}
                         </CardDescription>
                       </CardContent>
                     </Card>
-                  </div>
+                  </Link>
                 );
               } else {
                 return (
