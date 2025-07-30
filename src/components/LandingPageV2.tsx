@@ -426,15 +426,15 @@ const LandingPageV2 = () => {
               if (feature.link) {
                 return (
                   <div key={index} onClick={() => window.location.href = feature.link} className="cursor-pointer">
-                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer transition-colors hover:border-border/40">
+                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer transition-colors hover:border-border/40 [&_*]:!text-foreground [&_.card-title]:!text-foreground [&_.card-description]:!text-muted-foreground">
                       <CardHeader>
                         <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
                           <feature.icon className="h-6 w-6" />
                         </div>
-                        <CardTitle className="text-xl text-foreground">{feature.title}</CardTitle>
+                        <CardTitle className="text-xl text-foreground card-title">{feature.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-base leading-relaxed text-muted-foreground">
+                        <CardDescription className="text-base leading-relaxed text-muted-foreground card-description">
                           {feature.description}
                         </CardDescription>
                       </CardContent>
