@@ -695,7 +695,7 @@ const LandingPageV2 = () => {
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <Button variant="gradient" size="lg" className="px-8" asChild>
+                <Button variant="outline" size="lg" className="px-8" asChild>
                   <Link to="/future-income-projects">
                     Try Projection Tool
                     <ArrowRight className="ml-2 h-5 w-5" />
