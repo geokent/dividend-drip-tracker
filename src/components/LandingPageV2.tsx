@@ -425,16 +425,16 @@ const LandingPageV2 = () => {
             ].map((feature, index) => {
               if (feature.link) {
                 return (
-                  <Link key={index} to={feature.link}>
-                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer">
+                  <Link key={index} to={feature.link} className="text-inherit no-underline">
+                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer transition-colors hover:border-border/40">
                       <CardHeader>
                         <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
                           <feature.icon className="h-6 w-6" />
                         </div>
-                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                        <CardTitle className="text-xl text-foreground">{feature.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-base leading-relaxed">
+                        <CardDescription className="text-base leading-relaxed text-muted-foreground">
                           {feature.description}
                         </CardDescription>
                       </CardContent>
