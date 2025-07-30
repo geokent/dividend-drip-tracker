@@ -1,8 +1,8 @@
-import { LandingPageV2 } from "@/components/LandingPageV2";
+import { LandingPage } from "@/components/LandingPage";
 
 const Index = () => {
   // Show landing page for all users (authenticated and non-authenticated)
-  return <LandingPageV2 />;
+  return <LandingPage />;
 };
 
 export default Index;
