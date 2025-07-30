@@ -395,25 +395,25 @@ const LandingPageV2 = () => {
                 icon: PieChart,
                 title: "Portfolio Analytics",
                 description: "Deep insights into your holdings with advanced charts, performance metrics, and risk analysis.",
-                color: "text-green-500"
+                color: "text-blue-500"
               },
               {
                 icon: Shield,
                 title: "Bank-Level Security",
                 description: "Your financial data is protected with enterprise-grade encryption and security protocols.",
-                color: "text-purple-500"
+                color: "text-blue-500"
               },
               {
                 icon: Zap,
                 title: "Auto-Sync Accounts",
                 description: "Connect your brokerage accounts for automatic dividend tracking and portfolio updates.",
-                color: "text-red-500"
+                color: "text-blue-500"
               },
               {
                 icon: Target,
                 title: "Goal Setting",
                 description: "Set and track your financial independence goals with personalized FIRE calculators.",
-                color: "text-indigo-500"
+                color: "text-blue-500"
               }
             ].map((feature, index) => (
               <Card key={index} className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm">
