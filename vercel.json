@@ -5,11 +5,7 @@
       "dest": "/assets/$1"
     },
     {
-      "src": "/src/(.*)",
-      "dest": "/src/$1"
-    },
-    {
-      "src": "/.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$",
+      "src": "/.*\\.(js|css|mjs|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$",
       "dest": "/$0"
     },
     {
