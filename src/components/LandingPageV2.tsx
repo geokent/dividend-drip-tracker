@@ -425,7 +425,7 @@ const LandingPageV2 = () => {
             ].map((feature, index) => {
               if (feature.link) {
                 return (
-                  <Link key={index} to={feature.link} className="text-inherit no-underline">
+                  <div key={index} onClick={() => window.location.href = feature.link} className="cursor-pointer">
                     <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer transition-colors hover:border-border/40">
                       <CardHeader>
                         <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
@@ -439,7 +439,7 @@ const LandingPageV2 = () => {
                         </CardDescription>
                       </CardContent>
                     </Card>
-                  </Link>
+                  </div>
                 );
               } else {
                 return (
