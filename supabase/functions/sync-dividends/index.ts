@@ -60,7 +60,6 @@ Deno.serve(async (req) => {
             access_token: account.access_token,
             start_date: startDate,
             end_date: endDate,
-            account_ids: [account.account_id],
           }),
         })
 
