@@ -90,11 +90,12 @@ Deno.serve(async (req) => {
     console.log('Plaid API response status:', plaidResponse.status)
 
     const plaidData = await plaidResponse.json()
+    console.log('Plaid API response data:', JSON.stringify(plaidData, null, 2))
 
     if (!plaidResponse.ok) {
       console.error('Plaid error:', plaidData)
       return new Response(
-        JSON.stringify({ error: 'Failed to create link token' }),
+        JSON.stringify({ error: 'Failed to create link token', plaidError: plaidData }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
