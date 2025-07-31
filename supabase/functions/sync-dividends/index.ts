@@ -33,6 +33,8 @@ Deno.serve(async (req) => {
       .eq('user_id', user_id)
       .eq('is_active', true)
 
+    console.log(`Found ${accounts?.length || 0} active accounts for user ${user_id}`)
+
     if (accountsError) {
       console.error('Accounts fetch error:', accountsError)
       return new Response(
@@ -88,13 +90,20 @@ Deno.serve(async (req) => {
             }
 
             if (dividendData) {
+              console.log(`Processing dividend data for ${symbol}:`, dividendData)
+              
               // Check if this stock is already tracked by the user
-              const { data: existingStock } = await supabase
+              const { data: existingStock, error: selectError } = await supabase
                 .from('user_stocks')
                 .select('*')
                 .eq('user_id', user_id)
                 .eq('symbol', symbol)
-                .single()
+                .maybeSingle()
+
+              if (selectError) {
+                console.error(`Error checking existing stock ${symbol}:`, selectError)
+                continue
+              }
 
               const stockData = {
                 user_id: user_id,
@@ -121,7 +130,10 @@ Deno.serve(async (req) => {
                   .update(stockData)
                   .eq('id', existingStock.id)
 
-                if (!updateError) {
+                if (updateError) {
+                  console.error(`Error updating stock ${symbol}:`, updateError)
+                } else {
+                  console.log(`Updated stock ${symbol} with ${holding.quantity} shares`)
                   totalNewDividends++
                 }
               } else {
@@ -130,10 +142,15 @@ Deno.serve(async (req) => {
                   .from('user_stocks')
                   .insert(stockData)
 
-                if (!insertError) {
+                if (insertError) {
+                  console.error(`Error inserting stock ${symbol}:`, insertError)
+                } else {
+                  console.log(`Inserted new stock ${symbol} with ${holding.quantity} shares`)
                   totalNewDividends++
                 }
               }
+            } else {
+              console.log(`No dividend data returned for ${symbol}`)
             }
           } catch (error) {
             console.error(`Error processing stock ${symbol}:`, error)
