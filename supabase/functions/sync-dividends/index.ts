@@ -45,11 +45,8 @@ Deno.serve(async (req) => {
 
     for (const account of accounts || []) {
       try {
-        // Get transactions from the last 90 days
-        const endDate = new Date().toISOString().split('T')[0]
-        const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-
-        const transactionsResponse = await fetch('https://production.plaid.com/transactions/get', {
+        // Get stock holdings from Plaid
+        const holdingsResponse = await fetch('https://production.plaid.com/investments/holdings/get', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -58,57 +55,89 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             access_token: account.access_token,
-            start_date: startDate,
-            end_date: endDate,
           }),
         })
 
-        const transactionsData = await transactionsResponse.json()
+        const holdingsData = await holdingsResponse.json()
 
-        if (!transactionsResponse.ok) {
-          console.error('Plaid transactions error:', transactionsData)
+        if (!holdingsResponse.ok) {
+          console.error('Plaid holdings error:', holdingsData)
           continue
         }
 
-        // Filter for dividend transactions
-        const dividendTransactions = transactionsData.transactions.filter((tx: any) => 
-          tx.category?.includes('Deposit') && 
-          (tx.name?.toLowerCase().includes('dividend') || 
-           tx.merchant_name?.toLowerCase().includes('dividend') ||
-           tx.category?.includes('Dividend'))
-        )
+        console.log(`Found ${holdingsData.holdings?.length || 0} holdings for account ${account.account_id}`)
 
-        for (const tx of dividendTransactions) {
-          // Check if transaction already exists
-          const { data: existing } = await supabase
-            .from('dividend_transactions')
-            .select('id')
-            .eq('transaction_id', tx.transaction_id)
-            .single()
+        // Process each holding
+        for (const holding of holdingsData.holdings || []) {
+          // Skip if no ticker symbol
+          if (!holding.security?.ticker_symbol) {
+            continue
+          }
 
-          if (!existing) {
-            // Extract symbol from transaction name if possible
-            const symbolMatch = tx.name?.match(/([A-Z]{1,5})\s+dividend/i)
-            const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : null
+          const symbol = holding.security.ticker_symbol.toUpperCase()
+          
+          try {
+            // Get dividend data for this stock
+            const { data: dividendData, error: dividendError } = await supabase.functions.invoke('get-dividend-data', {
+              body: { symbol }
+            })
 
-            const { error: insertError } = await supabase
-              .from('dividend_transactions')
-              .insert({
-                user_id: user_id,
-                plaid_account_id: account.id,
-                transaction_id: tx.transaction_id,
-                amount: tx.amount,
-                date: tx.date,
-                symbol: symbol,
-                company_name: tx.merchant_name || tx.name,
-                description: tx.name,
-              })
-
-            if (!insertError) {
-              totalNewDividends++
-            } else {
-              console.error('Insert error:', insertError)
+            if (dividendError) {
+              console.error(`Error getting dividend data for ${symbol}:`, dividendError)
+              continue
             }
+
+            if (dividendData) {
+              // Check if this stock is already tracked by the user
+              const { data: existingStock } = await supabase
+                .from('user_stocks')
+                .select('*')
+                .eq('user_id', user_id)
+                .eq('symbol', symbol)
+                .single()
+
+              const stockData = {
+                user_id: user_id,
+                symbol: symbol,
+                shares: holding.quantity || 0,
+                company_name: dividendData.companyName,
+                current_price: dividendData.currentPrice,
+                dividend_yield: dividendData.dividendYield,
+                dividend_per_share: dividendData.dividendPerShare,
+                annual_dividend: dividendData.annualDividend,
+                ex_dividend_date: dividendData.exDividendDate,
+                dividend_date: dividendData.dividendDate,
+                sector: dividendData.sector,
+                industry: dividendData.industry,
+                market_cap: dividendData.marketCap,
+                pe_ratio: dividendData.peRatio,
+                last_synced: new Date().toISOString(),
+              }
+
+              if (existingStock) {
+                // Update existing stock
+                const { error: updateError } = await supabase
+                  .from('user_stocks')
+                  .update(stockData)
+                  .eq('id', existingStock.id)
+
+                if (!updateError) {
+                  totalNewDividends++
+                }
+              } else {
+                // Insert new stock
+                const { error: insertError } = await supabase
+                  .from('user_stocks')
+                  .insert(stockData)
+
+                if (!insertError) {
+                  totalNewDividends++
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error processing stock ${symbol}:`, error)
+            continue
           }
         }
       } catch (error) {
