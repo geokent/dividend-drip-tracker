@@ -19,13 +19,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    commonjsOptions: {
-      include: [/react-plaid-link/, /node_modules/],
-    },
-  },
-  optimizeDeps: {
-    include: ['react-plaid-link'],
-    force: true,
-  },
 }));
