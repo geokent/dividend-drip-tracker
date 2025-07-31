@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
-import { CustomPlaidLinkButton } from "./CustomPlaidLinkButton";
+import { PlaidLinkButton } from "./PlaidLinkButton";
 import { PlaidAccountsList } from "./PlaidAccountsList";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -195,7 +195,7 @@ export const DividendDashboard = () => {
                 <p className="text-muted-foreground text-sm mb-6">
                   Automatically sync your dividend-paying stocks and track your portfolio performance.
                 </p>
-                <CustomPlaidLinkButton onSuccess={() => window.location.reload()} />
+                <PlaidLinkButton onSuccess={() => window.location.reload()} />
               </div>
               
               <div className="mt-8">
