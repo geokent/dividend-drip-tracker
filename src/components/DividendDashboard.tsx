@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
-import { PlaidLinkButton } from "./PlaidLinkButton";
-import { PlaidAccountsList } from "./PlaidAccountsList";
+// import { PlaidLinkButton } from "./PlaidLinkButton";
+// import { PlaidAccountsList } from "./PlaidAccountsList";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./AuthProvider";
@@ -189,17 +189,18 @@ export const DividendDashboard = () => {
           </TabsContent>
 
           <TabsContent value="accounts" className="space-y-6">
+            {/* Plaid Integration - Temporarily Disabled */}
             <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-4">Connect Your Brokerage Account</h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  Automatically sync your dividend-paying stocks and track your portfolio performance.
+              <div className="text-center p-8 bg-muted/50 rounded-lg">
+                <CreditCard className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Connect Your Brokerage Account</h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Automatically sync your dividend-paying stocks and track your portfolio performance. 
+                  Account linking is temporarily disabled during development.
                 </p>
-                <PlaidLinkButton onSuccess={() => window.location.reload()} />
-              </div>
-              
-              <div className="mt-8">
-                <PlaidAccountsList />
+                <p className="text-xs text-muted-foreground">
+                  For now, you can manually add stocks using the Stock Tracker tab above.
+                </p>
               </div>
             </div>
           </TabsContent>
