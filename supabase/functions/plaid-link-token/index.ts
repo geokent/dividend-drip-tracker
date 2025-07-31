@@ -37,14 +37,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get Plaid environment and determine endpoint
-    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
-    const plaidEndpoint = plaidEnv === 'production' 
-      ? 'https://production.plaid.com' 
-      : 'https://sandbox.plaid.com'
-
     // Create Plaid link token
-    const plaidResponse = await fetch(`${plaidEndpoint}/link/token/create`, {
+    const plaidResponse = await fetch('https://production.plaid.com/link/token/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
