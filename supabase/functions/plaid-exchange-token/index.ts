@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     }
 
     // Exchange public token for access token
-    const plaidResponse = await fetch('https://production.plaid.com/link/token/exchange', {
+    const plaidResponse = await fetch('https://production.plaid.com/item/public_token/exchange', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
