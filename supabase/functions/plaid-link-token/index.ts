@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
         user: {
           client_user_id: user.id,
         },
-        products: ['transactions'],
+        products: ['assets'],
         account_filters: {
           depository: {
             account_subtypes: ['checking', 'savings'],
