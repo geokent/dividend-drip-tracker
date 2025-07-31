@@ -205,6 +205,69 @@ export type Database = {
         }
         Relationships: []
       }
+      user_stocks: {
+        Row: {
+          annual_dividend: number | null
+          company_name: string | null
+          created_at: string
+          current_price: number | null
+          dividend_date: string | null
+          dividend_per_share: number | null
+          dividend_yield: number | null
+          ex_dividend_date: string | null
+          id: string
+          industry: string | null
+          last_synced: string
+          market_cap: number | null
+          pe_ratio: number | null
+          sector: string | null
+          shares: number
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annual_dividend?: number | null
+          company_name?: string | null
+          created_at?: string
+          current_price?: number | null
+          dividend_date?: string | null
+          dividend_per_share?: number | null
+          dividend_yield?: number | null
+          ex_dividend_date?: string | null
+          id?: string
+          industry?: string | null
+          last_synced?: string
+          market_cap?: number | null
+          pe_ratio?: number | null
+          sector?: string | null
+          shares?: number
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annual_dividend?: number | null
+          company_name?: string | null
+          created_at?: string
+          current_price?: number | null
+          dividend_date?: string | null
+          dividend_per_share?: number | null
+          dividend_yield?: number | null
+          ex_dividend_date?: string | null
+          id?: string
+          industry?: string | null
+          last_synced?: string
+          market_cap?: number | null
+          pe_ratio?: number | null
+          sector?: string | null
+          shares?: number
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

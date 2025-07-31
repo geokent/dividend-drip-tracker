@@ -12,6 +12,7 @@ import { LogOut, TrendingUp, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/dividend-hero.jpg";
 import { Header } from "./Header";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StockData {
   symbol: string;
@@ -37,22 +38,49 @@ export const DividendDashboard = () => {
   const { toast } = useToast();
   const { signOut, user } = useAuth();
 
-  // Load tracked stocks from localStorage on component mount
+  // Load tracked stocks from database on component mount
   useEffect(() => {
-    const saved = localStorage.getItem('trackedStocks');
-    if (saved) {
-      try {
-        setTrackedStocks(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse saved tracked stocks:', e);
-      }
-    }
-  }, []);
+    const loadStocks = async () => {
+      if (!user?.id) return;
+      
+      const { data: stocks, error } = await supabase
+        .from('user_stocks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-  // Save to localStorage whenever tracked stocks change
-  useEffect(() => {
-    localStorage.setItem('trackedStocks', JSON.stringify(trackedStocks));
-  }, [trackedStocks]);
+      if (error) {
+        console.error('Error loading stocks:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load your stocks",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (stocks) {
+        const formattedStocks = stocks.map(stock => ({
+          symbol: stock.symbol,
+          companyName: stock.company_name || '',
+          currentPrice: stock.current_price,
+          dividendYield: stock.dividend_yield,
+          dividendPerShare: stock.dividend_per_share,
+          annualDividend: stock.annual_dividend,
+          exDividendDate: stock.ex_dividend_date,
+          dividendDate: stock.dividend_date,
+          sector: stock.sector,
+          industry: stock.industry,
+          marketCap: stock.market_cap?.toString() || null,
+          peRatio: stock.pe_ratio?.toString() || null,
+          shares: Number(stock.shares) || 0
+        }));
+        setTrackedStocks(formattedStocks);
+      }
+    };
+
+    loadStocks();
+  }, [user?.id, toast]);
 
   const handleStockFound = (stockData: StockData) => {
     const existingIndex = trackedStocks.findIndex(stock => stock.symbol === stockData.symbol);

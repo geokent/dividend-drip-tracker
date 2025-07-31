@@ -149,8 +149,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        newDividends: totalNewDividends,
-        message: `Synced ${totalNewDividends} new dividend transactions`
+        syncedStocks: totalNewDividends,
+        message: `Synced ${totalNewDividends} stocks from your portfolio`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
