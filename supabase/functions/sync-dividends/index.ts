@@ -77,83 +77,60 @@ Deno.serve(async (req) => {
           }
 
           const symbol = holding.security.ticker_symbol.toUpperCase()
+          const companyName = holding.security.name || symbol
+          const currentPrice = holding.institution_price || 0
+          const quantity = holding.quantity || 0
+          
+          console.log(`Processing holding: ${symbol} - ${quantity} shares at $${currentPrice}`)
           
           try {
-            // Get dividend data for this stock
-            console.log(`Fetching dividend data for symbol: ${symbol}`)
-            const { data: dividendData, error: dividendError } = await supabase.functions.invoke('get-dividend-data', {
-              body: { symbol }
-            })
+            // Check if this stock is already tracked by the user
+            const { data: existingStock, error: selectError } = await supabase
+              .from('user_stocks')
+              .select('*')
+              .eq('user_id', user_id)
+              .eq('symbol', symbol)
+              .maybeSingle()
 
-            console.log(`Dividend data response for ${symbol}:`, { data: dividendData, error: dividendError })
-
-            if (dividendError) {
-              console.error(`Error getting dividend data for ${symbol}:`, dividendError)
+            if (selectError) {
+              console.error(`Error checking existing stock ${symbol}:`, selectError)
               continue
             }
 
-            if (dividendData) {
-              console.log(`Processing dividend data for ${symbol}:`, dividendData)
-              
-              // Check if this stock is already tracked by the user
-              const { data: existingStock, error: selectError } = await supabase
+            const stockData = {
+              user_id: user_id,
+              symbol: symbol,
+              shares: quantity,
+              company_name: companyName,
+              current_price: currentPrice,
+              last_synced: new Date().toISOString(),
+            }
+
+            if (existingStock) {
+              // Update existing stock
+              const { error: updateError } = await supabase
                 .from('user_stocks')
-                .select('*')
-                .eq('user_id', user_id)
-                .eq('symbol', symbol)
-                .maybeSingle()
+                .update(stockData)
+                .eq('id', existingStock.id)
 
-              if (selectError) {
-                console.error(`Error checking existing stock ${symbol}:`, selectError)
-                continue
-              }
-
-              const stockData = {
-                user_id: user_id,
-                symbol: symbol,
-                shares: holding.quantity || 0,
-                company_name: dividendData.companyName,
-                current_price: dividendData.currentPrice,
-                dividend_yield: dividendData.dividendYield,
-                dividend_per_share: dividendData.dividendPerShare,
-                annual_dividend: dividendData.annualDividend,
-                ex_dividend_date: dividendData.exDividendDate,
-                dividend_date: dividendData.dividendDate,
-                sector: dividendData.sector,
-                industry: dividendData.industry,
-                market_cap: dividendData.marketCap,
-                pe_ratio: dividendData.peRatio,
-                last_synced: new Date().toISOString(),
-              }
-
-              if (existingStock) {
-                // Update existing stock
-                const { error: updateError } = await supabase
-                  .from('user_stocks')
-                  .update(stockData)
-                  .eq('id', existingStock.id)
-
-                if (updateError) {
-                  console.error(`Error updating stock ${symbol}:`, updateError)
-                } else {
-                  console.log(`Updated stock ${symbol} with ${holding.quantity} shares`)
-                  totalNewDividends++
-                }
+              if (updateError) {
+                console.error(`Error updating stock ${symbol}:`, updateError)
               } else {
-                // Insert new stock
-                const { error: insertError } = await supabase
-                  .from('user_stocks')
-                  .insert(stockData)
-
-                if (insertError) {
-                  console.error(`Error inserting stock ${symbol}:`, insertError)
-                } else {
-                  console.log(`Inserted new stock ${symbol} with ${holding.quantity} shares`)
-                  totalNewDividends++
-                }
+                console.log(`Updated stock ${symbol} with ${quantity} shares`)
+                totalNewDividends++
               }
             } else {
-              console.log(`No dividend data returned for ${symbol}`)
+              // Insert new stock
+              const { error: insertError } = await supabase
+                .from('user_stocks')
+                .insert(stockData)
+
+              if (insertError) {
+                console.error(`Error inserting stock ${symbol}:`, insertError)
+              } else {
+                console.log(`Inserted new stock ${symbol} with ${quantity} shares`)
+                totalNewDividends++
+              }
             }
           } catch (error) {
             console.error(`Error processing stock ${symbol}:`, error)
