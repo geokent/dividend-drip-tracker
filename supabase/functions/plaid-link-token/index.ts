@@ -61,7 +61,16 @@ Deno.serve(async (req) => {
     if (!clientId || !secret) {
       console.error('Missing Plaid credentials - CLIENT_ID:', !!clientId, 'SECRET:', !!secret)
       return new Response(
-        JSON.stringify({ error: 'Missing Plaid configuration' }),
+        JSON.stringify({ 
+          error: 'Missing Plaid configuration',
+          debug: {
+            clientIdExists: !!clientId,
+            secretExists: !!secret,
+            clientIdLength: clientId?.length || 0,
+            secretLength: secret?.length || 0,
+            plaidEnv: plaidEnv
+          }
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
