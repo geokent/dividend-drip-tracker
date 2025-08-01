@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     let totalNewDividends = 0
 
     // Determine Plaid API base URL based on environment
-    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
+    const plaidEnv = Deno.env.get('PLAID_ENV') || 'production'
     const plaidApiHost = plaidEnv === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com'
     
     console.log(`Using Plaid environment: ${plaidEnv}`)

@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     // Check if required Plaid credentials are available
     const clientId = Deno.env.get('PLAID_CLIENT_ID')
     const secret = Deno.env.get('PLAID_SECRET')
-    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
+    const plaidEnv = Deno.env.get('PLAID_ENV') || 'production'
     
     if (!clientId || !secret) {
       console.error('Missing Plaid credentials - CLIENT_ID:', !!clientId, 'SECRET:', !!secret)

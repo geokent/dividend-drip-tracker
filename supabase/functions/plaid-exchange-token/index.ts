@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     }
 
     // Determine Plaid API base URL based on environment
-    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
+    const plaidEnv = Deno.env.get('PLAID_ENV') || 'production'
     const plaidApiHost = plaidEnv === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com'
     
     console.log('Exchanging public token, Environment:', plaidEnv)
