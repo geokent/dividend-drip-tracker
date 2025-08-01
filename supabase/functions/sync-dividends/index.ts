@@ -80,9 +80,12 @@ Deno.serve(async (req) => {
           
           try {
             // Get dividend data for this stock
+            console.log(`Fetching dividend data for symbol: ${symbol}`)
             const { data: dividendData, error: dividendError } = await supabase.functions.invoke('get-dividend-data', {
               body: { symbol }
             })
+
+            console.log(`Dividend data response for ${symbol}:`, { data: dividendData, error: dividendError })
 
             if (dividendError) {
               console.error(`Error getting dividend data for ${symbol}:`, dividendError)
