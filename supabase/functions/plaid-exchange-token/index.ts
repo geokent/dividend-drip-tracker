@@ -46,8 +46,14 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Determine Plaid API base URL based on environment
+    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
+    const plaidApiHost = plaidEnv === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com'
+    
+    console.log('Exchanging public token, Environment:', plaidEnv)
+
     // Exchange public token for access token
-    const plaidResponse = await fetch('https://production.plaid.com/item/public_token/exchange', {
+    const plaidResponse = await fetch(`${plaidApiHost}/item/public_token/exchange`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -70,7 +76,7 @@ Deno.serve(async (req) => {
     }
 
     // Get account information
-    const accountsResponse = await fetch('https://production.plaid.com/accounts/get', {
+    const accountsResponse = await fetch(`${plaidApiHost}/accounts/get`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

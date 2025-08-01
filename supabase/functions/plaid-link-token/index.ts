@@ -49,6 +49,7 @@ Deno.serve(async (req) => {
     // Check if required Plaid credentials are available
     const clientId = Deno.env.get('PLAID_CLIENT_ID')
     const secret = Deno.env.get('PLAID_SECRET')
+    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
     
     if (!clientId || !secret) {
       console.error('Missing Plaid credentials - CLIENT_ID:', !!clientId, 'SECRET:', !!secret)
@@ -58,10 +59,13 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('Creating Plaid link token for user:', user.id)
+    // Determine Plaid API base URL based on environment
+    const plaidApiHost = plaidEnv === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com'
+    
+    console.log('Creating Plaid link token for user:', user.id, 'Environment:', plaidEnv)
 
     // Create Plaid link token
-    const plaidResponse = await fetch('https://production.plaid.com/link/token/create', {
+    const plaidResponse = await fetch(`${plaidApiHost}/link/token/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
