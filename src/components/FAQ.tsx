@@ -13,7 +13,7 @@ const faqData = [
   },
   {
     question: "How do I track my dividend income?",
-    answer: "You can track dividend income by connecting your brokerage accounts through Plaid integration, manually adding transactions, or importing data. Our platform automatically categorizes and tracks all dividend payments across your portfolio."
+    answer: "You can track dividend income by manually adding your dividend-paying stocks and specifying your share counts. Our platform automatically calculates your projected dividend income across your entire portfolio."
   },
   {
     question: "What is the dividend snowball effect?",

@@ -2,15 +2,8 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
-import { CustomPlaidLinkButton } from "./CustomPlaidLinkButton";
-import { PlaidAccountsList } from "./PlaidAccountsList";
-import { Button } from "./ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, TrendingUp, CreditCard } from "lucide-react";
-import { Link } from "react-router-dom";
-import heroImage from "@/assets/dividend-hero.jpg";
 import { Header } from "./Header";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -184,54 +177,25 @@ export const DividendDashboard = () => {
           </div>
         </section>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="stocks" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="stocks" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Stock Tracker
-            </TabsTrigger>
-            <TabsTrigger value="accounts" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Link Brokerage Account
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="stocks" className="space-y-6">
-            {/* Add Stock Form */}
-            <div className="flex justify-center">
-              <div className="w-full max-w-sm">
-                <StockSymbolForm onStockFound={handleStockFound} />
-              </div>
+        {/* Main Content */}
+        <div className="space-y-6">
+          {/* Add Stock Form */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-sm">
+              <StockSymbolForm onStockFound={handleStockFound} />
             </div>
+          </div>
 
-            {/* Portfolio Chart */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
-              <DividendPortfolioChart
-                trackedStocks={trackedStocks}
-                onRemoveStock={handleRemoveStock}
-                onUpdateShares={handleUpdateShares}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="accounts" className="space-y-6">
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-4">Connect Your Brokerage Account</h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  Automatically sync your dividend-paying stocks and track your portfolio performance.
-                </p>
-                <CustomPlaidLinkButton onSuccess={() => window.location.reload()} />
-              </div>
-              
-              <div className="mt-8">
-                <PlaidAccountsList />
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+          {/* Portfolio Chart */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
+            <DividendPortfolioChart
+              trackedStocks={trackedStocks}
+              onRemoveStock={handleRemoveStock}
+              onUpdateShares={handleUpdateShares}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

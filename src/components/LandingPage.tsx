@@ -419,7 +419,7 @@ export const LandingPage = () => {
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-4">True Portfolio Sync</h3>
                 <p className="text-muted-foreground mb-6">
-                  Stop exporting CSV files. Securely link your accounts once with Plaid, and get a live, 
+                  Track your dividend income manually with our intuitive interface, and get a live, 
                   always up-to-date view of your holdings.
                 </p>
                 <div className="rounded-xl overflow-hidden">

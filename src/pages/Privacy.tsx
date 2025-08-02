@@ -159,7 +159,7 @@ const Privacy = () => {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">5. Third-Party Integrations</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                When you choose to connect external accounts (like brokerage accounts), we use secure, read-only connections through trusted financial data providers like Plaid. These connections:
+                When you choose to manually add financial information, we ensure this data is securely stored and handled. Our platform:
               </p>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                 <li>Only access data you explicitly authorize</li>
