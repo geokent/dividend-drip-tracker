@@ -72,20 +72,6 @@ export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
         throw new Error('Not authenticated');
       }
 
-      // Test the debug function first
-      const { data: testData, error: testError } = await supabase.functions.invoke('plaid-test', {
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`,
-        },
-      });
-
-      if (testError) {
-        console.error('Test function error:', testError);
-        throw testError;
-      }
-
-      console.log('Test function response:', testData);
-
       const { data, error } = await supabase.functions.invoke('plaid-link-token', {
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,

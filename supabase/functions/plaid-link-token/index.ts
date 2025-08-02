@@ -12,62 +12,57 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Starting plaid-link-token function')
+    console.log('=== PLAID LINK TOKEN FUNCTION START ===')
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    console.log('Supabase client created')
-
     // Get the user from the Authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      console.log('No authorization header provided')
+      console.log('ERROR: No authorization header provided')
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Getting user from auth header')
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     )
 
     if (authError || !user) {
-      console.log('Authentication failed:', authError)
+      console.log('ERROR: Authentication failed:', authError)
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('User authenticated:', user.id)
+    console.log('SUCCESS: User authenticated:', user.id)
 
-    // Check if required Plaid credentials are available
+    // Get Plaid credentials
     const clientId = Deno.env.get('PLAID_CLIENT_ID')
     const secret = Deno.env.get('PLAID_SECRET')
-    const plaidEnv = Deno.env.get('PLAID_ENV') || 'production'
+    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
     
-    console.log('Plaid Environment Variables Check:')
-    console.log('PLAID_CLIENT_ID exists:', !!clientId)
-    console.log('PLAID_SECRET exists:', !!secret)
-    console.log('PLAID_ENV value:', plaidEnv)
-    console.log('PLAID_CLIENT_ID length:', clientId?.length || 0)
-    console.log('PLAID_SECRET length:', secret?.length || 0)
+    console.log('=== PLAID CREDENTIALS CHECK ===')
+    console.log('Client ID exists:', !!clientId)
+    console.log('Client ID length:', clientId?.length || 0)
+    console.log('Secret exists:', !!secret)
+    console.log('Secret length:', secret?.length || 0)
+    console.log('Environment:', plaidEnv)
     
     if (!clientId || !secret) {
-      console.error('Missing Plaid credentials - CLIENT_ID:', !!clientId, 'SECRET:', !!secret)
+      console.log('ERROR: Missing Plaid credentials')
       return new Response(
         JSON.stringify({ 
           error: 'Missing Plaid configuration',
           debug: {
             clientIdExists: !!clientId,
             secretExists: !!secret,
-            clientIdLength: clientId?.length || 0,
-            secretLength: secret?.length || 0,
             plaidEnv: plaidEnv
           }
         }),
@@ -75,13 +70,29 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Determine Plaid API base URL based on environment
+    // Determine Plaid API URL
     const plaidApiHost = plaidEnv === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com'
-    
-    console.log('Creating Plaid link token for user:', user.id, 'Environment:', plaidEnv)
     console.log('Using Plaid API host:', plaidApiHost)
 
-    // Create Plaid link token
+    // Create Plaid link token request
+    const requestBody = {
+      client_name: 'Dividend Tracker',
+      country_codes: ['US'],
+      language: 'en',
+      user: {
+        client_user_id: user.id,
+      },
+      products: ['investments'],
+      account_filters: {
+        investment: {
+          account_subtypes: ['401k', 'brokerage', 'ira', 'roth'],
+        },
+      },
+    }
+
+    console.log('=== MAKING PLAID API REQUEST ===')
+    console.log('Request body:', JSON.stringify(requestBody, null, 2))
+
     const plaidResponse = await fetch(`${plaidApiHost}/link/token/create`, {
       method: 'POST',
       headers: {
@@ -89,47 +100,47 @@ Deno.serve(async (req) => {
         'PLAID-CLIENT-ID': clientId,
         'PLAID-SECRET': secret,
       },
-      body: JSON.stringify({
-        client_name: 'Dividend Tracker',
-        country_codes: ['US'],
-        language: 'en',
-        user: {
-          client_user_id: user.id,
-        },
-        products: ['investments'],
-        account_filters: {
-          depository: {
-            account_subtypes: ['checking', 'savings'],
-          },
-          investment: {
-            account_subtypes: ['401k', 'brokerage', 'ira', 'roth'],
-          },
-        },
-      }),
+      body: JSON.stringify(requestBody),
     })
 
-    console.log('Plaid API response status:', plaidResponse.status)
-
+    console.log('Plaid response status:', plaidResponse.status)
+    
     const plaidData = await plaidResponse.json()
-    console.log('Plaid API response data:', JSON.stringify(plaidData, null, 2))
+    console.log('Plaid response data:', JSON.stringify(plaidData, null, 2))
 
     if (!plaidResponse.ok) {
-      console.error('Plaid error:', plaidData)
+      console.log('ERROR: Plaid API failed')
       return new Response(
-        JSON.stringify({ error: 'Failed to create link token', plaidError: plaidData }),
+        JSON.stringify({ 
+          error: 'Failed to create link token', 
+          plaidError: plaidData,
+          debug: {
+            status: plaidResponse.status,
+            clientIdLength: clientId?.length,
+            secretLength: secret?.length,
+            environment: plaidEnv,
+            apiHost: plaidApiHost
+          }
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('SUCCESS: Link token created')
     return new Response(
       JSON.stringify({ link_token: plaidData.link_token }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Detailed error in plaid-link-token:', error)
+    console.error('=== FATAL ERROR ===')
+    console.error('Error message:', error.message)
     console.error('Error stack:', error.stack)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ 
+        error: 'Internal server error', 
+        details: error.message,
+        stack: error.stack 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
