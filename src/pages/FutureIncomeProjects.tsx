@@ -55,7 +55,7 @@ interface TrackedStock extends StockData {
 export const FutureIncomeProjects = () => {
   const { user, signOut } = useAuth();
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
-  const [monthlyInvestment, setMonthlyInvestment] = useState(1000);
+  const [monthlyInvestment, setMonthlyInvestment] = useState(0);
   const [dividendGrowthRate, setDividendGrowthRate] = useState(5);
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
