@@ -31,6 +31,7 @@ import {
 import { Link } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StockData {
   symbol: string;
@@ -60,17 +61,47 @@ export const FutureIncomeProjects = () => {
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
 
-  // Load tracked stocks from localStorage
+  // Load tracked stocks from Supabase database
   useEffect(() => {
-    const saved = localStorage.getItem('trackedStocks');
-    if (saved) {
+    const loadTrackedStocks = async () => {
+      if (!user) return;
+
       try {
-        setTrackedStocks(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse saved tracked stocks:', e);
+        const { data, error } = await supabase
+          .from('user_stocks')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error loading tracked stocks:', error);
+          return;
+        }
+
+        if (data) {
+          const formattedStocks = data.map(stock => ({
+            symbol: stock.symbol,
+            companyName: stock.company_name || '',
+            currentPrice: stock.current_price,
+            dividendYield: stock.dividend_yield,
+            dividendPerShare: stock.dividend_per_share,
+            annualDividend: stock.annual_dividend,
+            exDividendDate: stock.ex_dividend_date,
+            dividendDate: stock.dividend_date,
+            sector: stock.sector,
+            industry: stock.industry,
+            marketCap: stock.market_cap?.toString(),
+            peRatio: stock.pe_ratio?.toString(),
+            shares: Number(stock.shares)
+          }));
+          setTrackedStocks(formattedStocks);
+        }
+      } catch (error) {
+        console.error('Failed to load tracked stocks:', error);
       }
-    }
-  }, []);
+    };
+
+    loadTrackedStocks();
+  }, [user]);
 
   // Calculate current portfolio metrics
   const calculateCurrentMetrics = () => {
