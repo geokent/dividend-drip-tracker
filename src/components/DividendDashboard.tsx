@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
+import { PlaidLinkButton } from "./PlaidLinkButton";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "./Header";
@@ -179,10 +180,19 @@ export const DividendDashboard = () => {
 
         {/* Main Content */}
         <div className="space-y-6">
-          {/* Add Stock Form */}
+          {/* Add Stock Form and Plaid Link */}
           <div className="flex justify-center">
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-sm space-y-4">
               <StockSymbolForm onStockFound={handleStockFound} />
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">Or connect your brokerage account</p>
+                <PlaidLinkButton onSuccess={() => {
+                  toast({
+                    title: "Account Connected",
+                    description: "Your brokerage account has been linked successfully",
+                  });
+                }} />
+              </div>
             </div>
           </div>
 
