@@ -18,13 +18,13 @@
       "src": "/lovable-uploads/180d1766-7c58-4527-890f-63957bc5fc9f.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable any"
     },
     {
       "src": "/lovable-uploads/180d1766-7c58-4527-890f-63957bc5fc9f.png", 
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable any"
     }
   ],
   "categories": ["finance", "productivity"],
