@@ -185,7 +185,7 @@ export const DividendDashboard = () => {
             <div className="w-full max-w-sm space-y-4">
               <StockSymbolForm onStockFound={handleStockFound} />
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Or connect your brokerage account</p>
+                <p className="text-sm font-semibold text-foreground mb-2">Or connect your brokerage account</p>
                 <PlaidLinkButton onSuccess={() => {
                   toast({
                     title: "Account Connected",
