@@ -1,21 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "lucide-react";
-
-// Declare Plaid global variable
-declare global {
-  interface Window {
-    Plaid: {
-      create: (config: any) => {
-        open: () => void;
-        exit: () => void;
-      };
-    };
-  }
-}
+import { usePlaidLink } from "react-plaid-link";
 
 interface PlaidLinkButtonProps {
   onSuccess?: () => void;
@@ -23,103 +12,95 @@ interface PlaidLinkButtonProps {
 
 export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [plaidLoaded, setPlaidLoaded] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Load Plaid script
+  // Fetch link token on component mount
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
-    script.onload = () => setPlaidLoaded(true);
-    document.head.appendChild(script);
+    const generateToken = async () => {
+      if (!user?.id) return;
 
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
-  const handleLinkAccount = async () => {
-    if (!user?.id) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to link your account",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!plaidLoaded) {
-      toast({
-        title: "Loading...",
-        description: "Plaid is still loading, please try again",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      // Call our edge function to create a link token
-      const { data, error } = await supabase.functions.invoke('plaid-link', {
-        body: { user_id: user.id }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data?.link_token) {
-        setLinkToken(data.link_token);
-        
-        // Create and open Plaid Link
-        const handler = window.Plaid.create({
-          token: data.link_token,
-          onSuccess: (public_token: string, metadata: any) => {
-            console.log('Plaid Link Success:', { public_token, metadata });
-            toast({
-              title: "Account Linked Successfully",
-              description: "Your bank account has been connected",
-            });
-            if (onSuccess) {
-              onSuccess();
-            }
-            // TODO: Send public_token to backend to exchange for access_token
-          },
-          onExit: (err: any, metadata: any) => {
-            console.log('Plaid Link Exit:', { err, metadata });
-            setLinkToken(null);
-          },
-          onEvent: (eventName: string, metadata: any) => {
-            console.log('Plaid Link Event:', { eventName, metadata });
-          },
+      try {
+        const { data, error } = await supabase.functions.invoke('plaid-link', {
+          body: { user_id: user.id }
         });
 
-        handler.open();
+        if (error) {
+          throw error;
+        }
+
+        if (data?.link_token) {
+          setLinkToken(data.link_token);
+        }
+      } catch (error) {
+        console.error('Error creating link token:', error);
+        toast({
+          title: "Connection Failed",
+          description: "Unable to prepare bank connection. Please try again.",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.error('Error creating link token:', error);
+    };
+
+    generateToken();
+  }, [user?.id, toast]);
+
+  const onPlaidSuccess = useCallback((public_token: string, metadata: any) => {
+    console.log('Plaid Link Success:', { public_token, metadata });
+    
+    // TODO: Exchange public_token for access_token on the backend
+    // For now, just show success message
+    toast({
+      title: "Account Linked Successfully",
+      description: "Your bank account has been connected",
+    });
+    
+    if (onSuccess) {
+      onSuccess();
+    }
+  }, [toast, onSuccess]);
+
+  const onPlaidExit = useCallback((err: any, metadata: any) => {
+    console.log('Plaid Link Exit:', { err, metadata });
+    if (err) {
       toast({
-        title: "Connection Failed",
-        description: "Unable to connect to your bank account. Please try again.",
+        title: "Connection Cancelled",
+        description: "Bank account connection was cancelled",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
     }
+  }, [toast]);
+
+  const config = {
+    token: linkToken,
+    onSuccess: onPlaidSuccess,
+    onExit: onPlaidExit,
   };
+
+  const { open, ready } = usePlaidLink(config);
+
+  if (!user?.id) {
+    return (
+      <Button
+        disabled
+        variant="outline"
+        className="w-full flex items-center gap-2"
+      >
+        <Link className="h-4 w-4" />
+        Sign in to Link Account
+      </Button>
+    );
+  }
 
   return (
     <Button
-      onClick={handleLinkAccount}
-      disabled={isLoading || !plaidLoaded}
+      onClick={() => open()}
+      disabled={!ready || !linkToken}
       variant="outline"
       className="w-full flex items-center gap-2"
     >
       <Link className="h-4 w-4" />
-      {!plaidLoaded ? "Loading Plaid..." : isLoading ? "Connecting..." : "Link Bank Account"}
+      {!ready || !linkToken ? "Loading..." : "Link Bank Account"}
     </Button>
   );
 };
