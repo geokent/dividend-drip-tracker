@@ -64,17 +64,35 @@ export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
 
     const handler = (window as any).Plaid.create({
       token: linkToken,
-      onSuccess: (public_token: string, metadata: any) => {
+      onSuccess: async (public_token: string, metadata: any) => {
         console.log('Plaid Link Success:', { public_token, metadata });
         
-        toast({
-          title: "Account Linked Successfully",
-          description: "Your bank account has been connected",
-        });
-        
-        if (onSuccess) {
-          onSuccess();
+        try {
+          const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
+            body: { public_token, metadata }
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          toast({
+            title: "Account Linked Successfully",
+            description: `Connected ${data.accounts} account(s) from your brokerage`,
+          });
+          
+          if (onSuccess) {
+            onSuccess();
+          }
+        } catch (error) {
+          console.error('Token exchange error:', error);
+          toast({
+            title: "Connection Error", 
+            description: "Failed to complete account linking. Please try again.",
+            variant: "destructive"
+          });
         }
+        
         setIsLoading(false);
       },
       onExit: (err: any, metadata: any) => {

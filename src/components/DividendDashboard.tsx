@@ -184,7 +184,7 @@ export const DividendDashboard = () => {
           <div className="flex justify-center">
             <div className="w-full max-w-sm space-y-4">
               <StockSymbolForm onStockFound={handleStockFound} />
-              <div className="text-center">
+              <div className="text-center space-y-2">
                 <p className="text-sm font-semibold text-foreground mb-2">Or Connect Your Brokerage Account</p>
                 <PlaidLinkButton onSuccess={() => {
                   toast({
@@ -192,6 +192,33 @@ export const DividendDashboard = () => {
                     description: "Your brokerage account has been linked successfully",
                   });
                 }} />
+                <button
+                  onClick={async () => {
+                    try {
+                      const { data, error } = await supabase.functions.invoke('sync-investments');
+                      
+                      if (error) throw error;
+                      
+                      toast({
+                        title: "Sync Complete",
+                        description: `Synced ${data.syncedStocks} dividend-paying stocks from your brokerage accounts`,
+                      });
+                      
+                      // Reload the stocks after sync
+                      window.location.reload();
+                    } catch (error) {
+                      console.error('Sync error:', error);
+                      toast({
+                        title: "Sync Failed",
+                        description: "Unable to sync your brokerage data. Please try again.",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+                >
+                  Sync Holdings from Linked Accounts
+                </button>
               </div>
             </div>
           </div>
