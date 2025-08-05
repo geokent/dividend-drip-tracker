@@ -27,7 +27,7 @@ serve(async (req) => {
     // Get Plaid configuration from environment
     const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
     const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-    const PLAID_ENV = Deno.env.get('PLAID_ENV') || 'production';
+    const PLAID_ENV = 'production'; // Using production environment
 
     if (!PLAID_CLIENT_ID || !PLAID_SECRET) {
       console.error('Missing Plaid configuration');
