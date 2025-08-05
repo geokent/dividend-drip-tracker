@@ -4,7 +4,6 @@ import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "lucide-react";
-import { usePlaidLink } from "react-plaid-link";
 
 interface PlaidLinkButtonProps {
   onSuccess?: () => void;
@@ -12,8 +11,21 @@ interface PlaidLinkButtonProps {
 
 export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Load Plaid Link script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // Fetch link token on component mount
   useEffect(() => {
@@ -45,39 +57,41 @@ export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
     generateToken();
   }, [user?.id, toast]);
 
-  const onPlaidSuccess = useCallback((public_token: string, metadata: any) => {
-    console.log('Plaid Link Success:', { public_token, metadata });
-    
-    // TODO: Exchange public_token for access_token on the backend
-    // For now, just show success message
-    toast({
-      title: "Account Linked Successfully",
-      description: "Your bank account has been connected",
+  const handlePlaidLink = useCallback(() => {
+    if (!linkToken || isLoading) return;
+
+    setIsLoading(true);
+
+    const handler = (window as any).Plaid.create({
+      token: linkToken,
+      onSuccess: (public_token: string, metadata: any) => {
+        console.log('Plaid Link Success:', { public_token, metadata });
+        
+        toast({
+          title: "Account Linked Successfully",
+          description: "Your bank account has been connected",
+        });
+        
+        if (onSuccess) {
+          onSuccess();
+        }
+        setIsLoading(false);
+      },
+      onExit: (err: any, metadata: any) => {
+        console.log('Plaid Link Exit:', { err, metadata });
+        if (err) {
+          toast({
+            title: "Connection Cancelled",
+            description: "Bank account connection was cancelled",
+            variant: "destructive"
+          });
+        }
+        setIsLoading(false);
+      },
     });
-    
-    if (onSuccess) {
-      onSuccess();
-    }
-  }, [toast, onSuccess]);
 
-  const onPlaidExit = useCallback((err: any, metadata: any) => {
-    console.log('Plaid Link Exit:', { err, metadata });
-    if (err) {
-      toast({
-        title: "Connection Cancelled",
-        description: "Bank account connection was cancelled",
-        variant: "destructive"
-      });
-    }
-  }, [toast]);
-
-  const config = {
-    token: linkToken,
-    onSuccess: onPlaidSuccess,
-    onExit: onPlaidExit,
-  };
-
-  const { open, ready } = usePlaidLink(config);
+    handler.open();
+  }, [linkToken, isLoading, toast, onSuccess]);
 
   if (!user?.id) {
     return (
@@ -94,13 +108,13 @@ export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
 
   return (
     <Button
-      onClick={() => open()}
-      disabled={!ready || !linkToken}
+      onClick={handlePlaidLink}
+      disabled={!linkToken || isLoading}
       variant="outline"
       className="w-full flex items-center gap-2"
     >
       <Link className="h-4 w-4" />
-      {!ready || !linkToken ? "Loading..." : "Link Bank Account"}
+      {!linkToken || isLoading ? "Loading..." : "Link Bank Account"}
     </Button>
   );
 };
