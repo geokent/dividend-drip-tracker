@@ -1,18 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "lucide-react";
+import { usePlaidLink } from "react-plaid-link";
 
 interface PlaidLinkButtonProps {
   onSuccess?: () => void;
 }
 
 export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
+  const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: (public_token, metadata) => {
+      console.log('Plaid Link Success:', { public_token, metadata });
+      toast({
+        title: "Account Linked Successfully",
+        description: "Your bank account has been connected",
+      });
+      if (onSuccess) {
+        onSuccess();
+      }
+      // TODO: Send public_token to backend to exchange for access_token
+    },
+    onExit: (err, metadata) => {
+      console.log('Plaid Link Exit:', { err, metadata });
+      setLinkToken(null);
+    },
+    onEvent: (eventName, metadata) => {
+      console.log('Plaid Link Event:', { eventName, metadata });
+    },
+  });
 
   const handleLinkAccount = async () => {
     if (!user?.id) {
@@ -37,16 +61,7 @@ export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
       }
 
       if (data?.link_token) {
-        // For now, just show the token was created successfully
-        // We'll implement the actual Plaid Link flow in the next step
-        toast({
-          title: "Link Token Created",
-          description: "Ready to connect your bank account",
-        });
-        
-        if (onSuccess) {
-          onSuccess();
-        }
+        setLinkToken(data.link_token);
       }
     } catch (error) {
       console.error('Error creating link token:', error);
@@ -60,10 +75,17 @@ export const PlaidLinkButton = ({ onSuccess }: PlaidLinkButtonProps) => {
     }
   };
 
+  // Open Plaid Link when token is ready
+  useEffect(() => {
+    if (linkToken && ready) {
+      open();
+    }
+  }, [linkToken, ready, open]);
+
   return (
     <Button
       onClick={handleLinkAccount}
-      disabled={isLoading}
+      disabled={isLoading || !ready}
       variant="outline"
       className="w-full flex items-center gap-2"
     >
