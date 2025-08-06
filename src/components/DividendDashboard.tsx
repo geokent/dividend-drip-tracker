@@ -76,28 +76,86 @@ export const DividendDashboard = () => {
     loadStocks();
   }, [user?.id, toast]);
 
-  const handleStockFound = (stockData: StockData) => {
+  const handleStockFound = async (stockData: StockData) => {
+    if (!user?.id) return;
+    
     const existingIndex = trackedStocks.findIndex(stock => stock.symbol === stockData.symbol);
     
-    if (existingIndex >= 0) {
-      // Update existing stock data
-      setTrackedStocks(prev => 
-        prev.map((stock, index) => 
-          index === existingIndex 
-            ? { ...stockData, shares: stock.shares }
-            : stock
-        )
-      );
+    try {
+      if (existingIndex >= 0) {
+        // Update existing stock in database
+        const { error } = await supabase
+          .from('user_stocks')
+          .update({
+            company_name: stockData.companyName,
+            current_price: stockData.currentPrice,
+            dividend_yield: stockData.dividendYield,
+            dividend_per_share: stockData.dividendPerShare,
+            annual_dividend: stockData.annualDividend,
+            ex_dividend_date: stockData.exDividendDate,
+            dividend_date: stockData.dividendDate,
+            sector: stockData.sector,
+            industry: stockData.industry,
+            market_cap: stockData.marketCap ? parseFloat(stockData.marketCap) : null,
+            pe_ratio: stockData.peRatio ? parseFloat(stockData.peRatio) : null,
+            last_synced: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+          .eq('symbol', stockData.symbol);
+
+        if (error) throw error;
+
+        // Update local state
+        setTrackedStocks(prev => 
+          prev.map((stock, index) => 
+            index === existingIndex 
+              ? { ...stockData, shares: stock.shares }
+              : stock
+          )
+        );
+        
+        toast({
+          title: "Stock Updated!",
+          description: `Updated dividend data for ${stockData.symbol}`,
+        });
+      } else {
+        // Add new stock to database
+        const { error } = await supabase
+          .from('user_stocks')
+          .insert({
+            user_id: user.id,
+            symbol: stockData.symbol,
+            company_name: stockData.companyName,
+            current_price: stockData.currentPrice,
+            dividend_yield: stockData.dividendYield,
+            dividend_per_share: stockData.dividendPerShare,
+            annual_dividend: stockData.annualDividend,
+            ex_dividend_date: stockData.exDividendDate,
+            dividend_date: stockData.dividendDate,
+            sector: stockData.sector,
+            industry: stockData.industry,
+            market_cap: stockData.marketCap ? parseFloat(stockData.marketCap) : null,
+            pe_ratio: stockData.peRatio ? parseFloat(stockData.peRatio) : null,
+            shares: 0,
+            last_synced: new Date().toISOString()
+          });
+
+        if (error) throw error;
+
+        // Add to local state
+        setTrackedStocks(prev => [{ ...stockData, shares: 0 }, ...prev]);
+        
+        toast({
+          title: "Stock Added!",
+          description: `${stockData.symbol} is now being tracked and saved`,
+        });
+      }
+    } catch (error) {
+      console.error('Error saving stock:', error);
       toast({
-        title: "Stock Updated!",
-        description: `Updated dividend data for ${stockData.symbol}`,
-      });
-    } else {
-      // Add new stock to the top of the list
-      setTrackedStocks(prev => [{ ...stockData, shares: 0 }, ...prev]);
-      toast({
-        title: "Stock Added!",
-        description: `${stockData.symbol} is now being tracked`,
+        title: "Error",
+        description: "Failed to save stock data",
+        variant: "destructive"
       });
     }
   };
