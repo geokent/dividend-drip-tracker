@@ -168,14 +168,34 @@ export const DividendDashboard = () => {
     });
   };
 
-  const handleUpdateShares = (symbol: string, shares: number) => {
-    setTrackedStocks(prev => 
-      prev.map(stock => 
-        stock.symbol === symbol 
-          ? { ...stock, shares }
-          : stock
-      )
-    );
+  const handleUpdateShares = async (symbol: string, shares: number) => {
+    if (!user?.id) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_stocks')
+        .update({ shares })
+        .eq('user_id', user.id)
+        .eq('symbol', symbol);
+
+      if (error) throw error;
+
+      // Update local state
+      setTrackedStocks(prev => 
+        prev.map(stock => 
+          stock.symbol === symbol 
+            ? { ...stock, shares }
+            : stock
+        )
+      );
+    } catch (error) {
+      console.error('Error updating shares:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save share count",
+        variant: "destructive"
+      });
+    }
   };
 
   const calculateStats = () => {
