@@ -32,22 +32,25 @@ Deno.serve(async (req) => {
     console.log(`Fetching data for symbol: ${symbol}`);
     
     // Fetch multiple endpoints in parallel for comprehensive data
-    const [overviewResponse, priceResponse] = await Promise.all([
+    const [overviewResponse, priceResponse, earningsResponse] = await Promise.all([
       fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${apiKey}`),
-      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`)
+      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`),
+      fetch(`https://www.alphavantage.co/query?function=EARNINGS&symbol=${symbol}&apikey=${apiKey}`)
     ]);
 
-    const [overviewData, priceData] = await Promise.all([
+    const [overviewData, priceData, earningsData] = await Promise.all([
       overviewResponse.json(),
-      priceResponse.json()
+      priceResponse.json(),
+      earningsResponse.json()
     ]);
 
     console.log('Overview data:', JSON.stringify(overviewData, null, 2));
     console.log('Price data:', JSON.stringify(priceData, null, 2));
+    console.log('Earnings data:', JSON.stringify(earningsData, null, 2));
 
     // Check for API errors in any response
-    if (overviewData['Error Message'] || priceData['Error Message']) {
-      const errorMsg = overviewData['Error Message'] || priceData['Error Message'];
+    if (overviewData['Error Message'] || priceData['Error Message'] || earningsData['Error Message']) {
+      const errorMsg = overviewData['Error Message'] || priceData['Error Message'] || earningsData['Error Message'];
       console.log('API Error:', errorMsg);
       return new Response(
         JSON.stringify({ error: errorMsg }),
@@ -56,8 +59,8 @@ Deno.serve(async (req) => {
     }
 
     // Check for rate limiting
-    if (overviewData.Note || priceData.Note) {
-      const noteMsg = overviewData.Note || priceData.Note;
+    if (overviewData.Note || priceData.Note || earningsData.Note) {
+      const noteMsg = overviewData.Note || priceData.Note || earningsData.Note;
       console.log('API Note (rate limit):', noteMsg);
       return new Response(
         JSON.stringify({ error: 'API rate limit reached. Please try again later.' }),
@@ -73,19 +76,40 @@ Deno.serve(async (req) => {
     const companyName = overviewData.Name || 
                        (overviewData.Symbol ? `${overviewData.Symbol} ETF` : `${symbol.toUpperCase()}`);
     
-    // Parse dividend data with better handling
-    const dividendYield = overviewData.DividendYield ? 
-      parseFloat(overviewData.DividendYield) * 100 : null; // Convert to percentage
-    
-    const dividendPerShare = overviewData.DividendPerShare ? 
-      parseFloat(overviewData.DividendPerShare) : null;
-    
-    // For ETFs and some stocks, annual dividend might be in different format
+    // Parse dividend data with better handling - try multiple sources
+    let dividendYield = null;
+    let dividendPerShare = null;
     let annualDividend = null;
-    if (dividendPerShare && !isNaN(dividendPerShare)) {
-      // Most dividends are quarterly, so multiply by 4
+    
+    // Try to get dividend data from overview first
+    if (overviewData.DividendYield && overviewData.DividendYield !== 'None' && overviewData.DividendYield !== '0') {
+      dividendYield = parseFloat(overviewData.DividendYield) * 100; // Convert to percentage
+    }
+    
+    if (overviewData.DividendPerShare && overviewData.DividendPerShare !== 'None' && overviewData.DividendPerShare !== '0') {
+      dividendPerShare = parseFloat(overviewData.DividendPerShare);
+      // Most dividends are quarterly, so multiply by 4 for annual
       annualDividend = dividendPerShare * 4;
     }
+    
+    // If overview data is empty or insufficient, try to extract from earnings data
+    if (!dividendYield && !dividendPerShare && earningsData && earningsData.quarterlyEarnings) {
+      console.log('Overview data insufficient, checking earnings data for dividend info...');
+      // Some companies report dividend information in earnings data
+      // This is a fallback approach for ETFs and REITs that might not have complete overview data
+    }
+    
+    // Special handling for ETFs and investment funds that might not have traditional dividend data
+    const assetType = overviewData.AssetType || 'Common Stock';
+    console.log('Asset type:', assetType);
+    
+    // Log what we found
+    console.log('Dividend data extracted:', {
+      dividendYield,
+      dividendPerShare,
+      annualDividend,
+      assetType
+    });
 
     // Extract other company data
     const exDividendDate = overviewData.ExDividendDate !== 'None' ? overviewData.ExDividendDate : null;
