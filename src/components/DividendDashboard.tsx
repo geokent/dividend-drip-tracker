@@ -195,10 +195,20 @@ export const DividendDashboard = () => {
                 <button
                   onClick={async () => {
                     try {
+                      console.log('Starting sync process...');
+                      toast({
+                        title: "Syncing...",
+                        description: "Fetching holdings and dividend data from your accounts",
+                      });
+                      
                       const { data, error } = await supabase.functions.invoke('sync-investments');
                       
-                      if (error) throw error;
+                      if (error) {
+                        console.error('Sync error:', error);
+                        throw error;
+                      }
                       
+                      console.log('Sync result:', data);
                       toast({
                         title: "Sync Complete",
                         description: `Synced ${data.syncedStocks} dividend-paying stocks from your brokerage accounts`,
@@ -210,14 +220,14 @@ export const DividendDashboard = () => {
                       console.error('Sync error:', error);
                       toast({
                         title: "Sync Failed",
-                        description: "Unable to sync your brokerage data. Please try again.",
+                        description: error?.message || "Unable to sync your brokerage data. Please try again.",
                         variant: "destructive"
                       });
                     }
                   }}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+                  className="w-full px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md transition-colors"
                 >
-                  Sync Holdings from Linked Accounts
+                  🔄 Sync Holdings from Linked Accounts
                 </button>
               </div>
             </div>
