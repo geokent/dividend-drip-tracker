@@ -113,8 +113,7 @@ serve(async (req) => {
         const holdingsRequest = {
           client_id: PLAID_CLIENT_ID,
           secret: PLAID_SECRET,
-          access_token: account.access_token,
-          account_ids: [account.account_id]
+          access_token: account.access_token
         };
 
         const holdingsResponse = await fetch(`${plaidUrl}/investments/holdings/get`, {
