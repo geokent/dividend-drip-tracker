@@ -189,16 +189,22 @@ serve(async (req) => {
             };
 
             if (existingStock) {
-              // Update existing stock
+              // For existing stocks, only update shares if they're currently 0 (meaning manually added without shares)
+              // Otherwise preserve manually set share counts
+              const finalStockData = {
+                ...stockData,
+                shares: existingStock.shares > 0 ? existingStock.shares : shares
+              };
+
               const { error: updateError } = await supabase
                 .from('user_stocks')
-                .update(stockData)
+                .update(finalStockData)
                 .eq('id', existingStock.id);
 
               if (updateError) {
                 console.error(`Error updating stock ${symbol}:`, updateError);
               } else {
-                console.log(`Updated ${symbol}: ${shares} shares`);
+                console.log(`Updated ${symbol}: preserved ${existingStock.shares} shares (Plaid has ${shares})`);
                 syncedStocks++;
               }
             } else {
