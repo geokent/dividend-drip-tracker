@@ -162,12 +162,13 @@ serve(async (req) => {
               continue;
             }
 
-            // Check if stock already exists
+            // Check if stock already exists for this specific account
             const { data: existingStock } = await supabase
               .from('user_stocks')
               .select('id, shares')
               .eq('user_id', user.id)
               .eq('symbol', symbol)
+              .eq('plaid_account_id', account.id)
               .single();
 
             const stockData = {
@@ -185,6 +186,8 @@ serve(async (req) => {
               market_cap: dividendData.marketCap ? parseFloat(dividendData.marketCap) : null,
               pe_ratio: dividendData.peRatio ? parseFloat(dividendData.peRatio) : null,
               shares: shares,
+              source: account.account_name || 'Plaid',
+              plaid_account_id: account.id,
               last_synced: new Date().toISOString()
             };
 

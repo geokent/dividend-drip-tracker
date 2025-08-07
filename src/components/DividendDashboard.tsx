@@ -312,24 +312,42 @@ export const DividendDashboard = () => {
                     try {
                       if (!user?.id) return;
                       
+                      // Get the list of connected accounts to show which one is being unlinked
+                      const { data: accounts } = await supabase
+                        .from('plaid_accounts')
+                        .select('id, account_name')
+                        .eq('user_id', user.id)
+                        .eq('is_active', true);
+
+                      if (!accounts || accounts.length === 0) {
+                        toast({
+                          title: "No Account Found",
+                          description: "No linked brokerage accounts found.",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+
+                      const accountName = accounts[0].account_name || 'your brokerage account';
+                      
                       toast({
                         title: "Unlinking...",
-                        description: "Removing your brokerage account connection and synced stocks",
+                        description: `Removing ${accountName} and its synced stocks`,
                       });
                       
-                      // First, delete Plaid-synced stocks (stocks with shares=0 are likely auto-synced without manual input)
+                      // First, delete stocks linked to these Plaid accounts
                       const { error: stocksError } = await supabase
                         .from('user_stocks')
                         .delete()
                         .eq('user_id', user.id)
-                        .eq('shares', 0);
+                        .not('plaid_account_id', 'is', null);
                       
                       if (stocksError) {
                         console.error('Error removing synced stocks:', stocksError);
                         // Continue anyway to unlink the account
                       }
                       
-                      // Then delete the Plaid account connection
+                      // Then delete the Plaid account connections
                       const { error: accountError } = await supabase
                         .from('plaid_accounts')
                         .delete()
@@ -339,7 +357,7 @@ export const DividendDashboard = () => {
                       
                       toast({
                         title: "Account Unlinked",
-                        description: "Your brokerage account and auto-synced stocks have been removed. Manually added stocks with share counts were preserved.",
+                        description: `${accountName} and its synced stocks have been removed. Manually added stocks were preserved.`,
                       });
                       
                       // Reload the page to update the UI
