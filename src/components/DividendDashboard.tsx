@@ -307,6 +307,43 @@ export const DividendDashboard = () => {
                 >
                   🔄 Sync Holdings from Linked Accounts
                 </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      if (!user?.id) return;
+                      
+                      toast({
+                        title: "Unlinking...",
+                        description: "Removing your brokerage account connection",
+                      });
+                      
+                      const { error } = await supabase
+                        .from('plaid_accounts')
+                        .delete()
+                        .eq('user_id', user.id);
+                      
+                      if (error) throw error;
+                      
+                      toast({
+                        title: "Account Unlinked",
+                        description: "Your brokerage account has been disconnected successfully",
+                      });
+                      
+                      // Reload the page to update the UI
+                      window.location.reload();
+                    } catch (error) {
+                      console.error('Unlink error:', error);
+                      toast({
+                        title: "Unlink Failed",
+                        description: "Unable to unlink your account. Please try again.",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                  className="w-full px-4 py-2 text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md transition-colors"
+                >
+                  🔗 Unlink Brokerage Account
+                </button>
               </div>
             </div>
           </div>
