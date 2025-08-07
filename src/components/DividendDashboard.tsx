@@ -317,12 +317,12 @@ export const DividendDashboard = () => {
                         description: "Removing your brokerage account connection and synced stocks",
                       });
                       
-                      // First, delete Plaid-synced stocks (stocks with shares=0 are likely auto-synced without manual input)
+                      // First, delete all stocks since we're unlinking the brokerage account
+                      // This ensures all Plaid-synced stocks are removed regardless of share count
                       const { error: stocksError } = await supabase
                         .from('user_stocks')
                         .delete()
-                        .eq('user_id', user.id)
-                        .eq('shares', 0);
+                        .eq('user_id', user.id);
                       
                       if (stocksError) {
                         console.error('Error removing synced stocks:', stocksError);
