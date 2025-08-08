@@ -80,7 +80,6 @@ Deno.serve(async (req) => {
         },
         products: ['investments'],
         required_if_supported_products: ['investments'],
-        optional_products: ['transactions'],
         redirect_uri: null,
         webhook: null,
       }),
