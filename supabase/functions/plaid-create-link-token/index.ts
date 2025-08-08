@@ -26,11 +26,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Determine Plaid API base URL based on environment
-    const plaidEnv = Deno.env.get('PLAID_ENV') || 'sandbox'
-    const plaidApiHost = plaidEnv === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com'
+    // Use production environment
+    const plaidApiHost = 'https://production.plaid.com'
     
-    console.log(`Creating link token for user ${user_id} using Plaid environment: ${plaidEnv}`)
+    console.log(`Creating link token for user ${user_id} using Plaid production environment`)
 
     // Get user profile for additional context
     const { data: profile } = await supabase
