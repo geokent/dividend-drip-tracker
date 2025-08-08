@@ -112,6 +112,59 @@ export type Database = {
           },
         ]
       }
+      plaid_accounts: {
+        Row: {
+          access_token: string
+          account_id: string
+          account_name: string | null
+          account_type: string | null
+          created_at: string
+          id: string
+          institution_id: string | null
+          institution_name: string | null
+          is_active: boolean
+          item_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          account_id: string
+          account_name?: string | null
+          account_type?: string | null
+          created_at?: string
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          is_active?: boolean
+          item_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          account_id?: string
+          account_name?: string | null
+          account_type?: string | null
+          created_at?: string
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          is_active?: boolean
+          item_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plaid_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

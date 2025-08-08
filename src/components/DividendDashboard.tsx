@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
+import { PlaidLinkButton } from "./PlaidLinkButton";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "./Header";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface StockData {
   symbol: string;
@@ -28,6 +31,7 @@ interface TrackedStock extends StockData {
 
 export const DividendDashboard = () => {
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
 
@@ -197,6 +201,75 @@ export const DividendDashboard = () => {
     }
   };
 
+  const handleSyncInvestments = async () => {
+    if (!user?.id) return;
+    
+    setIsSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-dividends', {
+        body: { user_id: user.id }
+      });
+
+      if (error) {
+        console.error('Sync error:', error);
+        toast({
+          title: "Sync Failed",
+          description: "Failed to sync your investment accounts. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Sync successful:', data);
+      toast({
+        title: "Sync Complete!",
+        description: data.message || "Successfully synced your investment accounts",
+      });
+
+      // Reload stocks after sync
+      const { data: stocks } = await supabase
+        .from('user_stocks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (stocks) {
+        const formattedStocks = stocks.map(stock => ({
+          symbol: stock.symbol,
+          companyName: stock.company_name || '',
+          currentPrice: stock.current_price,
+          dividendYield: stock.dividend_yield,
+          dividendPerShare: stock.dividend_per_share,
+          annualDividend: stock.annual_dividend,
+          exDividendDate: stock.ex_dividend_date,
+          dividendDate: stock.dividend_date,
+          sector: stock.sector,
+          industry: stock.industry,
+          marketCap: stock.market_cap?.toString() || null,
+          peRatio: stock.pe_ratio?.toString() || null,
+          shares: Number(stock.shares) || 0
+        }));
+        setTrackedStocks(formattedStocks);
+      }
+    } catch (error) {
+      console.error('Error syncing investments:', error);
+      toast({
+        title: "Sync Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handlePlaidSuccess = () => {
+    toast({
+      title: "Account Connected!",
+      description: "You can now sync your investment holdings to track dividends automatically.",
+    });
+  };
+
   const calculateStats = () => {
     const totalAnnualDividends = trackedStocks.reduce((sum, stock) => {
       if (stock.annualDividend && stock.shares > 0) {
@@ -257,10 +330,44 @@ export const DividendDashboard = () => {
 
         {/* Main Content */}
         <div className="space-y-6">
-          {/* Add Stock Form */}
-          <div className="flex justify-center">
-            <div className="w-full max-w-sm">
-              <StockSymbolForm onStockFound={handleStockFound} />
+          {/* Plaid Integration and Manual Stock Entry */}
+          <div className="space-y-6">
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-lg font-semibold mb-4">Connect Your Investment Accounts</h3>
+              <p className="text-muted-foreground mb-4">
+                Automatically track your dividend stocks by connecting your investment accounts through Plaid.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {user?.id && (
+                  <PlaidLinkButton 
+                    userId={user.id} 
+                    onSuccess={handlePlaidSuccess}
+                  />
+                )}
+                <Button
+                  onClick={handleSyncInvestments}
+                  disabled={isSyncing}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {isSyncing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : null}
+                  {isSyncing ? 'Syncing...' : 'Sync Holdings'}
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-lg font-semibold mb-4">Add Stocks Manually</h3>
+              <p className="text-muted-foreground mb-4">
+                Search and add dividend stocks manually to track their performance.
+              </p>
+              <div className="flex justify-center">
+                <div className="w-full max-w-sm">
+                  <StockSymbolForm onStockFound={handleStockFound} />
+                </div>
+              </div>
             </div>
           </div>
 
