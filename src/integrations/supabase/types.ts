@@ -220,7 +220,6 @@ export type Database = {
           last_synced: string
           market_cap: number | null
           pe_ratio: number | null
-          plaid_account_id: string | null
           sector: string | null
           shares: number
           symbol: string
@@ -241,7 +240,6 @@ export type Database = {
           last_synced?: string
           market_cap?: number | null
           pe_ratio?: number | null
-          plaid_account_id?: string | null
           sector?: string | null
           shares?: number
           symbol: string
@@ -262,22 +260,13 @@ export type Database = {
           last_synced?: string
           market_cap?: number | null
           pe_ratio?: number | null
-          plaid_account_id?: string | null
           sector?: string | null
           shares?: number
           symbol?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_stocks_plaid_account_id_fkey"
-            columns: ["plaid_account_id"]
-            isOneToOne: false
-            referencedRelation: "plaid_accounts"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {

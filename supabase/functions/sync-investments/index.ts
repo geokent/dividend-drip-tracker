@@ -162,13 +162,12 @@ serve(async (req) => {
               continue;
             }
 
-            // Check if stock already exists for this specific account
+            // Check if stock already exists
             const { data: existingStock } = await supabase
               .from('user_stocks')
               .select('id, shares')
               .eq('user_id', user.id)
               .eq('symbol', symbol)
-              .eq('plaid_account_id', account.id)
               .single();
 
             const stockData = {
@@ -186,28 +185,20 @@ serve(async (req) => {
               market_cap: dividendData.marketCap ? parseFloat(dividendData.marketCap) : null,
               pe_ratio: dividendData.peRatio ? parseFloat(dividendData.peRatio) : null,
               shares: shares,
-              source: account.account_name || 'Plaid',
-              plaid_account_id: account.id,
               last_synced: new Date().toISOString()
             };
 
             if (existingStock) {
-              // For existing stocks, only update shares if they're currently 0 (meaning manually added without shares)
-              // Otherwise preserve manually set share counts
-              const finalStockData = {
-                ...stockData,
-                shares: existingStock.shares > 0 ? existingStock.shares : shares
-              };
-
+              // Update existing stock
               const { error: updateError } = await supabase
                 .from('user_stocks')
-                .update(finalStockData)
+                .update(stockData)
                 .eq('id', existingStock.id);
 
               if (updateError) {
                 console.error(`Error updating stock ${symbol}:`, updateError);
               } else {
-                console.log(`Updated ${symbol}: preserved ${existingStock.shares} shares (Plaid has ${shares})`);
+                console.log(`Updated ${symbol}: ${shares} shares`);
                 syncedStocks++;
               }
             } else {
