@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
-import { PlaidLinkButton } from "./PlaidLinkButton";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "./Header";
@@ -258,56 +257,10 @@ export const DividendDashboard = () => {
 
         {/* Main Content */}
         <div className="space-y-6">
-          {/* Add Stock Form and Plaid Link */}
+          {/* Add Stock Form */}
           <div className="flex justify-center">
-            <div className="w-full max-w-sm space-y-4">
+            <div className="w-full max-w-sm">
               <StockSymbolForm onStockFound={handleStockFound} />
-              <div className="text-center space-y-2">
-                <p className="text-sm font-semibold text-foreground mb-2">Or Connect Your Brokerage Account</p>
-                <PlaidLinkButton onSuccess={() => {
-                  toast({
-                    title: "Account Connected",
-                    description: "Your brokerage account has been linked successfully",
-                  });
-                }} />
-                <button
-                  onClick={async () => {
-                    try {
-                      console.log('Starting sync process...');
-                      toast({
-                        title: "Syncing...",
-                        description: "Fetching holdings and dividend data from your accounts",
-                      });
-                      
-                      const { data, error } = await supabase.functions.invoke('sync-investments');
-                      
-                      if (error) {
-                        console.error('Sync error:', error);
-                        throw error;
-                      }
-                      
-                      console.log('Sync result:', data);
-                      toast({
-                        title: "Sync Complete",
-                        description: `Synced ${data.syncedStocks} dividend-paying stocks from your brokerage accounts`,
-                      });
-                      
-                      // Reload the stocks after sync
-                      window.location.reload();
-                    } catch (error) {
-                      console.error('Sync error:', error);
-                      toast({
-                        title: "Sync Failed",
-                        description: error?.message || "Unable to sync your brokerage data. Please try again.",
-                        variant: "destructive"
-                      });
-                    }
-                  }}
-                  className="w-full px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md transition-colors"
-                >
-                  🔄 Sync Holdings from Linked Accounts
-                </button>
-              </div>
             </div>
           </div>
 

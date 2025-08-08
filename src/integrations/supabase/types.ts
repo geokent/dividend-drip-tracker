@@ -73,7 +73,6 @@ export type Database = {
           date: string
           description: string | null
           id: string
-          plaid_account_id: string
           symbol: string | null
           transaction_id: string
           updated_at: string
@@ -86,7 +85,6 @@ export type Database = {
           date: string
           description?: string | null
           id?: string
-          plaid_account_id: string
           symbol?: string | null
           transaction_id: string
           updated_at?: string
@@ -99,7 +97,6 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
-          plaid_account_id?: string
           symbol?: string | null
           transaction_id?: string
           updated_at?: string
@@ -107,67 +104,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "dividend_transactions_plaid_account_id_fkey"
-            columns: ["plaid_account_id"]
-            isOneToOne: false
-            referencedRelation: "plaid_accounts"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "dividend_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      plaid_accounts: {
-        Row: {
-          access_token: string
-          account_id: string
-          account_name: string | null
-          account_subtype: string | null
-          account_type: string | null
-          created_at: string
-          id: string
-          is_active: boolean
-          item_id: string
-          mask: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          access_token: string
-          account_id: string
-          account_name?: string | null
-          account_subtype?: string | null
-          account_type?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          item_id: string
-          mask?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          access_token?: string
-          account_id?: string
-          account_name?: string | null
-          account_subtype?: string | null
-          account_type?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          item_id?: string
-          mask?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "plaid_accounts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
