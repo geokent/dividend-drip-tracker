@@ -59,7 +59,7 @@ serve(async (req) => {
 
     console.log('Exchanging public token for access token');
 
-    const exchangeResponse = await fetch(`${plaidUrl}/link/token/exchange`, {
+    const exchangeResponse = await fetch(`${plaidUrl}/link_token/exchange`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
