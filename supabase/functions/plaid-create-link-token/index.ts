@@ -65,7 +65,13 @@ Deno.serve(async (req) => {
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('Plaid API error:', data)
+      console.error('Plaid API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: data,
+        clientId: Deno.env.get('PLAID_CLIENT_ID') ? 'SET' : 'NOT_SET',
+        secret: Deno.env.get('PLAID_SECRET') ? 'SET' : 'NOT_SET'
+      })
       return new Response(
         JSON.stringify({ error: 'Failed to create link token', details: data }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
