@@ -31,20 +31,44 @@ Deno.serve(async (req) => {
     
     console.log(`Creating link token for user ${user_id} using Plaid production environment`)
 
+    // Check if secrets are available
+    const clientId = Deno.env.get('PLAID_CLIENT_ID')
+    const secret = Deno.env.get('PLAID_SECRET')
+    
+    console.log('Secret check:', {
+      clientId: clientId ? 'SET' : 'NOT_SET',
+      secret: secret ? 'SET' : 'NOT_SET'
+    })
+
+    if (!clientId || !secret) {
+      console.error('Missing Plaid credentials')
+      return new Response(
+        JSON.stringify({ error: 'Missing Plaid API credentials' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Get user profile for additional context
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('display_name')
       .eq('user_id', user_id)
       .maybeSingle()
 
+    if (profileError) {
+      console.error('Profile fetch error:', profileError)
+    }
+
+    console.log('Profile data:', profile)
+
     // Create link token with Plaid API
+    console.log('Making request to Plaid API...')
     const response = await fetch(`${plaidApiHost}/link/token/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'PLAID-CLIENT-ID': Deno.env.get('PLAID_CLIENT_ID') ?? '',
-        'PLAID-SECRET': Deno.env.get('PLAID_SECRET') ?? '',
+        'PLAID-CLIENT-ID': clientId,
+        'PLAID-SECRET': secret,
       },
       body: JSON.stringify({
         client_name: 'Dividend Tracker',
