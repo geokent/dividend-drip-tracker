@@ -120,30 +120,25 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${accountsData.accounts.length} accounts for institution: ${institutionName}`)
 
-    // Store account information in database
+    // Store account information in database using encrypted token storage
     for (const account of accountsData.accounts) {
       try {
         // Only store investment accounts
         if (account.type === 'investment') {
-          const { error: insertError } = await supabase
-            .from('plaid_accounts')
-            .upsert({
-              user_id: user_id,
-              access_token: access_token,
-              item_id: item_id,
-              account_id: account.account_id,
-              account_name: account.name,
-              account_type: account.type,
-              institution_name: institutionName,
-              institution_id: accountsData.item.institution_id,
-              is_active: true,
-              token_last_rotated: new Date().toISOString(),
-            }, {
-              onConflict: 'user_id,account_id'
-            })
+          // Use the secure encrypted token storage function
+          const success = await supabase.rpc('store_encrypted_access_token', {
+            p_user_id: user_id,
+            p_account_id: account.account_id,
+            p_access_token: access_token,
+            p_item_id: item_id,
+            p_account_name: account.name,
+            p_account_type: account.type,
+            p_institution_name: institutionName,
+            p_institution_id: accountsData.item.institution_id
+          })
 
-          if (insertError) {
-            console.error(`Error storing account ${account.account_id}:`, insertError)
+          if (!success) {
+            console.error(`Error storing encrypted account ${account.account_id}`)
             // Log failed account storage
             await supabase.rpc('log_plaid_access', {
               p_user_id: user_id,
@@ -153,7 +148,7 @@ Deno.serve(async (req) => {
               p_user_agent: userAgent
             })
           } else {
-            console.log(`Successfully stored investment account: ${account.name}`)
+            console.log(`Successfully stored encrypted investment account: ${account.name}`)
             // Log successful account storage
             await supabase.rpc('log_plaid_access', {
               p_user_id: user_id,
