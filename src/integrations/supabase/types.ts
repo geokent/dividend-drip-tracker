@@ -112,8 +112,39 @@ export type Database = {
           },
         ]
       }
+      plaid_access_logs: {
+        Row: {
+          account_id: string | null
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       plaid_accounts: {
         Row: {
+          access_count: number | null
           access_token: string
           account_id: string
           account_name: string | null
@@ -124,10 +155,13 @@ export type Database = {
           institution_name: string | null
           is_active: boolean
           item_id: string
+          token_expires_at: string | null
+          token_last_rotated: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          access_count?: number | null
           access_token: string
           account_id: string
           account_name?: string | null
@@ -138,10 +172,13 @@ export type Database = {
           institution_name?: string | null
           is_active?: boolean
           item_id: string
+          token_expires_at?: string | null
+          token_last_rotated?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          access_count?: number | null
           access_token?: string
           account_id?: string
           account_name?: string | null
@@ -152,6 +189,8 @@ export type Database = {
           institution_name?: string | null
           is_active?: boolean
           item_id?: string
+          token_expires_at?: string | null
+          token_last_rotated?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -263,9 +302,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      detect_suspicious_access: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       generate_slug: {
         Args: { title: string }
         Returns: string
+      }
+      log_plaid_access: {
+        Args: {
+          p_user_id: string
+          p_action: string
+          p_account_id?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
