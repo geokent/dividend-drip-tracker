@@ -146,14 +146,17 @@ export type Database = {
         Row: {
           access_count: number | null
           access_token: string
+          access_token_encrypted: string | null
           account_id: string
           account_name: string | null
           account_type: string | null
           created_at: string
+          encryption_version: number | null
           id: string
           institution_id: string | null
           institution_name: string | null
           is_active: boolean
+          is_encrypted: boolean | null
           item_id: string
           token_expires_at: string | null
           token_last_rotated: string | null
@@ -163,14 +166,17 @@ export type Database = {
         Insert: {
           access_count?: number | null
           access_token: string
+          access_token_encrypted?: string | null
           account_id: string
           account_name?: string | null
           account_type?: string | null
           created_at?: string
+          encryption_version?: number | null
           id?: string
           institution_id?: string | null
           institution_name?: string | null
           is_active?: boolean
+          is_encrypted?: boolean | null
           item_id: string
           token_expires_at?: string | null
           token_last_rotated?: string | null
@@ -180,14 +186,17 @@ export type Database = {
         Update: {
           access_count?: number | null
           access_token?: string
+          access_token_encrypted?: string | null
           account_id?: string
           account_name?: string | null
           account_type?: string | null
           created_at?: string
+          encryption_version?: number | null
           id?: string
           institution_id?: string | null
           institution_name?: string | null
           is_active?: boolean
+          is_encrypted?: boolean | null
           item_id?: string
           token_expires_at?: string | null
           token_last_rotated?: string | null
@@ -299,15 +308,89 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      plaid_accounts_safe: {
+        Row: {
+          access_count: number | null
+          account_id: string | null
+          account_name: string | null
+          account_type: string | null
+          created_at: string | null
+          encryption_version: number | null
+          id: string | null
+          institution_id: string | null
+          institution_name: string | null
+          is_active: boolean | null
+          is_encrypted: boolean | null
+          token_last_rotated: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_count?: number | null
+          account_id?: string | null
+          account_name?: string | null
+          account_type?: string | null
+          created_at?: string | null
+          encryption_version?: number | null
+          id?: string | null
+          institution_id?: string | null
+          institution_name?: string | null
+          is_active?: boolean | null
+          is_encrypted?: boolean | null
+          token_last_rotated?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_count?: number | null
+          account_id?: string | null
+          account_name?: string | null
+          account_type?: string | null
+          created_at?: string | null
+          encryption_version?: number | null
+          id?: string | null
+          institution_id?: string | null
+          institution_name?: string | null
+          is_active?: boolean | null
+          is_encrypted?: boolean | null
+          token_last_rotated?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plaid_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Functions: {
+      decrypt_sensitive_data: {
+        Args: { encrypted_data: string; key_name?: string }
+        Returns: string
+      }
       detect_suspicious_access: {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      encrypt_existing_tokens: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      encrypt_sensitive_data: {
+        Args: { data: string; key_name?: string }
+        Returns: string
+      }
       generate_slug: {
         Args: { title: string }
+        Returns: string
+      }
+      get_decrypted_access_token: {
+        Args: { p_user_id: string; p_account_id: string }
         Returns: string
       }
       log_plaid_access: {
@@ -319,6 +402,19 @@ export type Database = {
           p_user_agent?: string
         }
         Returns: undefined
+      }
+      store_encrypted_access_token: {
+        Args: {
+          p_user_id: string
+          p_account_id: string
+          p_access_token: string
+          p_item_id: string
+          p_account_name?: string
+          p_account_type?: string
+          p_institution_name?: string
+          p_institution_id?: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
