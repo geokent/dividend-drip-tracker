@@ -18,6 +18,19 @@ Deno.serve(async (req) => {
     )
 
     const { public_token, user_id } = await req.json()
+    
+    // Extract request metadata for security logging
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+    const userAgent = req.headers.get('user-agent') || 'unknown'
+    
+    // Log the token exchange attempt
+    await supabase.rpc('log_plaid_access', {
+      p_user_id: user_id,
+      p_action: 'token_exchange_attempt',
+      p_account_id: null,
+      p_ip_address: clientIP,
+      p_user_agent: userAgent
+    })
 
     if (!public_token || !user_id) {
       return new Response(
@@ -55,6 +68,15 @@ Deno.serve(async (req) => {
     }
 
     const { access_token, item_id } = exchangeData
+    
+    // Log successful token exchange
+    await supabase.rpc('log_plaid_access', {
+      p_user_id: user_id,
+      p_action: 'token_exchange_success',
+      p_account_id: null,
+      p_ip_address: clientIP,
+      p_user_agent: userAgent
+    })
 
     // Get account information
     const accountsResponse = await fetch(`${plaidApiHost}/accounts/get`, {
@@ -115,14 +137,31 @@ Deno.serve(async (req) => {
               institution_name: institutionName,
               institution_id: accountsData.item.institution_id,
               is_active: true,
+              token_last_rotated: new Date().toISOString(),
             }, {
               onConflict: 'user_id,account_id'
             })
 
           if (insertError) {
             console.error(`Error storing account ${account.account_id}:`, insertError)
+            // Log failed account storage
+            await supabase.rpc('log_plaid_access', {
+              p_user_id: user_id,
+              p_action: 'account_storage_failed',
+              p_account_id: account.account_id,
+              p_ip_address: clientIP,
+              p_user_agent: userAgent
+            })
           } else {
             console.log(`Successfully stored investment account: ${account.name}`)
+            // Log successful account storage
+            await supabase.rpc('log_plaid_access', {
+              p_user_id: user_id,
+              p_action: 'account_stored',
+              p_account_id: account.account_id,
+              p_ip_address: clientIP,
+              p_user_agent: userAgent
+            })
           }
         }
       } catch (error) {
