@@ -59,10 +59,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get all active Plaid accounts for the user
+    // Get all active Plaid accounts for the user (without sensitive token data)
     const { data: accounts, error: accountsError } = await supabase
       .from('plaid_accounts')
-      .select('*')
+      .select('account_id, item_id, account_name, account_type, institution_name, institution_id, user_id')
       .eq('user_id', user_id)
       .eq('is_active', true)
 
@@ -94,7 +94,25 @@ Deno.serve(async (req) => {
           p_user_agent: userAgent
         })
         
-        // Get stock holdings from Plaid
+        // Securely get decrypted access token
+        const { data: decryptedToken, error: tokenError } = await supabase.rpc('get_decrypted_access_token', {
+          p_user_id: user_id,
+          p_account_id: account.account_id
+        })
+        
+        if (tokenError || !decryptedToken) {
+          console.error(`Failed to get access token for account ${account.account_id}:`, tokenError)
+          await supabase.rpc('log_plaid_access', {
+            p_user_id: user_id,
+            p_action: 'token_decryption_failed',
+            p_account_id: account.account_id,
+            p_ip_address: clientIP,
+            p_user_agent: userAgent
+          })
+          continue
+        }
+        
+        // Get stock holdings from Plaid using decrypted token
         const holdingsResponse = await fetch(`${plaidApiHost}/investments/holdings/get`, {
           method: 'POST',
           headers: {
@@ -103,7 +121,7 @@ Deno.serve(async (req) => {
             'PLAID-SECRET': Deno.env.get('PLAID_SECRET') ?? '',
           },
           body: JSON.stringify({
-            access_token: account.access_token,
+            access_token: decryptedToken,
           }),
         })
 
