@@ -145,7 +145,6 @@ export type Database = {
       plaid_accounts: {
         Row: {
           access_count: number | null
-          access_token: string
           access_token_encrypted: string | null
           account_id: string
           account_name: string | null
@@ -165,7 +164,6 @@ export type Database = {
         }
         Insert: {
           access_count?: number | null
-          access_token: string
           access_token_encrypted?: string | null
           account_id: string
           account_name?: string | null
@@ -185,7 +183,6 @@ export type Database = {
         }
         Update: {
           access_count?: number | null
-          access_token?: string
           access_token_encrypted?: string | null
           account_id?: string
           account_name?: string | null
