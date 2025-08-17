@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -335,29 +335,29 @@ export type Database = {
         Returns: string
       }
       get_decrypted_access_token: {
-        Args: { p_user_id: string; p_account_id: string }
+        Args: { p_account_id: string; p_user_id: string }
         Returns: string
       }
       log_plaid_access: {
         Args: {
-          p_user_id: string
-          p_action: string
           p_account_id?: string
+          p_action: string
           p_ip_address?: unknown
           p_user_agent?: string
+          p_user_id: string
         }
         Returns: undefined
       }
       store_encrypted_access_token: {
         Args: {
-          p_user_id: string
-          p_account_id: string
           p_access_token: string
-          p_item_id: string
+          p_account_id: string
           p_account_name?: string
           p_account_type?: string
-          p_institution_name?: string
           p_institution_id?: string
+          p_institution_name?: string
+          p_item_id: string
+          p_user_id: string
         }
         Returns: boolean
       }
