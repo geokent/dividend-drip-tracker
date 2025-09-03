@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -14,7 +14,7 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { open, ready } = usePlaidLink({
+  const { open, ready, error } = usePlaidLink({
     token: linkToken,
     onSuccess: async (public_token) => {
       setIsLoading(true);
@@ -57,6 +57,31 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
     },
   });
 
+  // Log Plaid Link state for debugging
+  console.log('Plaid Link state:', { 
+    linkToken: linkToken ? 'SET' : 'NOT_SET', 
+    ready, 
+    error: error ? error.message : 'NONE',
+    isLoading 
+  });
+
+  // Auto-open when token is set and ready
+  useEffect(() => {
+    if (linkToken && ready && !isLoading) {
+      console.log('Auto-opening Plaid Link...');
+      open();
+    }
+  }, [linkToken, ready, open, isLoading]);
+
+  // Handle Plaid Link errors
+  useEffect(() => {
+    if (error) {
+      console.error('Plaid Link initialization error:', error);
+      toast.error(`Plaid Link error: ${error.message}`);
+      setIsLoading(false);
+    }
+  }, [error]);
+
   const createLinkToken = async () => {
     setIsLoading(true);
     try {
@@ -74,13 +99,6 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
 
       console.log('Link token created successfully');
       setLinkToken(data.link_token);
-      
-      // Open Plaid Link once token is ready
-      setTimeout(() => {
-        if (ready) {
-          open();
-        }
-      }, 100);
     } catch (error) {
       console.error('Error creating link token:', error);
       toast.error('Failed to initialize Plaid Link. Please try again.');
