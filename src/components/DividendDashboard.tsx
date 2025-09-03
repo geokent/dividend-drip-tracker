@@ -35,15 +35,18 @@ export const DividendDashboard = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [connectedAccounts, setConnectedAccounts] = useState<number>(0);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Load tracked stocks from database on component mount
+  // Load tracked stocks and connection status from database on component mount
   useEffect(() => {
-    const loadStocks = async () => {
+    const loadData = async () => {
       if (!user?.id) return;
       
+      // Load stocks
       const { data: stocks, error } = await supabase
         .from('user_stocks')
         .select('*')
@@ -87,9 +90,32 @@ export const DividendDashboard = () => {
           setLastSyncedAt(latestSync);
         }
       }
+
+      // Load connected accounts
+      const { data: accounts, error: accountsError } = await supabase
+        .from('plaid_accounts')
+        .select('id, account_name, institution_name, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (!accountsError && accounts) {
+        setConnectedAccounts(accounts.length);
+      }
+
+      // Load recent activity
+      const { data: activity, error: activityError } = await supabase
+        .from('plaid_access_logs')
+        .select('action, created_at, account_id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (!activityError && activity) {
+        setRecentActivity(activity);
+      }
     };
 
-    loadStocks();
+    loadData();
 
     // Auto-refresh prices every 5 minutes
     if (user?.id) {
@@ -193,12 +219,31 @@ export const DividendDashboard = () => {
     }
   };
 
-  const handleRemoveStock = (symbol: string) => {
-    setTrackedStocks(prev => prev.filter(stock => stock.symbol !== symbol));
-    toast({
-      title: "Stock Removed",
-      description: `${symbol} has been removed from tracking`,
-    });
+  const handleRemoveStock = async (symbol: string) => {
+    if (!user?.id) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_stocks')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('symbol', symbol);
+
+      if (error) throw error;
+
+      setTrackedStocks(prev => prev.filter(stock => stock.symbol !== symbol));
+      toast({
+        title: "Stock Removed",
+        description: `${symbol} has been permanently removed from tracking`,
+      });
+    } catch (error) {
+      console.error('Error removing stock:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove stock",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUpdateShares = async (symbol: string, shares: number) => {
@@ -234,6 +279,15 @@ export const DividendDashboard = () => {
   const handleSyncInvestments = async () => {
     if (!user?.id) return;
     
+    if (connectedAccounts === 0) {
+      toast({
+        title: "No Connected Accounts",
+        description: "Please connect an investment account first before syncing.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSyncing(true);
     try {
       const { data, error } = await supabase.functions.invoke('sync-dividends', {
@@ -251,9 +305,10 @@ export const DividendDashboard = () => {
       }
 
       console.log('Sync successful:', data);
+      const stockCount = data.stocksProcessed || 0;
       toast({
         title: "Sync Complete!",
-        description: data.message || "Successfully synced your investment accounts",
+        description: `Synced ${stockCount} stocks from your connected accounts`,
       });
 
       // Reload stocks after sync
@@ -307,6 +362,19 @@ export const DividendDashboard = () => {
       title: "Account Connected!",
       description: "You can now sync your investment holdings to track dividends automatically.",
     });
+    
+    // Refresh connected accounts count
+    if (user?.id) {
+      const { data: accounts } = await supabase
+        .from('plaid_accounts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+      
+      if (accounts) {
+        setConnectedAccounts(accounts.length);
+      }
+    }
     
     // Auto-sync holdings after successful connection
     setTimeout(() => {
@@ -455,28 +523,41 @@ export const DividendDashboard = () => {
 
         {/* Main Content */}
         <div className="space-y-6">
-          {/* Plaid Integration and Manual Stock Entry */}
-          <div className="space-y-6">
-            <div className="bg-card rounded-lg p-6 border text-center">
-              <h3 className="text-lg font-semibold mb-4">Connect Your Investment Accounts</h3>
-              <p className="text-muted-foreground mb-4">
-                Automatically track your dividend stocks by connecting your investment accounts through Plaid.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          {/* Connection Status and Controls */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Connected Accounts Status */}
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-lg font-semibold mb-4">Connected Accounts</h3>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">{connectedAccounts}</div>
+                <p className="text-muted-foreground mb-4">
+                  {connectedAccounts === 0 ? 'No accounts connected' : 
+                   connectedAccounts === 1 ? 'Investment account connected' : 
+                   'Investment accounts connected'}
+                </p>
                 {user?.id && (
                   <PlaidLinkButton 
                     userId={user.id} 
                     onSuccess={handlePlaidSuccess}
                   />
                 )}
+              </div>
+            </div>
+
+            {/* Sync Controls */}
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-lg font-semibold mb-4">Sync Holdings</h3>
+              <div className="text-center space-y-3">
+                <p className="text-muted-foreground text-sm">
+                  Sync your investment holdings to automatically track dividend stocks
+                </p>
                 <Button
                   onClick={handleSyncInvestments}
-                  disabled={isSyncing}
-                  variant="outline"
-                  className="flex items-center gap-2"
+                  disabled={isSyncing || connectedAccounts === 0}
+                  className="w-full"
                 >
                   {isSyncing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : null}
                   {isSyncing ? 'Syncing...' : 'Sync Holdings'}
                 </Button>
@@ -484,27 +565,47 @@ export const DividendDashboard = () => {
                   onClick={refreshStockPrices}
                   disabled={isRefreshingPrices}
                   variant="outline"
-                  className="flex items-center gap-2"
+                  className="w-full"
                 >
                   {isRefreshingPrices ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className="h-4 w-4 mr-2" />
                   )}
                   {isRefreshingPrices ? 'Refreshing...' : 'Refresh Prices'}
                 </Button>
               </div>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border text-center">
-              <h3 className="text-lg font-semibold mb-4">Add Stocks Manually</h3>
-              <p className="text-muted-foreground mb-4">
-                Search and add dividend stocks manually to track their performance.
-              </p>
-              <div className="flex justify-center">
-                <div className="w-full max-w-sm">
-                  <StockSymbolForm onStockFound={handleStockFound} />
-                </div>
+            {/* Recent Activity */}
+            <div className="bg-card rounded-lg p-6 border">
+              <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+              <div className="space-y-2">
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((activity, index) => (
+                    <div key={index} className="text-sm">
+                      <div className="font-medium">{activity.action}</div>
+                      <div className="text-muted-foreground">
+                        {new Date(activity.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">No recent activity</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Manual Stock Entry */}
+          <div className="bg-card rounded-lg p-6 border text-center">
+            <h3 className="text-lg font-semibold mb-4">Add Stocks Manually</h3>
+            <p className="text-muted-foreground mb-4">
+              Search and add dividend stocks manually to track their performance.
+            </p>
+            <div className="flex justify-center">
+              <div className="w-full max-w-sm">
+                <StockSymbolForm onStockFound={handleStockFound} />
               </div>
             </div>
           </div>

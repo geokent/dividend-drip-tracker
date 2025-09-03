@@ -19,6 +19,8 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
     token: linkToken,
     onSuccess: async (public_token) => {
       setIsLoading(true);
+      toast.loading('Finalizing your account connection...', { id: 'plaid-exchange' });
+      
       try {
         console.log('Plaid Link successful, exchanging token...');
         
@@ -31,12 +33,12 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
 
         if (error) {
           console.error('Token exchange error:', error);
-          toast.error('Failed to connect account. Please try again.');
+          toast.error('Account connection failed during final setup. Please try reconnecting.', { id: 'plaid-exchange' });
           return;
         }
 
         console.log('Token exchange successful:', data);
-        toast.success(data.message || 'Account connected successfully!');
+        toast.success('🎉 Investment account successfully connected!', { id: 'plaid-exchange' });
         
         // Clear token and reset state to prevent loop
         setLinkToken(null);
@@ -45,7 +47,7 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
         onSuccess?.();
       } catch (error) {
         console.error('Error exchanging token:', error);
-        toast.error('Failed to connect account. Please try again.');
+        toast.error('Connection setup incomplete. Please try connecting again.', { id: 'plaid-exchange' });
       } finally {
         setIsLoading(false);
       }
@@ -53,9 +55,12 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
     onExit: (err, metadata) => {
       if (err) {
         console.error('Plaid Link error:', err);
-        toast.error('Failed to connect account');
+        toast.error('Bank connection interrupted. Please try again if you want to connect your account.');
       } else {
         console.log('Plaid Link exited:', metadata);
+        if (metadata.status !== 'connected') {
+          toast.info('Connection cancelled. You can try connecting again anytime.');
+        }
       }
       
       // Clear token and reset state to prevent loop
@@ -95,6 +100,8 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
 
   const createLinkToken = async () => {
     setIsLoading(true);
+    toast.loading('Preparing connection to your bank...', { id: 'plaid-init' });
+    
     try {
       console.log('Creating link token for user:', userId);
       
@@ -104,15 +111,16 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
 
       if (error) {
         console.error('Link token creation error:', error);
-        toast.error('Failed to initialize Plaid Link. Please try again.');
+        toast.error('Failed to initialize bank connection. Please try again.', { id: 'plaid-init' });
         return;
       }
 
       console.log('Link token created successfully');
+      toast.success('Ready to connect! Opening bank selection...', { id: 'plaid-init' });
       setLinkToken(data.link_token);
     } catch (error) {
       console.error('Error creating link token:', error);
-      toast.error('Failed to initialize Plaid Link. Please try again.');
+      toast.error('Connection setup failed. Please check your internet and try again.', { id: 'plaid-init' });
     } finally {
       setIsLoading(false);
     }
