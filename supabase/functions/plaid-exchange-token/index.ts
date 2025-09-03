@@ -20,17 +20,22 @@ Deno.serve(async (req) => {
     const { public_token, user_id } = await req.json()
     
     // Extract request metadata for security logging
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+    const xForwardedFor = req.headers.get('x-forwarded-for')
+    const clientIP = xForwardedFor ? xForwardedFor.split(',')[0].trim() : req.headers.get('x-real-ip') || 'unknown'
     const userAgent = req.headers.get('user-agent') || 'unknown'
     
     // Log the token exchange attempt
-    await supabase.rpc('log_plaid_access', {
-      p_user_id: user_id,
-      p_action: 'token_exchange_attempt',
-      p_account_id: null,
-      p_ip_address: clientIP,
-      p_user_agent: userAgent
-    })
+    try {
+      await supabase.rpc('log_plaid_access', {
+        p_user_id: user_id,
+        p_action: 'token_exchange_attempt',
+        p_account_id: null,
+        p_ip_address: clientIP,
+        p_user_agent: userAgent
+      })
+    } catch (logError) {
+      console.error('Failed to log token exchange attempt:', logError)
+    }
 
     if (!public_token || !user_id) {
       return new Response(
@@ -70,13 +75,17 @@ Deno.serve(async (req) => {
     const { access_token, item_id } = exchangeData
     
     // Log successful token exchange
-    await supabase.rpc('log_plaid_access', {
-      p_user_id: user_id,
-      p_action: 'token_exchange_success',
-      p_account_id: null,
-      p_ip_address: clientIP,
-      p_user_agent: userAgent
-    })
+    try {
+      await supabase.rpc('log_plaid_access', {
+        p_user_id: user_id,
+        p_action: 'token_exchange_success',
+        p_account_id: null,
+        p_ip_address: clientIP,
+        p_user_agent: userAgent
+      })
+    } catch (logError) {
+      console.error('Failed to log token exchange success:', logError)
+    }
 
     // Get account information
     const accountsResponse = await fetch(`${plaidApiHost}/accounts/get`, {
@@ -140,23 +149,31 @@ Deno.serve(async (req) => {
           if (!success) {
             console.error(`Error storing encrypted account ${account.account_id}`)
             // Log failed account storage
-            await supabase.rpc('log_plaid_access', {
-              p_user_id: user_id,
-              p_action: 'account_storage_failed',
-              p_account_id: account.account_id,
-              p_ip_address: clientIP,
-              p_user_agent: userAgent
-            })
+            try {
+              await supabase.rpc('log_plaid_access', {
+                p_user_id: user_id,
+                p_action: 'account_storage_failed',
+                p_account_id: account.account_id,
+                p_ip_address: clientIP,
+                p_user_agent: userAgent
+              })
+            } catch (logError) {
+              console.error('Failed to log account storage failure:', logError)
+            }
           } else {
             console.log(`Successfully stored encrypted investment account: ${account.name}`)
             // Log successful account storage
-            await supabase.rpc('log_plaid_access', {
-              p_user_id: user_id,
-              p_action: 'account_stored',
-              p_account_id: account.account_id,
-              p_ip_address: clientIP,
-              p_user_agent: userAgent
-            })
+            try {
+              await supabase.rpc('log_plaid_access', {
+                p_user_id: user_id,
+                p_action: 'account_stored',
+                p_account_id: account.account_id,
+                p_ip_address: clientIP,
+                p_user_agent: userAgent
+              })
+            } catch (logError) {
+              console.error('Failed to log account storage success:', logError)
+            }
           }
         }
       } catch (error) {

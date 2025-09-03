@@ -302,11 +302,16 @@ export const DividendDashboard = () => {
     }
   };
 
-  const handlePlaidSuccess = () => {
+  const handlePlaidSuccess = async () => {
     toast({
       title: "Account Connected!",
       description: "You can now sync your investment holdings to track dividends automatically.",
     });
+    
+    // Auto-sync holdings after successful connection
+    setTimeout(() => {
+      handleSyncInvestments();
+    }, 2000); // Wait 2 seconds to ensure account is fully set up
   };
 
   const refreshStockPrices = async () => {

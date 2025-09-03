@@ -13,6 +13,7 @@ interface PlaidLinkButtonProps {
 export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
 
   const { open, ready, error } = usePlaidLink({
     token: linkToken,
@@ -36,6 +37,11 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
 
         console.log('Token exchange successful:', data);
         toast.success(data.message || 'Account connected successfully!');
+        
+        // Clear token and reset state to prevent loop
+        setLinkToken(null);
+        setHasOpened(false);
+        
         onSuccess?.();
       } catch (error) {
         console.error('Error exchanging token:', error);
@@ -51,6 +57,10 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
       } else {
         console.log('Plaid Link exited:', metadata);
       }
+      
+      // Clear token and reset state to prevent loop
+      setLinkToken(null);
+      setHasOpened(false);
     },
     onEvent: (eventName, metadata) => {
       console.log('Plaid Link event:', eventName, metadata);
@@ -65,13 +75,14 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
     isLoading 
   });
 
-  // Auto-open when token is set and ready
+  // Auto-open when token is set and ready (but only once)
   useEffect(() => {
-    if (linkToken && ready && !isLoading) {
+    if (linkToken && ready && !isLoading && !hasOpened) {
       console.log('Auto-opening Plaid Link...');
+      setHasOpened(true);
       open();
     }
-  }, [linkToken, ready, open, isLoading]);
+  }, [linkToken, ready, open, isLoading, hasOpened]);
 
   // Handle Plaid Link errors
   useEffect(() => {

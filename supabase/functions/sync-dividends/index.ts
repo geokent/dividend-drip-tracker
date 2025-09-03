@@ -20,7 +20,8 @@ Deno.serve(async (req) => {
     const { user_id } = await req.json()
     
     // Extract request metadata for security logging
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+    const xForwardedFor = req.headers.get('x-forwarded-for')
+    const clientIP = xForwardedFor ? xForwardedFor.split(',')[0].trim() : req.headers.get('x-real-ip') || 'unknown'
     const userAgent = req.headers.get('user-agent') || 'unknown'
     
     // Check for suspicious access patterns before proceeding
@@ -30,13 +31,17 @@ Deno.serve(async (req) => {
     
     if (suspiciousAccess) {
       console.warn(`Suspicious access pattern detected for user ${user_id}`)
-      await supabase.rpc('log_plaid_access', {
-        p_user_id: user_id,
-        p_action: 'suspicious_sync_blocked',
-        p_account_id: null,
-        p_ip_address: clientIP,
-        p_user_agent: userAgent
-      })
+      try {
+        await supabase.rpc('log_plaid_access', {
+          p_user_id: user_id,
+          p_action: 'suspicious_sync_blocked',
+          p_account_id: null,
+          p_ip_address: clientIP,
+          p_user_agent: userAgent
+        })
+      } catch (logError) {
+        console.error('Failed to log suspicious access:', logError)
+      }
       return new Response(
         JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -44,13 +49,17 @@ Deno.serve(async (req) => {
     }
     
     // Log sync attempt
-    await supabase.rpc('log_plaid_access', {
-      p_user_id: user_id,
-      p_action: 'sync_attempt',
-      p_account_id: null,
-      p_ip_address: clientIP,
-      p_user_agent: userAgent
-    })
+    try {
+      await supabase.rpc('log_plaid_access', {
+        p_user_id: user_id,
+        p_action: 'sync_attempt',
+        p_account_id: null,
+        p_ip_address: clientIP,
+        p_user_agent: userAgent
+      })
+    } catch (logError) {
+      console.error('Failed to log sync attempt:', logError)
+    }
 
     if (!user_id) {
       return new Response(
@@ -86,13 +95,17 @@ Deno.serve(async (req) => {
     for (const account of accounts || []) {
       try {
         // Log account access for audit trail
-        await supabase.rpc('log_plaid_access', {
-          p_user_id: user_id,
-          p_action: 'account_data_accessed',
-          p_account_id: account.account_id,
-          p_ip_address: clientIP,
-          p_user_agent: userAgent
-        })
+        try {
+          await supabase.rpc('log_plaid_access', {
+            p_user_id: user_id,
+            p_action: 'account_data_accessed',
+            p_account_id: account.account_id,
+            p_ip_address: clientIP,
+            p_user_agent: userAgent
+          })
+        } catch (logError) {
+          console.error('Failed to log account access:', logError)
+        }
         
         // Securely get decrypted access token
         const { data: decryptedToken, error: tokenError } = await supabase.rpc('get_decrypted_access_token', {
@@ -102,13 +115,17 @@ Deno.serve(async (req) => {
         
         if (tokenError || !decryptedToken) {
           console.error(`Failed to get access token for account ${account.account_id}:`, tokenError)
-          await supabase.rpc('log_plaid_access', {
-            p_user_id: user_id,
-            p_action: 'token_decryption_failed',
-            p_account_id: account.account_id,
-            p_ip_address: clientIP,
-            p_user_agent: userAgent
-          })
+          try {
+            await supabase.rpc('log_plaid_access', {
+              p_user_id: user_id,
+              p_action: 'token_decryption_failed',
+              p_account_id: account.account_id,
+              p_ip_address: clientIP,
+              p_user_agent: userAgent
+            })
+          } catch (logError) {
+            console.error('Failed to log token decryption failure:', logError)
+          }
           continue
         }
         
@@ -129,13 +146,17 @@ Deno.serve(async (req) => {
 
         if (!holdingsResponse.ok) {
           console.error('Plaid holdings error:', holdingsData)
-          await supabase.rpc('log_plaid_access', {
-            p_user_id: user_id,
-            p_action: 'holdings_fetch_failed',
-            p_account_id: account.account_id,
-            p_ip_address: clientIP,
-            p_user_agent: userAgent
-          })
+          try {
+            await supabase.rpc('log_plaid_access', {
+              p_user_id: user_id,
+              p_action: 'holdings_fetch_failed',
+              p_account_id: account.account_id,
+              p_ip_address: clientIP,
+              p_user_agent: userAgent
+            })
+          } catch (logError) {
+            console.error('Failed to log holdings fetch failure:', logError)
+          }
           continue
         }
 
@@ -216,13 +237,17 @@ Deno.serve(async (req) => {
     }
 
     // Log successful sync completion
-    await supabase.rpc('log_plaid_access', {
-      p_user_id: user_id,
-      p_action: 'sync_completed',
-      p_account_id: null,
-      p_ip_address: clientIP,
-      p_user_agent: userAgent
-    })
+    try {
+      await supabase.rpc('log_plaid_access', {
+        p_user_id: user_id,
+        p_action: 'sync_completed',
+        p_account_id: null,
+        p_ip_address: clientIP,
+        p_user_agent: userAgent
+      })
+    } catch (logError) {
+      console.error('Failed to log sync completion:', logError)
+    }
 
     return new Response(
       JSON.stringify({ 
