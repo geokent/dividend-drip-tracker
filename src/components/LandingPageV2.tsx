@@ -13,6 +13,7 @@ import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { FAQ } from "@/components/FAQ";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Import images
 import snowball from "@/assets/snowball.jpg";
@@ -30,10 +31,12 @@ const LandingPageV2 = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [showAuthCard, setShowAuthCard] = useState(false);
   
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     document.title = "Divtrkr - Track Your Dividend Income & Build Wealth";
@@ -219,22 +222,25 @@ const LandingPageV2 = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                <div className="text-center lg:text-left">
-                  <p className="text-lg font-semibold text-foreground mb-2">
-                    Ready to start building wealth?
-                  </p>
-                  <p className="text-muted-foreground">
-                    Join thousands of investors tracking their dividend income
-                  </p>
-                </div>
-                <div className="flex flex-col items-center">
-                  <Button variant="outline" size="lg" className="px-8 py-4 text-lg opacity-50 cursor-not-allowed" disabled>
-                    <Play className="mr-2 h-5 w-5" />
-                    Watch Demo
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
-                </div>
+                <Button 
+                  size="lg" 
+                  className="gradient-primary text-white hover:opacity-90 transition-smooth px-8 py-4 text-lg font-semibold"
+                  onClick={() => setShowAuthCard(true)}
+                >
+                  Create Free Account
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="border-border hover:bg-accent px-8 py-4 text-lg font-semibold"
+                  onClick={() => navigate('/learning-academy')}
+                >
+                  See How It Works
+                </Button>
               </div>
+              <p className="text-muted-foreground text-sm text-center lg:text-left mb-12">
+                No credit card required • Cancel anytime
+              </p>
 
               {/* Trust Indicators */}
               <div className="flex items-center justify-center lg:justify-start space-x-8 text-sm text-muted-foreground">
@@ -319,19 +325,26 @@ const LandingPageV2 = () => {
                       </button>
                     </div>
                     
-                    <Button 
-                      type="submit" 
-                      className="w-full h-12 text-lg" 
-                      disabled={isLoading}
-                      variant="gradient"
-                    >
-                      {isLoading 
-                        ? "Please wait..." 
-                        : isSignUp 
-                          ? "Create Free Account" 
-                          : "Sign In to Dashboard"
-                      }
-                    </Button>
+                     <Button 
+                       type="submit" 
+                       className="w-full h-12 text-lg" 
+                       disabled={isLoading}
+                       variant="gradient"
+                     >
+                       {isLoading 
+                         ? "Please wait..." 
+                         : isSignUp 
+                           ? "Create Free Account" 
+                           : "Sign In to Dashboard"
+                       }
+                     </Button>
+                     
+                     <p className="text-xs text-muted-foreground text-center mt-4">
+                       By continuing, you agree to our{" "}
+                       <Link to="/terms" className="text-primary hover:underline">Terms</Link>
+                       {" "}and{" "}
+                       <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                     </p>
                   </form>
                   
                    <div className="text-center mt-6">
@@ -355,27 +368,58 @@ const LandingPageV2 = () => {
         </div>
       </section>
 
-      {/* Dashboard Preview */}
-      <section className="py-20 bg-background/50">
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gradient-to-b from-background to-accent/5">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
-              Your Command Center for
-              <span className="gradient-text block">Dividend Success</span>
+              Trusted by Smart
+              <span className="gradient-text block">Investors</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Get a comprehensive view of your dividend portfolio with real-time tracking, 
-              performance analytics, and future income projections.
+              See what our users are saying about their dividend tracking journey
             </p>
           </div>
           
-          <div className="relative max-w-6xl mx-auto hover-scale">
-            <div className="absolute inset-0 gradient-primary rounded-3xl blur-3xl opacity-20"></div>
-            <img 
-              src="/lovable-uploads/0d6eeb20-2dec-42f3-bf81-d48762b0a348.png" 
-              alt="Divtrkr Dashboard - Portfolio Overview and Analytics"
-              className="relative rounded-3xl shadow-elegant w-full border border-border/20"
-            />
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-card p-6 rounded-xl border border-border/20 shadow-sm hover-scale">
+              <div className="flex items-center mb-4">
+                <div className="flex text-yellow-400">
+                  {"★".repeat(5)}
+                </div>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                "Finally found a tool that makes dividend tracking simple. The future income projections help me plan my retirement with confidence."
+              </p>
+              <div className="font-medium">Sarah M.</div>
+              <div className="text-sm text-muted-foreground">Retired Teacher</div>
+            </div>
+            
+            <div className="bg-card p-6 rounded-xl border border-border/20 shadow-sm hover-scale">
+              <div className="flex items-center mb-4">
+                <div className="flex text-yellow-400">
+                  {"★".repeat(5)}
+                </div>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                "The automatic sync with my broker saves me hours every month. Love seeing my dividend snowball grow in real-time!"
+              </p>
+              <div className="font-medium">Mike R.</div>
+              <div className="text-sm text-muted-foreground">Software Engineer</div>
+            </div>
+            
+            <div className="bg-card p-6 rounded-xl border border-border/20 shadow-sm hover-scale">
+              <div className="flex items-center mb-4">
+                <div className="flex text-yellow-400">
+                  {"★".repeat(5)}
+                </div>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                "The learning academy taught me everything about dividend investing. Now I'm on track to reach financial independence!"
+              </p>
+              <div className="font-medium">Jennifer L.</div>
+              <div className="text-sm text-muted-foreground">Marketing Manager</div>
+            </div>
           </div>
         </div>
       </section>
@@ -718,6 +762,21 @@ const LandingPageV2 = () => {
         </div>
       </section>
 
+      {/* PWA Install Nudge */}
+      <section className="py-12 bg-accent/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-card rounded-xl p-6 border border-border/20 flex flex-col md:flex-row items-center justify-between gap-4 hover-scale">
+              <div className="text-center md:text-left">
+                <h3 className="font-semibold text-lg mb-2">Install DivTrkr on Your Device</h3>
+                <p className="text-muted-foreground">Get the full app experience with offline access and notifications</p>
+              </div>
+              <PWAInstallButton />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-20 bg-gradient-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -736,7 +795,7 @@ const LandingPageV2 = () => {
                 size="lg" 
                 variant="secondary" 
                 className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90"
-                onClick={() => setIsSignUp(true)}
+                onClick={() => setShowAuthCard(true)}
               >
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -754,6 +813,132 @@ const LandingPageV2 = () => {
 
       {/* Footer */}
       <Footer />
+      
+      {/* Mobile Sticky CTA */}
+      {isMobile && !showAuthCard && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/20 p-4 z-40">
+          <Button 
+            className="w-full gradient-primary text-white hover:opacity-90 transition-smooth py-3"
+            onClick={() => setShowAuthCard(true)}
+          >
+            Create Free Account
+          </Button>
+        </div>
+      )}
+
+      {/* Auth Card Modal */}
+      {showAuthCard && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md relative">
+            <button
+              onClick={() => setShowAuthCard(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-2xl">
+                {isSignUp ? "Start Your Journey" : "Welcome Back"}
+              </CardTitle>
+              <CardDescription className="text-lg">
+                {isSignUp 
+                  ? "Join thousands building passive income" 
+                  : "Sign in to your dividend portfolio"
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {showEmailVerification && !isSignUp && (
+                <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
+                  <AlertDescription>
+                    <strong>Check your email!</strong> We've sent you a verification link. 
+                    Please check your email and click the link to verify your account, then sign in below.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
+                {isSignUp && (
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Your name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="h-12 text-lg"
+                      required
+                    />
+                  </div>
+                )}
+                
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 text-lg"
+                    required
+                  />
+                </div>
+                
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 text-lg pr-12"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 text-lg" 
+                  disabled={isLoading}
+                  variant="gradient"
+                >
+                  {isLoading 
+                    ? "Please wait..." 
+                    : isSignUp 
+                      ? "Create Free Account" 
+                      : "Sign In to Dashboard"
+                  }
+                </Button>
+                
+                <p className="text-xs text-muted-foreground text-center mt-4">
+                  By continuing, you agree to our{" "}
+                  <Link to="/terms" className="text-primary hover:underline">Terms</Link>
+                  {" "}and{" "}
+                  <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                </p>
+              </form>
+              
+              <div className="text-center mt-6">
+                <button
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setShowEmailVerification(false);
+                  }}
+                  className="text-primary hover:underline transition-smooth"
+                >
+                  {isSignUp 
+                    ? "Already have an account? Sign in" 
+                    : "Need an account? Sign up free"
+                  }
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
