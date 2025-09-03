@@ -12,7 +12,7 @@ export const StatsCard = ({ title, value, subtitle, trend, className = "" }: Sta
   const trendColor = trend === "up" ? "text-financial-green" : trend === "down" ? "text-destructive" : "text-financial-gray";
   
   return (
-    <Card className={`shadow-card hover:shadow-hover transition-smooth gradient-card ${className}`}>
+    <Card className={`shadow-card hover:shadow-hover transition-smooth gradient-card text-center ${className}`}>
       <CardHeader className="pb-1 px-3 pt-3">
         <CardTitle className="text-xs font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>

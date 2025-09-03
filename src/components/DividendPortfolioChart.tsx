@@ -127,7 +127,7 @@ export const DividendPortfolioChart = ({
           <div className="text-center opacity-60">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-xs lg:text-sm font-medium text-muted-foreground">Premium</p>
+              <p className="text-xs lg:text-sm font-medium text-muted-foreground">Coming Soon</p>
             </div>
             <p className="text-xs text-muted-foreground">Yield on Cost</p>
           </div>
@@ -143,14 +143,14 @@ export const DividendPortfolioChart = ({
           <div className="text-center opacity-60 hidden lg:block">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">Premium</p>
+              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
             </div>
             <p className="text-xs text-muted-foreground">Dividend Safety Score</p>
           </div>
           <div className="text-center opacity-60 hidden lg:block">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">Pro Feature</p>
+              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
             </div>
             <p className="text-xs text-muted-foreground">Tax Efficiency Score</p>
           </div>

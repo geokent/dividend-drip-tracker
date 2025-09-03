@@ -445,12 +445,12 @@ export const DividendDashboard = () => {
         <div className="space-y-6">
           {/* Plaid Integration and Manual Stock Entry */}
           <div className="space-y-6">
-            <div className="bg-card rounded-lg p-6 border">
+            <div className="bg-card rounded-lg p-6 border text-center">
               <h3 className="text-lg font-semibold mb-4">Connect Your Investment Accounts</h3>
               <p className="text-muted-foreground mb-4">
                 Automatically track your dividend stocks by connecting your investment accounts through Plaid.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 {user?.id && (
                   <PlaidLinkButton 
                     userId={user.id} 
@@ -484,7 +484,7 @@ export const DividendDashboard = () => {
               </div>
             </div>
 
-            <div className="bg-card rounded-lg p-6 border">
+            <div className="bg-card rounded-lg p-6 border text-center">
               <h3 className="text-lg font-semibold mb-4">Add Stocks Manually</h3>
               <p className="text-muted-foreground mb-4">
                 Search and add dividend stocks manually to track their performance.
@@ -499,7 +499,7 @@ export const DividendDashboard = () => {
 
           {/* Portfolio Chart */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="text-center">
               <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
               {lastSyncedAt && (
                 <p className="text-sm text-muted-foreground">
