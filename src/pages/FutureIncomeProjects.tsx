@@ -11,6 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { StatsCard } from "@/components/StatsCard";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -216,10 +218,10 @@ export const FutureIncomeProjects = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
+    <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Hero Section */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
@@ -238,48 +240,40 @@ export const FutureIncomeProjects = () => {
 
         {/* Current Portfolio Summary */}
         {trackedStocks.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 animate-fade-in">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary mb-1">
-                  ${currentMetrics.totalPortfolioValue.toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">Current Portfolio</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">
-                  ${currentMetrics.totalAnnualDividends.toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">Annual Dividends</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">
-                  {currentMetrics.portfolioYield.toFixed(2)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Portfolio Yield</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-accent mb-1">
-                  {currentMetrics.weightedAvgYield.toFixed(2)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Weighted Avg Yield</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">
-                  {currentMetrics.uniqueStocks}
-                </div>
-                <div className="text-sm text-muted-foreground">Dividend Stocks</div>
-              </CardContent>
-            </Card>
-          </div>
+          <section className="py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+              <StatsCard
+                title="Current Portfolio"
+                value={`$${currentMetrics.totalPortfolioValue.toLocaleString()}`}
+                subtitle="Total portfolio value"
+                trend="up"
+              />
+              <StatsCard
+                title="Annual Dividends"
+                value={`$${currentMetrics.totalAnnualDividends.toLocaleString()}`}
+                subtitle="Projected yearly income"
+                trend="up"
+              />
+              <StatsCard
+                title="Portfolio Yield"
+                value={`${currentMetrics.portfolioYield.toFixed(2)}%`}
+                subtitle="Current dividend yield"
+                trend="neutral"
+              />
+              <StatsCard
+                title="Weighted Avg Yield"
+                value={`${currentMetrics.weightedAvgYield.toFixed(2)}%`}
+                subtitle="Portfolio-weighted yield"
+                trend="neutral"
+              />
+              <StatsCard
+                title="Dividend Stocks"
+                value={currentMetrics.uniqueStocks.toString()}
+                subtitle="Tracked dividend stocks"
+                trend="neutral"
+              />
+            </div>
+          </section>
         )}
 
         {/* How These Numbers Are Calculated - Collapsible Section */}
@@ -703,13 +697,13 @@ export const FutureIncomeProjects = () => {
 
         {/* CTA Section */}
         <div className="text-center">
-          <Card className="bg-gradient-primary shadow-elegant">
+          <Card className="gradient-card shadow-card">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4 text-slate-900">Want to Optimize Your Portfolio?</h3>
-              <p className="text-slate-800 mb-6 text-lg">
+              <h3 className="text-2xl font-bold mb-4 text-foreground">Want to Optimize Your Portfolio?</h3>
+              <p className="text-muted-foreground mb-6 text-lg">
                 Add more dividend stocks to your portfolio to improve these projections.
               </p>
-              <Button variant="secondary" size="lg" className="px-8" asChild>
+              <Button variant="gradient" size="lg" className="px-8" asChild>
                 <Link to="/dashboard">
                   Manage Portfolio
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -720,30 +714,7 @@ export const FutureIncomeProjects = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-12 border-t bg-background mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex items-center">
-              <Link to="/">
-                <img 
-                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                  alt="DivTrkr Logo" 
-                  className="h-6 w-auto mr-3 hover:opacity-80 transition-opacity"
-                />
-              </Link>
-            </div>
-            <div className="text-center md:text-right">
-              <p className="text-muted-foreground mb-2">
-                © 2024 DivTrkr. Building wealth through dividend investing.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                This is not investment advice. We are not investment professionals. All data is provided for educational and entertainment purposes only.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
