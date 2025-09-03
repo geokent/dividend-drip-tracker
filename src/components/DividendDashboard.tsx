@@ -33,7 +33,7 @@ export const DividendDashboard = () => {
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
-  const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -76,6 +76,15 @@ export const DividendDashboard = () => {
           shares: Number(stock.shares) || 0
         }));
         setTrackedStocks(formattedStocks);
+        
+        // Update last synced timestamp from the latest stock sync
+        const latestSync = stocks.reduce((latest, stock) => {
+          const stockSync = new Date(stock.last_synced);
+          return stockSync > latest ? stockSync : latest;
+        }, new Date(0));
+        if (latestSync.getTime() > 0) {
+          setLastSyncedAt(latestSync);
+        }
       }
     };
 
@@ -134,6 +143,7 @@ export const DividendDashboard = () => {
               : stock
           )
         );
+        setLastSyncedAt(new Date());
         
         toast({
           title: "Stock Updated!",
@@ -165,6 +175,7 @@ export const DividendDashboard = () => {
 
         // Add to local state
         setTrackedStocks(prev => [{ ...stockData, shares: 0 }, ...prev]);
+        setLastSyncedAt(new Date());
         
         toast({
           title: "Stock Added!",
@@ -268,6 +279,15 @@ export const DividendDashboard = () => {
           shares: Number(stock.shares) || 0
         }));
         setTrackedStocks(formattedStocks);
+        
+        // Update last synced timestamp from the latest stock sync
+        const latestSync = stocks.reduce((latest, stock) => {
+          const stockSync = new Date(stock.last_synced);
+          return stockSync > latest ? stockSync : latest;
+        }, new Date(0));
+        if (latestSync.getTime() > 0) {
+          setLastSyncedAt(latestSync);
+        }
       }
     } catch (error) {
       console.error('Error syncing investments:', error);
@@ -309,7 +329,6 @@ export const DividendDashboard = () => {
       }
 
       console.log('Price refresh response:', data);
-      setLastPriceUpdate(new Date());
       
       // Reload stocks to get updated prices
       const { data: stocks } = await supabase
@@ -335,6 +354,15 @@ export const DividendDashboard = () => {
           shares: Number(stock.shares) || 0
         }));
         setTrackedStocks(formattedStocks);
+        
+        // Update last synced timestamp from the latest stock sync
+        const latestSync = stocks.reduce((latest, stock) => {
+          const stockSync = new Date(stock.last_synced);
+          return stockSync > latest ? stockSync : latest;
+        }, new Date(0));
+        if (latestSync.getTime() > 0) {
+          setLastSyncedAt(latestSync);
+        }
       }
 
       if (data?.updated > 0) {
@@ -473,9 +501,9 @@ export const DividendDashboard = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
-              {lastPriceUpdate && (
+              {lastSyncedAt && (
                 <p className="text-sm text-muted-foreground">
-                  Last updated: {lastPriceUpdate.toLocaleTimeString()}
+                  Last synced: {lastSyncedAt.toLocaleString()}
                 </p>
               )}
             </div>
