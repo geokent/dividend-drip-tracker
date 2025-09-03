@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, TrendingUp, DollarSign, PieChart, Target, Shield, Zap, ArrowRight, Play, Star, CheckCircle } from "lucide-react";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { FAQ } from "@/components/FAQ";
@@ -19,6 +20,7 @@ import fire from "@/assets/fire.jpg";
 import sync from "@/assets/sync.jpg";
 import future from "@/assets/future.jpg";
 import whatdiv from "@/assets/whatdiv.jpg";
+import dashboardScreenshot from "@/assets/dashboard-screenshot-new.jpg";
 
 const LandingPageV2 = () => {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -181,7 +183,7 @@ const LandingPageV2 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <Header />
 
       {/* Hero Section */}
@@ -228,15 +230,15 @@ const LandingPageV2 = () => {
               {/* Trust Indicators */}
               <div className="flex items-center justify-center lg:justify-start space-x-8 text-sm text-muted-foreground">
                 <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircle className="h-4 w-4 text-financial-green mr-2" />
                   Bank-Level Security
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircle className="h-4 w-4 text-financial-green mr-2" />
                   Real-Time Data
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircle className="h-4 w-4 text-financial-green mr-2" />
                   Free Forever Plan
                 </div>
               </div>
@@ -361,7 +363,7 @@ const LandingPageV2 = () => {
           <div className="relative max-w-6xl mx-auto hover-scale">
             <div className="absolute inset-0 gradient-primary rounded-3xl blur-3xl opacity-20"></div>
             <img 
-              src="/lovable-uploads/ac4c76f1-85e1-4a10-aea3-ef432a91a3a6.png" 
+              src={dashboardScreenshot} 
               alt="Divtrkr Dashboard - Portfolio Overview and Analytics"
               className="relative rounded-3xl shadow-elegant w-full border border-border/20"
             />
@@ -389,38 +391,38 @@ const LandingPageV2 = () => {
                 icon: TrendingUp,
                 title: "Real-Time Tracking",
                 description: "Monitor your dividend income as it happens with live portfolio updates and instant notifications.",
-                color: "text-blue-500"
+                color: "text-primary"
               },
               {
                 icon: PieChart,
                 title: "Portfolio Analytics",
                 description: "Deep insights into your holdings with advanced charts, performance metrics, and risk analysis.",
-                color: "text-green-500"
+                color: "text-financial-green"
               },
               {
                 icon: DollarSign,
                 title: "Income Projections",
                 description: "Forecast your future dividend income with our AI-powered prediction algorithms.",
-                color: "text-yellow-500",
+                color: "text-accent",
                 link: "/future-income-projects"
               },
               {
                 icon: Shield,
                 title: "Bank-Level Security",
                 description: "Your financial data is protected with enterprise-grade encryption and security protocols.",
-                color: "text-purple-500"
+                color: "text-primary"
               },
               {
                 icon: Zap,
                 title: "Auto-Sync Accounts",
                 description: "Connect your brokerage accounts for automatic dividend tracking and portfolio updates.",
-                color: "text-red-500"
+                color: "text-secondary"
               },
               {
                 icon: Target,
                 title: "Goal Setting",
                 description: "Set and track your financial independence goals with personalized FIRE calculators.",
-                color: "text-indigo-500"
+                color: "text-primary"
               }
             ].map((feature, index) => {
               if (feature.link) {
@@ -485,12 +487,12 @@ const LandingPageV2 = () => {
                   "Understand dividend yields and payout ratios",
                   "Build a diversified dividend portfolio",
                   "Track your progress toward financial goals"
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-foreground">{item}</span>
-                  </div>
-                ))}
+                 ].map((item, index) => (
+                   <div key={index} className="flex items-center">
+                     <CheckCircle className="h-5 w-5 text-financial-green mr-3 flex-shrink-0" />
+                     <span className="text-foreground">{item}</span>
+                   </div>
+                 ))}
               </div>
               <Link to="/learning-academy">
                 <Button variant="outline" size="lg" className="px-8">
@@ -537,10 +539,10 @@ const LandingPageV2 = () => {
                   <div className="text-3xl font-bold text-primary mb-2">$500</div>
                   <div className="text-sm text-muted-foreground">Monthly Investment</div>
                 </div>
-                <div className="text-center p-6 rounded-2xl bg-background/80 border border-border/20">
-                  <div className="text-3xl font-bold text-green-500 mb-2">$2.1M</div>
-                  <div className="text-sm text-muted-foreground">30-Year Total</div>
-                </div>
+                 <div className="text-center p-6 rounded-2xl bg-background/80 border border-border/20">
+                   <div className="text-3xl font-bold text-financial-green mb-2">$2.1M</div>
+                   <div className="text-sm text-muted-foreground">30-Year Total</div>
+                 </div>
               </div>
               <div className="flex flex-col items-center">
                 <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
@@ -646,12 +648,12 @@ const LandingPageV2 = () => {
                   "Real-time portfolio updates",
                   "Automated dividend tracking",
                   "Tax-loss harvesting alerts"
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                    <span className="text-foreground">{feature}</span>
-                  </div>
-                ))}
+                 ].map((feature, index) => (
+                   <div key={index} className="flex items-center">
+                     <CheckCircle className="h-5 w-5 text-financial-green mr-3" />
+                     <span className="text-foreground">{feature}</span>
+                   </div>
+                 ))}
               </div>
             </div>
             <div className="hover-scale">
@@ -685,14 +687,14 @@ const LandingPageV2 = () => {
                   <div className="text-2xl font-bold text-primary mb-1">5Y</div>
                   <div className="text-xs text-muted-foreground">Projection</div>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-background/80 border border-border/20">
-                  <div className="text-2xl font-bold text-green-500 mb-1">10Y</div>
-                  <div className="text-xs text-muted-foreground">Timeline</div>
-                </div>
-                <div className="text-center p-4 rounded-xl bg-background/80 border border-border/20">
-                  <div className="text-2xl font-bold text-blue-500 mb-1">25Y</div>
-                  <div className="text-xs text-muted-foreground">Long-term</div>
-                </div>
+                 <div className="text-center p-4 rounded-xl bg-background/80 border border-border/20">
+                   <div className="text-2xl font-bold text-financial-green mb-1">10Y</div>
+                   <div className="text-xs text-muted-foreground">Timeline</div>
+                 </div>
+                 <div className="text-center p-4 rounded-xl bg-background/80 border border-border/20">
+                   <div className="text-2xl font-bold text-primary mb-1">25Y</div>
+                   <div className="text-xs text-muted-foreground">Long-term</div>
+                 </div>
               </div>
               <div className="flex flex-col items-center">
                 <Button variant="outline" size="lg" className="px-8" asChild>
@@ -742,38 +744,7 @@ const LandingPageV2 = () => {
       <FAQ />
 
       {/* Footer */}
-      <footer className="bg-background border-t border-border/10 py-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-6">
-              <img 
-                src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                alt="DivTrkr Logo" 
-                className="h-6 w-auto"
-              />
-            </div>
-            <div className="flex justify-center space-x-8 mb-4">
-              <Link to="/terms" className="text-muted-foreground hover:text-primary transition-smooth">
-                Terms of Service
-              </Link>
-              <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-smooth">
-                Privacy Policy
-              </Link>
-              <Link to="/learning-academy" className="text-muted-foreground hover:text-primary transition-smooth">
-                Learn Dividends
-              </Link>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              © 2024 Divtrkr. Building wealth through intelligent dividend investing.
-            </p>
-            <p className="text-sm text-muted-foreground/70 max-w-2xl mx-auto">
-              Disclaimer: Past performance does not guarantee future results. All investments 
-              carry risk of loss. Please invest responsibly and consider consulting with a 
-              financial advisor.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
