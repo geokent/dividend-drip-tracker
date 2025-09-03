@@ -162,10 +162,14 @@ Deno.serve(async (req) => {
 
         console.log(`Found ${holdingsData.holdings?.length || 0} holdings for account ${account.account_id}`)
 
-        // Process each holding
+        // Create a map to aggregate holdings by symbol across all accounts
+        const holdingsMap = new Map()
+
+        // Process each holding and aggregate by symbol
         for (const holding of holdingsData.holdings || []) {
-          // Skip if no ticker symbol
+          // Skip if no security or ticker symbol
           if (!holding.security?.ticker_symbol) {
+            console.log(`Skipping holding with no ticker symbol:`, holding)
             continue
           }
 
@@ -174,7 +178,31 @@ Deno.serve(async (req) => {
           const currentPrice = holding.institution_price || 0
           const quantity = holding.quantity || 0
           
-          console.log(`Processing holding: ${symbol} - ${quantity} shares at $${currentPrice}`)
+          console.log(`Processing holding: ${symbol} - ${quantity} shares at $${currentPrice} from security ${holding.security_id}`)
+          
+          // Aggregate quantities by symbol
+          if (holdingsMap.has(symbol)) {
+            const existing = holdingsMap.get(symbol)
+            existing.quantity += quantity
+            // Use the most recent price or highest price as current
+            if (currentPrice > 0) {
+              existing.currentPrice = currentPrice
+            }
+          } else {
+            holdingsMap.set(symbol, {
+              symbol,
+              companyName,
+              currentPrice,
+              quantity
+            })
+          }
+        }
+
+        console.log(`Aggregated ${holdingsMap.size} unique symbols from ${holdingsData.holdings?.length || 0} holdings`)
+
+        // Process aggregated holdings
+        for (const [symbol, aggregatedHolding] of holdingsMap) {
+          console.log(`Processing aggregated holding: ${symbol} - ${aggregatedHolding.quantity} total shares at $${aggregatedHolding.currentPrice}`)
           
           try {
             // Check if this stock is already tracked by the user
@@ -193,14 +221,14 @@ Deno.serve(async (req) => {
             const stockData = {
               user_id: user_id,
               symbol: symbol,
-              shares: quantity,
-              company_name: companyName,
-              current_price: currentPrice,
+              shares: aggregatedHolding.quantity,
+              company_name: aggregatedHolding.companyName,
+              current_price: aggregatedHolding.currentPrice,
               last_synced: new Date().toISOString(),
             }
 
             if (existingStock) {
-              // Update existing stock
+              // Update existing stock with aggregated quantity
               const { error: updateError } = await supabase
                 .from('user_stocks')
                 .update(stockData)
@@ -209,7 +237,7 @@ Deno.serve(async (req) => {
               if (updateError) {
                 console.error(`Error updating stock ${symbol}:`, updateError)
               } else {
-                console.log(`Updated stock ${symbol} with ${quantity} shares`)
+                console.log(`Updated stock ${symbol} with ${aggregatedHolding.quantity} total shares (was ${existingStock.shares})`)
                 totalNewDividends++
               }
             } else {
@@ -221,12 +249,12 @@ Deno.serve(async (req) => {
               if (insertError) {
                 console.error(`Error inserting stock ${symbol}:`, insertError)
               } else {
-                console.log(`Inserted new stock ${symbol} with ${quantity} shares`)
+                console.log(`Inserted new stock ${symbol} with ${aggregatedHolding.quantity} shares`)
                 totalNewDividends++
               }
             }
           } catch (error) {
-            console.error(`Error processing stock ${symbol}:`, error)
+            console.error(`Error processing aggregated stock ${symbol}:`, error)
             continue
           }
         }
