@@ -66,8 +66,15 @@ export const DividendPortfolioChart = ({
   };
 
   const calculateAnnualIncome = (stock: TrackedStock) => {
-    if (!stock.annualDividend || stock.shares === 0) return 0;
-    return stock.annualDividend * stock.shares;
+    if (stock.shares === 0) return 0;
+    // Use annualDividend if available, otherwise derive from yield and price
+    if (stock.annualDividend) {
+      return stock.annualDividend * stock.shares;
+    } else if (stock.dividendYield && stock.currentPrice) {
+      const annualDividend = (stock.dividendYield / 100) * stock.currentPrice;
+      return annualDividend * stock.shares;
+    }
+    return 0;
   };
 
   const totalPortfolioValue = trackedStocks.reduce((sum, stock) => sum + calculatePortfolioValue(stock), 0);

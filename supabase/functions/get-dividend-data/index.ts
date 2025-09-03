@@ -89,8 +89,8 @@ Deno.serve(async (req) => {
     
     if (overviewData.DividendPerShare && overviewData.DividendPerShare !== 'None' && overviewData.DividendPerShare !== '0') {
       dividendPerShare = parseFloat(overviewData.DividendPerShare);
-      // Most dividends are quarterly, so multiply by 4 for annual
-      annualDividend = dividendPerShare * 4;
+      // DividendPerShare from Alpha Vantage is already TTM (trailing twelve months)
+      annualDividend = dividendPerShare;
     }
     
     // Enhanced dividend extraction from time series data (paid tier feature)

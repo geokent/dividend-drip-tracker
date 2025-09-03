@@ -385,8 +385,14 @@ export const DividendDashboard = () => {
 
   const calculateStats = () => {
     const totalAnnualDividends = trackedStocks.reduce((sum, stock) => {
-      if (stock.annualDividend && stock.shares > 0) {
-        return sum + (stock.annualDividend * stock.shares);
+      if (stock.shares > 0) {
+        // Use annualDividend if available, otherwise derive from yield and price
+        if (stock.annualDividend) {
+          return sum + (stock.annualDividend * stock.shares);
+        } else if (stock.dividendYield && stock.currentPrice) {
+          const annualDividend = (stock.dividendYield / 100) * stock.currentPrice;
+          return sum + (annualDividend * stock.shares);
+        }
       }
       return sum;
     }, 0);
