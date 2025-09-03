@@ -79,7 +79,6 @@ Deno.serve(async (req) => {
           legal_name: profile?.display_name || 'User',
         },
         products: ['investments'],
-        required_if_supported_products: ['investments'],
         redirect_uri: null,
         webhook: null,
       }),
