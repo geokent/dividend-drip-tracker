@@ -319,6 +319,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      emergency_lockdown_financial_tables: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       encrypt_existing_tokens: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -334,6 +338,10 @@ export type Database = {
       get_decrypted_access_token: {
         Args: { p_account_id: string; p_user_id: string }
         Returns: string
+      }
+      is_emergency_lockdown: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       log_financial_access: {
         Args: {
