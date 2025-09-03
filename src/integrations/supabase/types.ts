@@ -358,6 +358,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_user_stock_access: {
+        Args: { stock_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
