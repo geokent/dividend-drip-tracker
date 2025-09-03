@@ -162,19 +162,26 @@ Deno.serve(async (req) => {
 
         console.log(`Found ${holdingsData.holdings?.length || 0} holdings for account ${account.account_id}`)
 
+        // Build a lookup of securities by security_id to resolve ticker symbols
+        const securitiesById = new Map<string, any>()
+        for (const sec of holdingsData.securities || []) {
+          if (sec?.security_id) securitiesById.set(sec.security_id, sec)
+        }
+
         // Create a map to aggregate holdings by symbol across all accounts
-        const holdingsMap = new Map()
+        const holdingsMap = new Map<string, { symbol: string; companyName: string; currentPrice: number; quantity: number }>()
 
         // Process each holding and aggregate by symbol
         for (const holding of holdingsData.holdings || []) {
-          // Skip if no security or ticker symbol
-          if (!holding.security?.ticker_symbol) {
-            console.log(`Skipping holding with no ticker symbol:`, holding)
+          const sec = securitiesById.get(holding.security_id)
+          const ticker = sec?.ticker_symbol || sec?.sedol || sec?.cusip || null
+          if (!ticker) {
+            console.log(`Skipping holding with no resolvable ticker symbol. security_id=${holding.security_id}`)
             continue
           }
 
-          const symbol = holding.security.ticker_symbol.toUpperCase()
-          const companyName = holding.security.name || symbol
+          const symbol = String(ticker).toUpperCase()
+          const companyName = sec?.name || symbol
           const currentPrice = holding.institution_price || 0
           const quantity = holding.quantity || 0
           
@@ -182,9 +189,8 @@ Deno.serve(async (req) => {
           
           // Aggregate quantities by symbol
           if (holdingsMap.has(symbol)) {
-            const existing = holdingsMap.get(symbol)
+            const existing = holdingsMap.get(symbol)!
             existing.quantity += quantity
-            // Use the most recent price or highest price as current
             if (currentPrice > 0) {
               existing.currentPrice = currentPrice
             }
