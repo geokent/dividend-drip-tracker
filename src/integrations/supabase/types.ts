@@ -335,6 +335,14 @@ export type Database = {
         Args: { p_account_id: string; p_user_id: string }
         Returns: string
       }
+      log_financial_access: {
+        Args: {
+          operation: string
+          table_name: string
+          user_id_accessed?: string
+        }
+        Returns: undefined
+      }
       log_plaid_access: {
         Args: {
           p_account_id?: string
@@ -344,6 +352,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      mask_financial_data: {
+        Args: { data: string }
+        Returns: string
       }
       store_encrypted_access_token: {
         Args: {
