@@ -20,7 +20,7 @@ import fire from "@/assets/fire.jpg";
 import sync from "@/assets/sync.jpg";
 import future from "@/assets/future.jpg";
 import whatdiv from "@/assets/whatdiv.jpg";
-import dashboardScreenshot from "@/assets/dashboard-screenshot-new.jpg";
+// Dashboard screenshot now uses public uploaded image
 
 const LandingPageV2 = () => {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -74,6 +74,15 @@ const LandingPageV2 = () => {
       const meta = document.createElement('meta');
       meta.setAttribute('property', 'og:description');
       meta.content = 'Transform your investment strategy with comprehensive dividend tracking, portfolio analysis, and passive income optimization.';
+      document.head.appendChild(meta);
+    }
+
+    // Add Open Graph image tag
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    if (!ogImage) {
+      const meta = document.createElement('meta');
+      meta.setAttribute('property', 'og:image');
+      meta.content = 'https://your-domain.com/lovable-uploads/0d6eeb20-2dec-42f3-bf81-d48762b0a348.png';
       document.head.appendChild(meta);
     }
   }, []);
@@ -363,7 +372,7 @@ const LandingPageV2 = () => {
           <div className="relative max-w-6xl mx-auto hover-scale">
             <div className="absolute inset-0 gradient-primary rounded-3xl blur-3xl opacity-20"></div>
             <img 
-              src={dashboardScreenshot} 
+              src="/lovable-uploads/0d6eeb20-2dec-42f3-bf81-d48762b0a348.png" 
               alt="Divtrkr Dashboard - Portfolio Overview and Analytics"
               className="relative rounded-3xl shadow-elegant w-full border border-border/20"
             />

@@ -30,9 +30,8 @@
   "categories": ["finance", "productivity"],
   "screenshots": [
     {
-      "src": "/src/assets/dashboard-screenshot.jpg",
-      "sizes": "1200x800",
-      "type": "image/jpeg",
+      "src": "/lovable-uploads/0d6eeb20-2dec-42f3-bf81-d48762b0a348.png",
+      "type": "image/png",
       "form_factor": "wide"
     }
   ]
