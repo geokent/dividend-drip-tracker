@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { StatsCard } from "./StatsCard";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Header } from "./Header";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 
 interface StockData {
   symbol: string;
@@ -32,8 +32,11 @@ interface TrackedStock extends StockData {
 export const DividendDashboard = () => {
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
+  const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Load tracked stocks from database on component mount
   useEffect(() => {
@@ -77,6 +80,21 @@ export const DividendDashboard = () => {
     };
 
     loadStocks();
+
+    // Auto-refresh prices every 5 minutes
+    if (user?.id) {
+      refreshStockPrices(); // Initial refresh
+      autoRefreshInterval.current = setInterval(() => {
+        refreshStockPrices();
+      }, 5 * 60 * 1000); // 5 minutes
+    }
+
+    // Cleanup interval on unmount
+    return () => {
+      if (autoRefreshInterval.current) {
+        clearInterval(autoRefreshInterval.current);
+      }
+    };
   }, [user?.id, toast]);
 
   const handleStockFound = async (stockData: StockData) => {
@@ -270,6 +288,73 @@ export const DividendDashboard = () => {
     });
   };
 
+  const refreshStockPrices = async () => {
+    if (!user?.id || trackedStocks.length === 0) return;
+    
+    setIsRefreshingPrices(true);
+    try {
+      console.log('Refreshing stock prices...');
+      const { data, error } = await supabase.functions.invoke('refresh-stock-prices', {
+        body: { user_id: user.id }
+      });
+
+      if (error) {
+        console.error('Price refresh error:', error);
+        toast({
+          title: "Refresh Failed",
+          description: "Failed to refresh stock prices. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Price refresh response:', data);
+      setLastPriceUpdate(new Date());
+      
+      // Reload stocks to get updated prices
+      const { data: stocks } = await supabase
+        .from('user_stocks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (stocks) {
+        const formattedStocks = stocks.map(stock => ({
+          symbol: stock.symbol,
+          companyName: stock.company_name || '',
+          currentPrice: stock.current_price,
+          dividendYield: stock.dividend_yield,
+          dividendPerShare: stock.dividend_per_share,
+          annualDividend: stock.annual_dividend,
+          exDividendDate: stock.ex_dividend_date,
+          dividendDate: stock.dividend_date,
+          sector: stock.sector,
+          industry: stock.industry,
+          marketCap: stock.market_cap?.toString() || null,
+          peRatio: stock.pe_ratio?.toString() || null,
+          shares: Number(stock.shares) || 0
+        }));
+        setTrackedStocks(formattedStocks);
+      }
+
+      if (data?.updated > 0) {
+        toast({
+          title: "Prices Updated!",
+          description: `Updated prices for ${data.updated} stocks`,
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing prices:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "An unexpected error occurred while refreshing prices.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshingPrices(false);
+    }
+  };
+
   const calculateStats = () => {
     const totalAnnualDividends = trackedStocks.reduce((sum, stock) => {
       if (stock.annualDividend && stock.shares > 0) {
@@ -355,6 +440,19 @@ export const DividendDashboard = () => {
                   ) : null}
                   {isSyncing ? 'Syncing...' : 'Sync Holdings'}
                 </Button>
+                <Button
+                  onClick={refreshStockPrices}
+                  disabled={isRefreshingPrices}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {isRefreshingPrices ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  {isRefreshingPrices ? 'Refreshing...' : 'Refresh Prices'}
+                </Button>
               </div>
             </div>
 
@@ -373,7 +471,14 @@ export const DividendDashboard = () => {
 
           {/* Portfolio Chart */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
+              {lastPriceUpdate && (
+                <p className="text-sm text-muted-foreground">
+                  Last updated: {lastPriceUpdate.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
             <DividendPortfolioChart
               trackedStocks={trackedStocks}
               onRemoveStock={handleRemoveStock}
