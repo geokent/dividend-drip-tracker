@@ -26,7 +26,7 @@ import {
   LogOut
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Brush } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -58,7 +58,6 @@ export const FutureIncomeProjects = () => {
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
-  const [yAxisScale, setYAxisScale] = useState<"linear" | "sqrt">("sqrt");
   
 
   // Load tracked stocks and connected accounts from Supabase database
@@ -204,15 +203,11 @@ export const FutureIncomeProjects = () => {
   
   // Filter out Year 0 for chart display (Years 1-15)
   const chartData = useMemo(() => {
-    const filteredData = projectionData.filter(data => data.year > 0);
-    return filteredData.map(data => ({
-      ...data,
-      sqrtMonthlyIncome: Math.sqrt(data.monthlyIncome)
-    }));
+    return projectionData.filter(data => data.year > 0);
   }, [projectionData]);
   
   // Create a key for forcing chart re-renders
-  const chartKey = `${monthlyInvestment}-${dividendGrowthRate}-${portfolioGrowthRate}-${additionalYearlyContribution}-${reinvestDividends}-${yAxisScale}`;
+  const chartKey = `${monthlyInvestment}-${dividendGrowthRate}-${portfolioGrowthRate}-${additionalYearlyContribution}-${reinvestDividends}`;
   
   const currentMetrics = calculateCurrentMetrics();
 
@@ -258,38 +253,44 @@ export const FutureIncomeProjects = () => {
 
         {/* Main Chart - Full Width */}
         <Card className="card-elevated gradient-card mb-8">
-          <CardHeader className="pb-4">
+          <CardHeader className={`pb-4 ${chartMode === "dividend" ? "hidden" : ""}`}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <CardTitle className="card-title flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  {chartMode === "dividend" ? "Monthly Dividend Income" : "Portfolio Growth Projection"}
+                  Portfolio Growth Projection
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
-                  {chartMode === "dividend" 
-                    ? "Monthly dividend income projections over 15 years" 
-                    : "Portfolio value and annual dividend income over 15 years"}
+                  Portfolio value and annual dividend income over 15 years
                 </CardDescription>
               </div>
-              <div className="flex flex-col gap-2">
-                <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
-                    <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-                {chartMode === "dividend" && (
-                  <Tabs value={yAxisScale} onValueChange={(value) => setYAxisScale(value as "linear" | "sqrt")}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="linear" className="text-xs">Linear Scale</TabsTrigger>
-                      <TabsTrigger value="sqrt" className="text-xs">√ Scale</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                )}
-              </div>
+              <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
+                  <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </CardHeader>
-          <CardContent className="pb-4">
+          {chartMode === "dividend" && (
+            <div className="flex justify-between items-center p-4 pb-2">
+              <div></div>
+              <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
+                  <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
+          <CardContent className="pb-4 relative">
+            {chartMode === "dividend" && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <h3 className="text-2xl font-bold text-primary bg-background/80 px-4 py-2 rounded-lg backdrop-blur-sm">
+                  Monthly Dividend Income
+                </h3>
+              </div>
+            )}
             <div className="h-[280px] md:h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
                  {chartMode === "dividend" ? (
@@ -315,8 +316,7 @@ export const FutureIncomeProjects = () => {
           stroke="hsl(var(--primary))"
           tickLine={{ stroke: 'hsl(var(--primary))' }}
           axisLine={{ stroke: 'hsl(var(--primary))' }}
-          scale={yAxisScale}
-          tickFormatter={(value) => yAxisScale === 'sqrt' ? `$${Math.pow(value, 2).toLocaleString()}` : `$${value.toLocaleString()}`}
+          tickFormatter={(value) => `$${value.toLocaleString()}`}
         />
                      <Tooltip 
                        contentStyle={{
@@ -330,20 +330,12 @@ export const FutureIncomeProjects = () => {
                        labelFormatter={(label) => `Year ${label}`}
                        labelStyle={{ fontSize: 12, color: 'hsl(var(--primary))' }}
                      />
-                     <Bar 
-                       dataKey={yAxisScale === 'sqrt' ? 'sqrtMonthlyIncome' : 'monthlyIncome'} 
-                       fill="hsl(var(--primary))"
-                       radius={[4, 4, 0, 0]}
-                       maxBarSize={12}
-                       minPointSize={4}
-                     />
-                     <Brush 
-                       dataKey="year" 
-                       height={30} 
-                       stroke="hsl(var(--primary))" 
-                       startIndex={0}
-                       endIndex={9}
-                     />
+                    <Bar 
+                      dataKey="monthlyIncome" 
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={12}
+                    />
                   </BarChart>
                 ) : (
                    <LineChart 
