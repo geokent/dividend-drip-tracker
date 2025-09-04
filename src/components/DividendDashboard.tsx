@@ -669,7 +669,7 @@ export const DividendDashboard = () => {
         variant="outline"
       >
         <Plus className="h-4 w-4 mr-2" />
-        Add Stock
+        Manually Add Stock
       </Button>
     </div>
   );
@@ -686,6 +686,7 @@ export const DividendDashboard = () => {
       <PortfolioTopStrip 
         totalValue={totalPortfolioValue}
         connectedAccounts={connectedAccounts}
+        trackedStocks={trackedStocks}
       />
       
       {/* First-time user help banner */}
