@@ -3,7 +3,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Progress } from "./ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Trash2, TrendingUp, TrendingDown, DollarSign, Calendar, Building, Lock } from "lucide-react";
 
 interface StockData {
@@ -99,13 +99,12 @@ export const DividendPortfolioChart = ({
   }
 
   return (
-    <TooltipProvider>
-      <div className="space-y-6">
-        {/* Stock Holdings Chart - moved to top */}
-        <div className="grid gap-4">
-          {trackedStocks
-            .sort((a, b) => calculatePortfolioValue(b) - calculatePortfolioValue(a))
-            .map((stock) => {
+    <div className="space-y-6">
+      {/* Stock Holdings Chart - moved to top */}
+      <div className="grid gap-4">
+        {trackedStocks
+          .sort((a, b) => calculatePortfolioValue(b) - calculatePortfolioValue(a))
+          .map((stock) => {
             const portfolioValue = calculatePortfolioValue(stock);
             const annualIncome = calculateAnnualIncome(stock);
             const monthlyIncome = annualIncome / 12;
@@ -119,21 +118,17 @@ export const DividendPortfolioChart = ({
                   {/* Header Row */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="cursor-help">
-                            <h3 className="font-semibold text-lg text-foreground leading-tight">
-                              {stock.companyName}
-                            </h3>
-                            <p className="text-xl font-bold text-primary">
-                              {formatCurrency(stock.currentPrice)}
-                            </p>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="font-mono font-bold">{stock.symbol}</p>
-                        </TooltipContent>
-                      </Tooltip>
+                      <span className="font-mono text-sm font-bold text-foreground uppercase tracking-wide min-w-[3rem]">
+                        {stock.symbol}
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
+                          {stock.companyName}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {formatCurrency(stock.currentPrice)}
+                        </p>
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
@@ -217,23 +212,19 @@ export const DividendPortfolioChart = ({
 
                 {/* Desktop Layout */}
                 <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center">
-                  {/* Stock identification - 3 columns */}
-                  <div className="col-span-3">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="cursor-help">
-                          <h3 className="font-semibold text-lg text-foreground leading-tight">
-                            {stock.companyName}
-                          </h3>
-                          <p className="text-xl font-bold text-primary">
-                            {formatCurrency(stock.currentPrice)}
-                          </p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="font-mono font-bold">{stock.symbol}</p>
-                      </TooltipContent>
-                    </Tooltip>
+                  {/* Stock identification - 2 columns */}
+                  <div className="col-span-2 flex items-center gap-3">
+                    <span className="font-mono text-sm font-bold text-foreground uppercase tracking-wide min-w-[3rem]">
+                      {stock.symbol}
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
+                        {stock.companyName}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        {formatCurrency(stock.currentPrice)}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Shares - 1 column */}
@@ -282,8 +273,8 @@ export const DividendPortfolioChart = ({
                     <p className="text-sm font-bold text-accent">{formatCurrency(monthlyIncome)}</p>
                   </div>
 
-                  {/* Annual Income - 1 column */}
-                  <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
+                  {/* Annual Income - 2 columns */}
+                  <div className="col-span-2 text-center px-2 py-1 bg-accent/10 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
                     <p className="text-sm font-bold text-accent">{formatCurrency(annualIncome)}</p>
                   </div>
@@ -316,9 +307,9 @@ export const DividendPortfolioChart = ({
                 </div>
               </Card>
             );
-            })}
-        </div>
+          })}
       </div>
-    </TooltipProvider>
+
+    </div>
   );
 };
