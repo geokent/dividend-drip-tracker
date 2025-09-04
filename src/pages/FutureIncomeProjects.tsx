@@ -603,33 +603,23 @@ export const FutureIncomeProjects = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Call to Action */}
-        <Card className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border-primary/20 shadow-elegant">
-          <CardContent className="text-center py-12">
-            <div className="max-w-2xl mx-auto space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-foreground">Ready to Build Your Dividend Portfolio?</h2>
-                <p className="text-muted-foreground">
-                  Start tracking your investments and get personalized projections based on real dividend data.
-                </p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Button asChild size="lg" className="min-w-[200px]">
-                  <Link to="/" className="flex items-center gap-2">
-                    <Home className="h-4 w-4" />
-                    Manage Portfolio
-                  </Link>
-                </Button>
-                
-                <Button variant="outline" size="lg" onClick={signOut} className="min-w-[150px]">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Next Steps Strip */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center p-4 bg-card/50 border border-border rounded-lg">
+          <div className="text-sm font-medium text-muted-foreground">Next steps:</div>
+          <div className="flex gap-3">
+            <Button asChild className="h-8 px-4 text-sm">
+              <Link to="/" className="flex items-center gap-2">
+                <Home className="h-3 w-3" />
+                {currentMetrics.uniqueStocks === 0 ? "Add your first stock" : "Go to Dashboard"}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-8 px-4 text-sm">
+              <Link to="/learn-dividend-snowball">
+                Learn Dividend Snowball
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Footer />
