@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Progress } from "./ui/progress";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Trash2, TrendingUp, TrendingDown, DollarSign, Calendar, Building, Lock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { Trash2, TrendingUp } from "lucide-react";
 
 interface StockData {
   symbol: string;
@@ -60,6 +59,11 @@ export const DividendPortfolioChart = ({
     return formatCurrency(num);
   };
 
+  const abbreviateCompanyName = (name: string, maxLength: number = 25) => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength - 3) + "...";
+  };
+
   const calculatePortfolioValue = (stock: TrackedStock) => {
     if (!stock.currentPrice || stock.shares === 0) return 0;
     return stock.currentPrice * stock.shares;
@@ -99,9 +103,8 @@ export const DividendPortfolioChart = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Stock Holdings Chart - moved to top */}
-      <div className="grid gap-4">
+    <TooltipProvider>
+      <div className="space-y-3">
         {trackedStocks
           .sort((a, b) => calculatePortfolioValue(b) - calculatePortfolioValue(a))
           .map((stock) => {
@@ -112,192 +115,210 @@ export const DividendPortfolioChart = ({
             const valueProgress = maxPortfolioValue > 0 ? (portfolioValue / maxPortfolioValue) * 100 : 0;
 
             return (
-              <Card key={stock.symbol} className="p-3 hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20">
+              <Card key={stock.symbol} className="p-4 hover:shadow-md transition-all duration-200 border border-border/50">
                 {/* Mobile Layout */}
                 <div className="block lg:hidden space-y-3">
                   {/* Header Row */}
-                   <div className="flex items-center justify-between">
-                     <div className="flex flex-col space-y-1">
-                       <span className="font-semibold tracking-tight text-base text-foreground">{stock.symbol}</span>
-                       <span className="text-xs text-muted-foreground">{stock.companyName}</span>
-                     </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-lg text-foreground">{stock.symbol}</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm text-muted-foreground cursor-help">
+                            {abbreviateCompanyName(stock.companyName, 30)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{stock.companyName}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                     {/* Shares */}
+                     <div className="text-center">
+                       <p className="text-xs text-primary font-medium mb-1">Shares</p>
+                      {editingShares === stock.symbol ? (
+                        <Input
+                          type="number"
+                          defaultValue={stock.shares}
+                          className="h-8 text-sm text-center"
+                          onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSharesChange(stock.symbol, e.currentTarget.value);
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <p 
+                          className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => setEditingShares(stock.symbol)}
+                        >
+                          {stock.shares.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+
+                     {/* Price */}
+                     <div className="text-center">
+                       <p className="text-xs text-primary font-medium mb-1">Price</p>
+                      <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
+                    </div>
+
+                     {/* Value */}
+                     <div className="text-center">
+                       <p className="text-xs text-primary font-medium mb-1">Value</p>
+                      <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
+                    </div>
+
+                     {/* Yield */}
+                     <div className="text-center">
+                       <p className="text-xs text-primary font-medium mb-1">Yield</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {formatPercentage(stock.dividendYield)}
+                      </p>
+                    </div>
+
+                     {/* Monthly Income */}
+                     <div className="text-center">
+                       <p className="text-xs text-primary font-medium mb-1">Monthly</p>
+                      <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
+                    </div>
+
+                     {/* Annual Income */}
+                     <div className="text-center">
+                       <p className="text-xs text-primary font-medium mb-1">Annual</p>
+                      <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
+                    </div>
+                 </div>
+
+                  {/* Bottom Row: Dates and Actions */}
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                    <div className="text-left">
+                      <p className="text-xs text-primary font-medium mb-1">Ex-Div / Last Div</p>
+                      <p className="text-xs text-muted-foreground">
+                        {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        }) : "N/A"} / {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        }) : "N/A"}
+                      </p>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onRemoveStock(stock.symbol)}
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
-                  </div>
-
-                   {/* Metrics Grid */}
-                   <div className="grid grid-cols-2 gap-2">
-                      {/* Shares */}
-                      <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Shares</p>
-                       {editingShares === stock.symbol ? (
-                         <Input
-                           type="number"
-                           defaultValue={stock.shares}
-                           className="h-6 w-full text-xs text-center font-medium"
-                           onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
-                           onKeyDown={(e) => {
-                             if (e.key === 'Enter') {
-                               handleSharesChange(stock.symbol, e.currentTarget.value);
-                             }
-                           }}
-                           autoFocus
-                         />
-                       ) : (
-                         <p 
-                           className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors"
-                           onClick={() => setEditingShares(stock.symbol)}
-                         >
-                           {stock.shares.toLocaleString()}
-                         </p>
-                       )}
-                     </div>
-
-                      {/* Price */}
-                      <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Price</p>
-                       <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
-                     </div>
-
-                      {/* Value */}
-                      <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Value</p>
-                       <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
-                     </div>
-
-                      {/* Yield */}
-                      <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
-                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Yield</p>
-                       <p className="text-sm font-semibold text-foreground">
-                         {formatPercentage(stock.dividendYield)}
-                       </p>
-                     </div>
-
-                      {/* Monthly Income */}
-                      <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
-                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Monthly Income</p>
-                       <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
-                     </div>
-
-                      {/* Annual Income */}
-                      <div className="text-center px-2 py-1 bg-accent/10 rounded-lg col-span-2">
-                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Annual Income</p>
-                       <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
-                     </div>
-                  </div>
-
-                   {/* Dividend Dates */}
-                   <div className="text-center px-2 py-1 bg-secondary/20 rounded-lg">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
-                    <p className="text-xs font-medium">
-                      {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric'
-                      }) : "N/A"} / {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric'
-                      }) : "N/A"}
-                    </p>
                   </div>
                 </div>
 
                 {/* Desktop Layout */}
-                <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center">
-                   {/* Stock identification - 2 columns */}
-                   <div className="col-span-2 flex items-center gap-3">
-                     <div className="flex flex-col space-y-1">
-                       <span className="font-semibold tracking-tight text-base text-foreground">{stock.symbol}</span>
-                       <span className="text-xs text-muted-foreground">{stock.companyName}</span>
-                     </div>
-                   </div>
+                <div className="hidden lg:grid lg:grid-cols-12 gap-4 items-center">
+                  {/* Stock identification - 2 columns */}
+                  <div className="col-span-2 flex items-center">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-lg text-foreground">{stock.symbol}</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm text-muted-foreground cursor-help">
+                            {abbreviateCompanyName(stock.companyName, 20)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{stock.companyName}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
 
-                   {/* Shares - 1 column */}
-                   <div className="col-span-1 text-center">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Shares</p>
-                    {editingShares === stock.symbol ? (
-                      <Input
-                        type="number"
-                        defaultValue={stock.shares}
-                        className="h-6 w-full text-xs text-center font-medium"
-                        onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            handleSharesChange(stock.symbol, e.currentTarget.value);
-                          }
-                        }}
-                        autoFocus
-                      />
-                    ) : (
-                      <p 
-                        className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors"
-                        onClick={() => setEditingShares(stock.symbol)}
-                      >
-                        {stock.shares.toLocaleString()}
+                  {/* Shares - 1 column */}
+                  <div className="col-span-1 text-center">
+                    <p className="text-xs text-primary font-medium mb-1">Shares</p>
+                   {editingShares === stock.symbol ? (
+                     <Input
+                       type="number"
+                       defaultValue={stock.shares}
+                       className="h-8 text-sm text-center"
+                       onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
+                       onKeyDown={(e) => {
+                         if (e.key === 'Enter') {
+                           handleSharesChange(stock.symbol, e.currentTarget.value);
+                         }
+                       }}
+                       autoFocus
+                     />
+                   ) : (
+                     <p 
+                       className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors"
+                       onClick={() => setEditingShares(stock.symbol)}
+                     >
+                       {stock.shares.toLocaleString()}
+                     </p>
+                   )}
+                 </div>
+
+                  {/* Price - 1 column */}
+                  <div className="col-span-1 text-center">
+                    <p className="text-xs text-primary font-medium mb-1">Price</p>
+                   <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
+                 </div>
+
+                  {/* Value - 1 column */}
+                  <div className="col-span-1 text-center">
+                    <p className="text-xs text-primary font-medium mb-1">Value</p>
+                   <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
+                 </div>
+
+                  {/* Yield - 1 column */}
+                  <div className="col-span-1 text-center">
+                    <p className="text-xs text-primary font-medium mb-1">Yield</p>
+                   <p className="text-sm font-semibold text-foreground">
+                     {formatPercentage(stock.dividendYield)}
+                   </p>
+                 </div>
+
+                  {/* Monthly Income - 1 column */}
+                  <div className="col-span-1 text-center">
+                    <p className="text-xs text-primary font-medium mb-1">Monthly</p>
+                   <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
+                 </div>
+
+                  {/* Annual Income - 1 column */}
+                  <div className="col-span-1 text-center">
+                    <p className="text-xs text-primary font-medium mb-1">Annual</p>
+                   <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
+                 </div>
+
+                  {/* Ex-Dividend Date with Action - 3 columns */}
+                  <div className="col-span-3 flex items-center justify-between">
+                    <div className="text-left">
+                      <p className="text-xs text-primary font-medium mb-1">Ex-Div / Last Div</p>
+                      <p className="text-xs text-muted-foreground">
+                        {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        }) : "N/A"} / {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        }) : "N/A"}
                       </p>
-                    )}
-                  </div>
-
-                   {/* Price - 1 column */}
-                   <div className="col-span-1 text-center px-2 py-1 bg-muted/30 rounded-lg">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Price</p>
-                    <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
-                  </div>
-
-                   {/* Value - 2 columns */}
-                   <div className="col-span-2 text-center px-2 py-1 bg-muted/30 rounded-lg">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Value</p>
-                    <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
-                  </div>
-
-                   {/* Yield - 1 column */}
-                   <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Yield</p>
-                    <p className="text-sm font-semibold text-foreground">
-                      {formatPercentage(stock.dividendYield)}
-                    </p>
-                  </div>
-
-                   {/* Monthly Income - 1 column */}
-                   <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Monthly</p>
-                    <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
-                  </div>
-
-                   {/* Annual Income - 2 columns */}
-                   <div className="col-span-2 text-center px-2 py-1 bg-accent/10 rounded-lg">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Annual Income</p>
-                    <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
-                  </div>
-
-                   {/* Ex-Dividend Date - 2 columns */}
-                   <div className="col-span-2 text-center px-2 py-1 bg-secondary/20 rounded-lg">
-                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
-                    <p className="text-xs font-medium">
-                      {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric'
-                      }) : "N/A"} / {stock.dividendDate ? new Date(stock.dividendDate).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric'
-                      }) : "N/A"}
-                    </p>
-                  </div>
-                  
-                  {/* Actions - 1 column */}
-                  <div className="col-span-1 flex justify-end pr-1">
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onRemoveStock(stock.symbol)}
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
@@ -305,7 +326,6 @@ export const DividendPortfolioChart = ({
             );
           })}
       </div>
-
-    </div>
+    </TooltipProvider>
   );
 };
