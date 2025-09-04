@@ -1,15 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { StatsCard } from "./StatsCard";
-import { StockSymbolForm } from "./StockSymbolForm";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
-import { PlaidLinkButton } from "./PlaidLinkButton";
+import { CompactToolbar } from "./CompactToolbar";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw } from "lucide-react";
 
 interface StockData {
   symbol: string;
@@ -637,188 +633,33 @@ export const DividendDashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        
-        {/* Stats Grid */}
-        <section className="py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatsCard
-              title="Annual Dividends"
-              value={`$${stats.totalAnnualDividends.toFixed(2)}`}
-              subtitle="Projected yearly income"
-              trend="up"
-            />
-            <StatsCard
-              title="Quarterly Dividends"
-              value={`$${stats.totalQuarterlyDividends.toFixed(2)}`}
-              subtitle="Projected quarterly income"
-              trend="up"
-            />
-            <StatsCard
-              title="Monthly Estimate"
-              value={`$${stats.totalMonthlyDividends.toFixed(2)}`}
-              subtitle="Average monthly income"
-              trend="neutral"
-            />
-            <StatsCard
-              title="Portfolio"
-              value={stats.uniqueStocks.toString()}
-              subtitle="Tracked dividend stocks"
-              trend="neutral"
-            />
-          </div>
-        </section>
-
-        {/* Main Content - Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Portfolio Section */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Portfolio Actions Toolbar */}
-            <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-              <Button
-                onClick={handleSyncInvestments}
-                disabled={isSyncing}
-                size="sm"
-                variant="outline"
-              >
-                {isSyncing ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
-                ) : null}
-                {isSyncing ? 'Syncing...' : 'Sync Holdings'}
-              </Button>
-              <Button
-                onClick={refreshStockPrices}
-                disabled={isRefreshingPrices}
-                variant="outline"
-                size="sm"
-              >
-                {isRefreshingPrices ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
-                ) : (
-                  <RefreshCw className="h-3 w-3 mr-2" />
-                )}
-                {isRefreshingPrices ? 'Refreshing...' : 'Refresh Prices'}
-              </Button>
-            </div>
-
-            {/* Portfolio Chart */}
-            <div className="space-y-4">
-              <div className="text-center lg:text-left">
-                <h2 className="text-xl font-semibold">Your Dividend Portfolio</h2>
-                {lastSyncedAt && (
-                  <p className="text-sm text-muted-foreground">
-                    Last synced: {lastSyncedAt.toLocaleString()}
-                  </p>
-                )}
-              </div>
-              <DividendPortfolioChart
-                trackedStocks={trackedStocks}
-                onRemoveStock={handleRemoveStock}
-                onUpdateShares={handleUpdateShares}
-              />
-            </div>
-          </div>
-
-          {/* Sidebar with Utilities */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Connected Accounts Status */}
-            <div className="bg-card rounded-lg p-4 border">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold">Connected Accounts</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={async () => {
-                    if (user?.id) {
-                      const { data: accounts } = await supabase
-                        .from('plaid_accounts')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .eq('is_active', true);
-                      
-                      if (accounts) {
-                        console.log('Refreshed connected accounts count:', accounts.length);
-                        setConnectedAccounts(accounts.length);
-                      }
-                    }
-                  }}
-                  className="h-6 w-6 p-0"
-                >
-                  <RefreshCw className="h-3 w-3" />
-                </Button>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-primary mb-1">{connectedAccounts}</div>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {connectedAccounts === 0 ? 'No accounts' : 
-                   connectedAccounts === 1 ? 'Account connected' : 
-                   'Accounts connected'}
-                </p>
-                
-                {/* Connected Institutions List */}
-                {connectedInstitutions.length > 0 && (
-                  <div className="mb-3 space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Institutions:</p>
-                    {connectedInstitutions.map((institution) => (
-                      <div key={institution.item_id} className="flex items-center justify-between p-1.5 bg-muted/50 rounded-md">
-                        <div className="text-left">
-                          <p className="text-xs font-medium truncate">{institution.institution_name}</p>
-                          <p className="text-xs text-muted-foreground">{institution.account_count} acc.</p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDisconnectInstitution(institution.item_id, institution.institution_name)}
-                          className="text-destructive hover:text-destructive h-6 w-12 text-xs p-0"
-                        >
-                          Disc.
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {user?.id && (
-                  <PlaidLinkButton 
-                    userId={user.id} 
-                    onSuccess={handlePlaidSuccess}
-                    disabled={connectedInstitutions.length >= 1}
-                    limitMessage={connectedInstitutions.length >= 1 ? "Free tier allows only 1 institution" : undefined}
-                    size="sm"
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Manual Stock Entry */}
-            <div className="bg-card rounded-lg p-4 border">
-              <h3 className="text-sm font-semibold mb-3 text-center">Add Stocks</h3>
-              <p className="text-xs text-muted-foreground mb-3 text-center">
-                Search and add dividend stocks manually.
-              </p>
-              <StockSymbolForm onStockFound={handleStockFound} />
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-card rounded-lg p-4 border">
-              <h3 className="text-sm font-semibold mb-3">Recent Activity</h3>
-              <div className="space-y-1">
-                {recentActivity.length > 0 ? (
-                  recentActivity.slice(0, 3).map((activity, index) => (
-                    <div key={index} className="text-xs">
-                      <div className="font-medium truncate">{activity.action}</div>
-                      <div className="text-muted-foreground">
-                        {new Date(activity.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-muted-foreground text-xs">No recent activity</p>
-                )}
-              </div>
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Portfolio Header and Compact Toolbar */}
+        <div className="space-y-1 mb-6">
+          <h1 className="text-2xl font-bold">Your Dividend Portfolio</h1>
+          <CompactToolbar
+            connectedAccounts={connectedAccounts}
+            connectedInstitutions={connectedInstitutions}
+            recentActivity={recentActivity}
+            stats={stats}
+            userId={user?.id}
+            isSyncing={isSyncing}
+            isRefreshingPrices={isRefreshingPrices}
+            lastSyncedAt={lastSyncedAt}
+            onSync={handleSyncInvestments}
+            onRefresh={refreshStockPrices}
+            onPlaidSuccess={handlePlaidSuccess}
+            onStockFound={handleStockFound}
+            onDisconnectInstitution={handleDisconnectInstitution}
+          />
         </div>
+
+        {/* Full-Width Portfolio Chart */}
+        <DividendPortfolioChart
+          trackedStocks={trackedStocks}
+          onRemoveStock={handleRemoveStock}
+          onUpdateShares={handleUpdateShares}
+        />
       </div>
 
       <Footer />
