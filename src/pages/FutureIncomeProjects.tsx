@@ -419,7 +419,7 @@ export const FutureIncomeProjects = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <div className="container section-y space-y-8">
         {/* Page Title */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
@@ -507,7 +507,7 @@ export const FutureIncomeProjects = () => {
                     {chartMode === "dividend" ? (
                        <BarChart 
                          data={projectionData.filter((_, index) => index % 2 === 0)}
-                         margin={{ top: 8, right: 16, left: 28, bottom: 24 }}
+          margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
                        >
                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                          <XAxis 
@@ -515,13 +515,13 @@ export const FutureIncomeProjects = () => {
                            stroke="hsl(var(--muted-foreground))"
                            label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
                          />
-                         <YAxis 
-                           width={40}
-                           tickMargin={4}
-                           tick={{ fontSize: 12 }}
-                           stroke="hsl(var(--muted-foreground))"
-                           tickFormatter={(value) => `$${value.toLocaleString()}`}
-                         />
+          <YAxis 
+            width={56}
+            tickMargin={8}
+            tick={{ fontSize: 12 }}
+            stroke="hsl(var(--muted-foreground))"
+            tickFormatter={(value) => `$${value.toLocaleString()}`}
+          />
                         <Tooltip 
                           contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
@@ -541,7 +541,7 @@ export const FutureIncomeProjects = () => {
                     ) : (
                        <LineChart 
                          data={projectionData}
-                         margin={{ top: 8, right: 16, left: 28, bottom: 24 }}
+                         margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
                        >
                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                          <XAxis 
@@ -549,13 +549,13 @@ export const FutureIncomeProjects = () => {
                            stroke="hsl(var(--muted-foreground))"
                            label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
                          />
-                         <YAxis 
-                           width={40}
-                           tickMargin={4}
-                           tick={{ fontSize: 12 }}
-                           stroke="hsl(var(--muted-foreground))"
-                           tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                         />
+          <YAxis 
+            width={56}
+            tickMargin={8}
+            tick={{ fontSize: 12 }}
+            stroke="hsl(var(--muted-foreground))"
+            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+          />
                         <Tooltip 
                           contentStyle={{
                             backgroundColor: 'hsl(var(--card))',

@@ -201,7 +201,7 @@ const LandingPageV2 = () => {
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 gradient-primary opacity-5"></div>
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
             <div className="text-center lg:text-left animate-fade-in">
@@ -370,7 +370,7 @@ const LandingPageV2 = () => {
 
       {/* Testimonials Section */}
       <section className="py-20 bg-gradient-to-b from-background to-accent/5">
-        <div className="container mx-auto px-4">
+        <div className="container">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
               Trusted by Smart
@@ -426,7 +426,7 @@ const LandingPageV2 = () => {
 
       {/* Features Grid */}
       <section className="py-20">
-        <div className="container mx-auto px-4">
+        <div className="container">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
               Everything You Need to

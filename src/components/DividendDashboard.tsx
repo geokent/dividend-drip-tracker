@@ -648,10 +648,10 @@ export const DividendDashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="container section-y">
         {/* Portfolio Header and Compact Toolbar */}
-        <div className="space-y-4 mb-6 text-center">
-          <h1 className="text-2xl font-bold">Your Dividend Portfolio</h1>
+        <div className="space-y-6 mb-8 text-center">
+          <h1 className="text-3xl lg:text-4xl font-bold">Your Dividend Portfolio</h1>
           
           {/* First-time user help banner */}
           {connectedAccounts === 0 && trackedStocks.length === 0 && (

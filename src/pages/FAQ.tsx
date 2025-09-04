@@ -5,7 +5,9 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <FAQ />
+      <main className="container section-y">
+        <FAQ />
+      </main>
     </div>
   );
 }
