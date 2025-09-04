@@ -468,7 +468,251 @@ export const FutureIncomeProjects = () => {
           onDisconnectInstitution={handleDisconnectInstitution}
         />
 
-        {/* How These Numbers Are Calculated - Collapsible Section */}
+        {/* Charts Section - Now prioritized */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Portfolio Growth Chart */}
+          <Card className="shadow-elegant">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Portfolio Growth Projection
+              </CardTitle>
+              <CardDescription>
+                Portfolio value and annual dividend income over 15 years
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={projectionData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="year" 
+                      stroke="hsl(var(--muted-foreground))"
+                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number, name: string) => [
+                        `$${value.toLocaleString()}`, 
+                        name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
+                      ]}
+                      labelFormatter={(label) => `Year ${label}`}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="portfolioValue" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={3}
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="annualDividends" 
+                      stroke="hsl(var(--secondary))" 
+                      strokeWidth={3}
+                      dot={{ fill: 'hsl(var(--secondary))', strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Monthly Dividend Income Chart */}
+          <Card className="shadow-elegant">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Monthly Dividend Income
+              </CardTitle>
+              <CardDescription>
+                Projected monthly dividend income over time
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={projectionData.filter((_, index) => index % 2 === 0)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="year" 
+                      stroke="hsl(var(--muted-foreground))"
+                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      tickFormatter={(value) => `$${value.toLocaleString()}`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
+                      labelFormatter={(label) => `Year ${label}`}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="monthlyIncome" 
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Compact Parameters and Milestones Grid */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          {/* Key Milestones - Compact */}
+          <Card className="shadow-card">
+            <CardHeader className="py-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Target className="h-4 w-4 text-primary" />
+                Key Milestones
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Important achievements in your dividend journey.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="py-4 space-y-3">
+              {/* 1 Year */}
+              <div className="bg-card border rounded-lg p-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium text-muted-foreground">1 Year</span>
+                  <Badge variant="outline" className="text-xs">
+                    ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/month
+                  </Badge>
+                </div>
+                <div className="text-xl font-bold text-primary">
+                  ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  ${projectionData[1]?.annualDividends?.toLocaleString() || '0'} annual dividends
+                </div>
+              </div>
+
+              {/* 10 Year */}
+              <div className="bg-card border rounded-lg p-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium text-muted-foreground">10 Years</span>
+                  <Badge variant="outline" className="text-xs">
+                    ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/month
+                  </Badge>
+                </div>
+                <div className="text-xl font-bold text-primary">
+                  ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  ${projectionData[10]?.annualDividends?.toLocaleString() || '0'} annual dividends
+                </div>
+              </div>
+
+              {/* 15 Year */}
+              <div className="bg-card border rounded-lg p-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium text-muted-foreground">15 Years</span>
+                  <Badge variant="outline" className="text-xs">
+                    ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/month
+                  </Badge>
+                </div>
+                <div className="text-xl font-bold text-primary">
+                  ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  ${projectionData[15]?.annualDividends?.toLocaleString() || '0'} annual dividends
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Projection Parameters - Compact */}
+          <Card className="shadow-card">
+            <CardHeader className="py-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Calculator className="h-4 w-4 text-primary" />
+                Projection Parameters
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Adjust these values to see different scenarios.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="py-4 space-y-4">
+              {/* Monthly Investment */}
+              <div className="space-y-2">
+                <Label htmlFor="monthly-investment" className="text-sm font-medium">
+                  Monthly Investment: ${monthlyInvestment.toLocaleString()}
+                </Label>
+                <Slider
+                  id="monthly-investment"
+                  min={0}
+                  max={5000}
+                  step={100}
+                  value={[monthlyInvestment]}
+                  onValueChange={([value]) => setMonthlyInvestment(value)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Dividend Growth Rate */}
+              <div className="space-y-2">
+                <Label htmlFor="dividend-growth" className="text-sm font-medium">
+                  Dividend Growth Rate: {dividendGrowthRate}%
+                </Label>
+                <Slider
+                  id="dividend-growth"
+                  min={0}
+                  max={15}
+                  step={0.5}
+                  value={[dividendGrowthRate]}
+                  onValueChange={([value]) => setDividendGrowthRate(value)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Additional Yearly Contribution */}
+              <div className="space-y-2">
+                <Label htmlFor="yearly-contribution" className="text-sm font-medium">
+                  Additional Yearly: ${additionalYearlyContribution.toLocaleString()}
+                </Label>
+                <Slider
+                  id="yearly-contribution"
+                  min={0}
+                  max={50000}
+                  step={1000}
+                  value={[additionalYearlyContribution]}
+                  onValueChange={([value]) => setAdditionalYearlyContribution(value)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Reinvest Dividends */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="reinvest-dividends"
+                  checked={reinvestDividends}
+                  onCheckedChange={(checked) => setReinvestDividends(checked as boolean)}
+                />
+                <Label htmlFor="reinvest-dividends" className="text-sm font-medium">
+                  Reinvest Dividends
+                </Label>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* How These Numbers Are Calculated - Now below charts */}
         <Collapsible open={isCalculationOpen} onOpenChange={setIsCalculationOpen} className="mb-8">
           <Card className="shadow-elegant bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/10">
             <CollapsibleTrigger asChild>
@@ -492,418 +736,259 @@ export const FutureIncomeProjects = () => {
             
             <CollapsibleContent>
               <CardContent className="space-y-6 pt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Left Column - Core Calculations */}
+                <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h4 className="font-semibold text-foreground flex items-center gap-2">
                       <Calculator className="h-4 w-4 text-primary" />
-                      Core Calculation Method
+                      Portfolio Growth Formula
                     </h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="bg-background/50 p-4 rounded-lg border border-border/50">
-                        <div className="font-medium text-foreground mb-2">Year 0 (Current)</div>
-                        <ul className="space-y-1 text-muted-foreground">
-                          <li>• Portfolio Value = Current stock positions</li>
-                          <li>• Annual Dividends = Sum of (Shares × Annual Dividend per Share)</li>
-                          <li>• Portfolio Yield = Annual Dividends ÷ Portfolio Value</li>
-                        </ul>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <div className="bg-muted/50 p-3 rounded-lg">
+                        <strong>Year N Portfolio Value =</strong><br />
+                        Previous Year Value × 1.07 (market growth) +<br />
+                        Monthly Investment × 12 +<br />
+                        Additional Yearly Contribution +<br />
+                        Reinvested Dividends (if enabled)
                       </div>
-                      <div className="bg-background/50 p-4 rounded-lg border border-border/50">
-                        <div className="font-medium text-foreground mb-2">Future Years (1-15)</div>
-                        <ul className="space-y-1 text-muted-foreground">
-                          <li>• Add monthly investments (${monthlyInvestment.toLocaleString()}/month)</li>
-                          <li>• Add yearly bonus (${additionalYearlyContribution.toLocaleString()})</li>
-                          <li>• {reinvestDividends ? 'Reinvest' : 'Do not reinvest'} all dividends</li>
-                          <li>• Apply 7% annual portfolio growth</li>
-                          <li>• Grow dividends by {dividendGrowthRate}% annually</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column - Key Assumptions */}
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-foreground flex items-center gap-2">
-                      <Target className="h-4 w-4 text-primary" />
-                      Key Assumptions Explained
-                    </h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
-                          <span className="text-muted-foreground">Market Growth Rate</span>
-                          <span className="font-medium text-foreground">7% annually</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground px-3">
-                          Historical S&P 500 average return (includes price appreciation)
-                        </p>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
-                          <span className="text-muted-foreground">Dividend Growth</span>
-                          <span className="font-medium text-foreground">{dividendGrowthRate}% annually</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground px-3">
-                          Conservative estimate based on dividend aristocrats track record
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg border border-border/50">
-                          <span className="text-muted-foreground">Current Yield Used</span>
-                          <span className="font-medium text-foreground">
-                            {currentMetrics.portfolioYield > 0 ? `${currentMetrics.portfolioYield.toFixed(2)}%` : '4.0%'}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground px-3">
-                          {currentMetrics.portfolioYield > 0 
-                            ? "Based on your actual portfolio's current yield" 
-                            : "Default conservative estimate (add stocks for accurate projections)"
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Formula Breakdown */}
-                <div className="bg-background/50 p-4 rounded-lg border border-border/50">
-                  <h5 className="font-medium text-foreground mb-3">Simple Formula (for any given year):</h5>
-                  <div className="font-mono text-sm text-muted-foreground space-y-1">
-                    <div>Portfolio Value = Previous Year Value + Monthly Investments + {reinvestDividends ? 'Dividend Reinvestment + ' : ''}Market Growth</div>
-                    <div>Annual Dividends = Portfolio Value × Current Yield × (1 + Dividend Growth)^Year</div>
-                    <div>Monthly Income = Annual Dividends ÷ 12</div>
-                  </div>
-                </div>
-
-                {/* Important Notes */}
-                <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
-                  <h5 className="font-medium text-foreground mb-3 flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-muted-foreground" />
-                    Important Disclaimers
-                  </h5>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted-foreground">
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2">
-                        <span className="text-muted-foreground mt-1">•</span>
-                        <span>Projections are estimates, not guarantees</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-muted-foreground mt-1">•</span>
-                        <span>Assumes consistent contributions and no withdrawals</span>
-                      </li>
-                    </ul>
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2">
-                        <span className="text-muted-foreground mt-1">•</span>
-                        <span>Market volatility affects actual results</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-muted-foreground mt-1">•</span>
-                        <span>Tax implications not included</span>
-                      </li>
-                    </ul>
-                  </div>
-                  {trackedStocks.length === 0 && (
-                    <div className="mt-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                      <p className="text-sm text-primary font-medium">
-                        💡 Add your actual dividend stocks for more accurate projections based on real yields
+                      <p>
+                        We assume a 7% average annual market growth, which is based on historical S&P 500 performance over long periods.
                       </p>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-foreground flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                      Dividend Calculation
+                    </h4>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <div className="bg-muted/50 p-3 rounded-lg">
+                        <strong>Annual Dividends =</strong><br />
+                        Portfolio Value × Current Yield × <br />
+                        (1 + Growth Rate)^Year
+                      </div>
+                      <p>
+                        Current yield is calculated from your tracked stocks or defaults to 4% if you haven't added any dividend-paying stocks yet.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                    <Brain className="h-4 w-4 text-primary" />
+                    Key Assumptions
+                  </h4>
+                  <div className="grid md:grid-cols-3 gap-4 text-sm">
+                    <div className="bg-muted/50 p-3 rounded-lg">
+                      <strong className="text-foreground">Market Growth</strong>
+                      <p className="text-muted-foreground mt-1">7% annual average based on historical data</p>
+                    </div>
+                    <div className="bg-muted/50 p-3 rounded-lg">
+                      <strong className="text-foreground">Dividend Growth</strong>
+                      <p className="text-muted-foreground mt-1">Customizable rate (default 5% annually)</p>
+                    </div>
+                    <div className="bg-muted/50 p-3 rounded-lg">
+                      <strong className="text-foreground">Reinvestment</strong>
+                      <p className="text-muted-foreground mt-1">Optional dividend reinvestment at market value</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <div className="flex items-start gap-2">
+                    <Brain className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm">
+                      <strong className="text-amber-800 dark:text-amber-200">Disclaimer:</strong>
+                      <p className="text-amber-700 dark:text-amber-300 mt-1">
+                        These projections are estimates based on historical patterns and your input parameters. 
+                        Actual results will vary due to market volatility, changes in dividend policies, economic conditions, and other factors. 
+                        This tool is for educational purposes and should not be considered financial advice.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </CollapsibleContent>
           </Card>
         </Collapsible>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-12">
-          {/* Parameter Controls */}
-          <Card className="shadow-elegant hover-scale">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Calculator className="h-5 w-5 text-primary" />
-                <CardTitle>Projection Parameters</CardTitle>
-              </div>
-              <CardDescription>
-                Adjust these values to see how they impact your projections
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="monthlyInvestment">Monthly Investment: ${monthlyInvestment}</Label>
-                <Slider
-                  value={[monthlyInvestment]}
-                  onValueChange={([value]) => setMonthlyInvestment(value)}
-                  max={5000}
-                  min={0}
-                  step={100}
-                  className="w-full"
-                />
-              </div>
+        {/* Projection Assumptions & Recommendations */}
+        <Tabs defaultValue="assumptions" className="mb-12">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="assumptions">Projection Assumptions</TabsTrigger>
+            <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+          </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="dividendGrowth">Expected Dividend Growth: {dividendGrowthRate}%</Label>
-                <Slider
-                  value={[dividendGrowthRate]}
-                  onValueChange={([value]) => setDividendGrowthRate(value)}
-                  max={15}
-                  min={0}
-                  step={0.5}
-                  className="w-full"
-                />
-              </div>
+          <TabsContent value="assumptions" className="space-y-6">
+            <Card className="shadow-elegant">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  Key Assumptions Used in Projections
+                </CardTitle>
+                <CardDescription>
+                  Understanding the mathematical foundations of your projections
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Market & Growth Assumptions</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm">Average Annual Market Growth</span>
+                        <Badge>7%</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm">Dividend Growth Rate</span>
+                        <Badge>{dividendGrowthRate}%</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm">Initial Portfolio Yield</span>
+                        <Badge>{currentMetrics.portfolioYield > 0 ? `${currentMetrics.portfolioYield.toFixed(2)}%` : '4% (Default)'}</Badge>
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="yearlyContribution">Additional Yearly Investment: ${additionalYearlyContribution}</Label>
-                <Slider
-                  value={[additionalYearlyContribution]}
-                  onValueChange={([value]) => setAdditionalYearlyContribution(value)}
-                  max={50000}
-                  min={0}
-                  step={1000}
-                  className="w-full"
-                />
-              </div>
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Investment Strategy Assumptions</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm">Monthly Contributions</span>
+                        <Badge>${monthlyInvestment.toLocaleString()}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm">Annual Bonus Investments</span>
+                        <Badge>${additionalYearlyContribution.toLocaleString()}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm">Dividend Reinvestment</span>
+                        <Badge variant={reinvestDividends ? "default" : "secondary"}>
+                          {reinvestDividends ? "Enabled" : "Disabled"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="reinvest"
-                  checked={reinvestDividends}
-                  onChange={(e) => setReinvestDividends(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <Label htmlFor="reinvest">Reinvest Dividends</Label>
-              </div>
-            </CardContent>
-          </Card>
+                <Separator />
 
-          {/* Key Projections */}
-          <Card className="shadow-elegant lg:col-span-2">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <CardTitle>Key Milestones</CardTitle>
-              </div>
-              <CardDescription>
-                Based on your current portfolio and parameters
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 10, 15].map((targetYear) => {
-                  const yearData = projectionData[targetYear];
-                  return (
-                    <Card key={targetYear} className="bg-gradient-to-br from-primary/5 to-accent/5">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-primary" />
-                          <CardTitle className="text-lg">{targetYear} Year{targetYear > 1 ? 's' : ''}</CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-primary mb-1">
-                          ${yearData?.monthlyIncome.toLocaleString() || 0}
-                        </div>
-                        <div className="text-sm text-muted-foreground mb-3">Monthly Income</div>
-                        <div className="text-lg font-semibold text-foreground">
-                          ${yearData?.portfolioValue.toLocaleString() || 0}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Total Portfolio</div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Data Sources & Methodology</h5>
+                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                    <li>• Market growth: Based on historical S&P 500 performance (1957-2023)</li>
+                    <li>• Dividend yields: Real-time data from financial APIs for your holdings</li>
+                    <li>• Growth rates: Conservative estimates based on dividend aristocrats</li>
+                    <li>• Reinvestment: Assumes immediate reinvestment at current market price</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Charts Section */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Line Chart - Portfolio Growth */}
-          <Card className="shadow-elegant">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <CardTitle>Portfolio Growth Projection</CardTitle>
-              </div>
-              <CardDescription>
-                Expected portfolio value and dividend income over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={projectionData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis />
-                    <Tooltip 
-                      formatter={(value, name) => [
-                        `$${Number(value).toLocaleString()}`,
-                        name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
-                      ]}
-                    />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="portfolioValue" 
-                      stroke="#8884d8" 
-                      strokeWidth={2}
-                      name="Portfolio Value"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="annualDividends" 
-                      stroke="#82ca9d" 
-                      strokeWidth={2}
-                      name="Annual Dividends"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          <TabsContent value="recommendations" className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="h-5 w-5 text-primary" />
+                    Portfolio Optimization
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <h5 className="font-medium text-green-900 dark:text-green-100">✓ Diversification</h5>
+                      <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                        Spread investments across sectors and company sizes to reduce risk
+                      </p>
+                    </div>
+                    
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <h5 className="font-medium text-green-900 dark:text-green-100">✓ Dollar-Cost Averaging</h5>
+                      <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                        Invest consistently regardless of market conditions to smooth out volatility
+                      </p>
+                    </div>
+                    
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <h5 className="font-medium text-green-900 dark:text-green-100">✓ Dividend Growth Focus</h5>
+                      <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                        Prioritize companies with a history of growing dividends over time
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Bar Chart - Income Breakdown */}
-          <Card className="shadow-elegant">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <CardTitle>Dividend Income Timeline</CardTitle>
-              </div>
-              <CardDescription>
-                Monthly dividend income projections by year
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectionData.filter((_, index) => index % 2 === 0)}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis />
-                    <Tooltip 
-                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Monthly Income']}
-                    />
-                    <Bar dataKey="monthlyIncome" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Assumptions and Recommendations */}
-        <Card className="shadow-elegant mb-12">
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Brain className="h-5 w-5 text-primary" />
-              <CardTitle>Projection Assumptions & Recommendations</CardTitle>
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-primary" />
+                    Action Items
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    {trackedStocks.length === 0 && (
+                      <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                        <h5 className="font-medium text-yellow-900 dark:text-yellow-100">📈 Add Your First Stock</h5>
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                          Start tracking dividend-paying stocks to get personalized projections
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <h5 className="font-medium text-blue-900 dark:text-blue-100">🔄 Review Regularly</h5>
+                      <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
+                        Update your projections monthly as your portfolio grows
+                      </p>
+                    </div>
+                    
+                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <h5 className="font-medium text-purple-900 dark:text-purple-100">💰 Increase Contributions</h5>
+                      <p className="text-sm text-purple-800 dark:text-purple-200 mt-1">
+                        Every $100 increase in monthly investment significantly impacts long-term results
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            <CardDescription>
-              Key assumptions used in calculations and suggestions for optimization
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="assumptions" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="assumptions">Key Assumptions</TabsTrigger>
-                <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="assumptions" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-foreground">Market Assumptions</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Portfolio Yield (Used in Projections)</span>
-                        <span className="font-medium">{currentMetrics.portfolioYield.toFixed(2)}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Weighted Avg Yield</span>
-                        <span className="font-medium">{currentMetrics.weightedAvgYield.toFixed(2)}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Annual Market Growth</span>
-                        <span className="font-medium">7.0%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Dividend Growth Rate</span>
-                        <span className="font-medium">{dividendGrowthRate}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Inflation Rate</span>
-                        <span className="font-medium">2.5%</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-foreground">Your Parameters</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Monthly Investment</span>
-                        <span className="font-medium">${monthlyInvestment}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Additional Yearly</span>
-                        <span className="font-medium">${additionalYearlyContribution}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Dividend Reinvestment</span>
-                        <span className="font-medium">{reinvestDividends ? 'Yes' : 'No'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Current Stocks</span>
-                        <span className="font-medium">{currentMetrics.uniqueStocks}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
+          </TabsContent>
+        </Tabs>
 
-              <TabsContent value="recommendations" className="space-y-4">
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-foreground">Optimization Suggestions</h4>
-                  {[
-                    'Consider increasing your monthly investment to accelerate growth',
-                    'Enable dividend reinvestment to leverage compound growth',
-                    'Add more dividend growth stocks to improve long-term yields',
-                    'Diversify across different sectors to reduce risk',
-                    'Consider adding international dividend exposure'
-                  ].map((recommendation, index) => (
-                    <div key={index} className="flex items-start space-x-3 p-4 bg-accent/50 rounded-lg">
-                      <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-foreground">{recommendation}</p>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
+        {/* Call to Action */}
+        <Card className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border-primary/20 shadow-elegant">
+          <CardContent className="text-center py-12">
+            <div className="max-w-2xl mx-auto space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-foreground">Ready to Build Your Dividend Portfolio?</h2>
+                <p className="text-muted-foreground">
+                  Start tracking your investments and get personalized projections based on real dividend data.
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button asChild size="lg" className="min-w-[200px]">
+                  <Link to="/" className="flex items-center gap-2">
+                    <Home className="h-4 w-4" />
+                    Manage Portfolio
+                  </Link>
+                </Button>
+                
+                <Button variant="outline" size="lg" onClick={signOut} className="min-w-[150px]">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
-
-        {/* CTA Section */}
-        <div className="text-center">
-          <Card className="gradient-card shadow-card">
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4 text-foreground">Want to Optimize Your Portfolio?</h3>
-              <p className="text-muted-foreground mb-6 text-lg">
-                Add more dividend stocks to your portfolio to improve these projections.
-              </p>
-              <Button variant="gradient" size="lg" className="px-8" asChild>
-                <Link to="/dashboard">
-                  Manage Portfolio
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       <Footer />
