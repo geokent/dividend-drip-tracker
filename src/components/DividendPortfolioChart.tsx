@@ -116,12 +116,10 @@ export const DividendPortfolioChart = ({
                 {/* Mobile Layout */}
                 <div className="block lg:hidden space-y-3">
                   {/* Header Row */}
-                  <div className="flex items-center justify-between">
+                   <div className="flex items-center justify-between">
                      <div className="flex flex-col space-y-1">
                        <span className="font-semibold tracking-tight text-base text-foreground">{stock.symbol}</span>
-                       <span className="text-xs text-muted-foreground">
-                         {formatCurrency(stock.currentPrice)}
-                       </span>
+                       <span className="text-xs text-muted-foreground">{stock.companyName}</span>
                      </div>
                     <Button
                       variant="ghost"
@@ -133,59 +131,65 @@ export const DividendPortfolioChart = ({
                     </Button>
                   </div>
 
-                  {/* Metrics Grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Shares */}
-                    <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Shares</p>
-                      {editingShares === stock.symbol ? (
-                        <Input
-                          type="number"
-                          defaultValue={stock.shares}
-                          className="h-6 w-full text-xs text-center font-medium"
-                          onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleSharesChange(stock.symbol, e.currentTarget.value);
-                            }
-                          }}
-                          autoFocus
-                        />
-                      ) : (
-                        <p 
-                          className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => setEditingShares(stock.symbol)}
-                        >
-                          {stock.shares.toLocaleString()}
-                        </p>
-                      )}
-                    </div>
+                   {/* Metrics Grid */}
+                   <div className="grid grid-cols-2 gap-2">
+                     {/* Shares */}
+                     <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
+                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Shares</p>
+                       {editingShares === stock.symbol ? (
+                         <Input
+                           type="number"
+                           defaultValue={stock.shares}
+                           className="h-6 w-full text-xs text-center font-medium"
+                           onBlur={(e) => handleSharesChange(stock.symbol, e.target.value)}
+                           onKeyDown={(e) => {
+                             if (e.key === 'Enter') {
+                               handleSharesChange(stock.symbol, e.currentTarget.value);
+                             }
+                           }}
+                           autoFocus
+                         />
+                       ) : (
+                         <p 
+                           className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors"
+                           onClick={() => setEditingShares(stock.symbol)}
+                         >
+                           {stock.shares.toLocaleString()}
+                         </p>
+                       )}
+                     </div>
 
-                    {/* Value */}
-                    <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Value</p>
-                      <p className="text-sm font-bold text-primary">{formatCurrency(portfolioValue)}</p>
-                    </div>
+                     {/* Price */}
+                     <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
+                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Price</p>
+                       <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
+                     </div>
 
-                    {/* Yield */}
-                    <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Yield</p>
-                      <p className="text-sm font-semibold text-accent">
-                        {formatPercentage(stock.dividendYield)}
-                      </p>
-                    </div>
+                     {/* Value */}
+                     <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
+                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Value</p>
+                       <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
+                     </div>
 
-                    {/* Monthly Income */}
-                    <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Monthly Income</p>
-                      <p className="text-sm font-bold text-accent">{formatCurrency(monthlyIncome)}</p>
-                    </div>
+                     {/* Yield */}
+                     <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
+                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Yield</p>
+                       <p className="text-sm font-semibold text-foreground">
+                         {formatPercentage(stock.dividendYield)}
+                       </p>
+                     </div>
 
-                    {/* Annual Income */}
-                    <div className="text-center px-2 py-1 bg-accent/10 rounded-lg col-span-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
-                      <p className="text-sm font-bold text-accent">{formatCurrency(annualIncome)}</p>
-                    </div>
+                     {/* Monthly Income */}
+                     <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
+                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Monthly Income</p>
+                       <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
+                     </div>
+
+                     {/* Annual Income */}
+                     <div className="text-center px-2 py-1 bg-accent/10 rounded-lg col-span-2">
+                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
+                       <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
+                     </div>
                   </div>
 
                   {/* Dividend Dates */}
@@ -209,9 +213,7 @@ export const DividendPortfolioChart = ({
                    <div className="col-span-2 flex items-center gap-3">
                      <div className="flex flex-col space-y-1">
                        <span className="font-semibold tracking-tight text-base text-foreground">{stock.symbol}</span>
-                       <span className="text-xs text-muted-foreground">
-                         {formatCurrency(stock.currentPrice)}
-                       </span>
+                       <span className="text-xs text-muted-foreground">{stock.companyName}</span>
                      </div>
                    </div>
 
@@ -241,16 +243,22 @@ export const DividendPortfolioChart = ({
                     )}
                   </div>
 
+                  {/* Price - 1 column */}
+                  <div className="col-span-1 text-center px-2 py-1 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Price</p>
+                    <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
+                  </div>
+
                   {/* Value - 2 columns */}
                   <div className="col-span-2 text-center px-2 py-1 bg-muted/30 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Value</p>
-                    <p className="text-sm font-bold text-primary">{formatCurrency(portfolioValue)}</p>
+                    <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
                   </div>
 
                   {/* Yield - 1 column */}
                   <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Yield</p>
-                    <p className="text-sm font-semibold text-accent">
+                    <p className="text-sm font-semibold text-foreground">
                       {formatPercentage(stock.dividendYield)}
                     </p>
                   </div>
@@ -258,13 +266,13 @@ export const DividendPortfolioChart = ({
                   {/* Monthly Income - 1 column */}
                   <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Monthly</p>
-                    <p className="text-sm font-bold text-accent">{formatCurrency(monthlyIncome)}</p>
+                    <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
                   </div>
 
                   {/* Annual Income - 2 columns */}
                   <div className="col-span-2 text-center px-2 py-1 bg-accent/10 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
-                    <p className="text-sm font-bold text-accent">{formatCurrency(annualIncome)}</p>
+                    <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
                   </div>
 
                   {/* Ex-Dividend Date - 2 columns */}
