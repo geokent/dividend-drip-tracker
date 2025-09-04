@@ -1,13 +1,17 @@
 import { FAQ } from "@/components/FAQ";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { HelpCircle } from "lucide-react";
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container section-y">
-        <FAQ />
-      </main>
-    </div>
+    <AppLayout>
+      <PageHeader
+        title="Frequently Asked Questions"
+        description="Common questions about dividend investing and our platform"
+        icon={HelpCircle}
+      />
+      <FAQ />
+    </AppLayout>
   );
 }

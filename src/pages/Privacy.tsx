@@ -1,56 +1,36 @@
 import { Link } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { ArrowLeft, Shield, Eye, Lock, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/5 backdrop-blur-lg bg-white/95 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/">
-                <img 
-                  src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-                  alt="DivTrkr Logo" 
-                  className="h-8 w-auto hover:opacity-80 transition-opacity"
-                />
-              </Link>
-            </div>
-            <Button variant="outline" asChild className="hover-scale">
-              <Link to="/" className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Home
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <AppLayout>
+      <PageHeader
+        title="Privacy Policy"
+        description={`Last updated: ${new Date().toLocaleDateString()}`}
+        icon={Shield}
+        actions={
+          <Button variant="outline" asChild>
+            <Link to="/" className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
+          </Button>
+        }
+      />
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
-            <Shield className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Privacy Policy
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
-          </p>
-        </div>
+      <div className="max-w-4xl mx-auto">{/* Key Privacy Points */}
 
-        {/* Key Privacy Points */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="text-center">
+          <Card className="card-elevated text-center">
             <CardHeader>
               <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <Lock className="h-6 w-6 text-green-600" />
               </div>
-              <CardTitle className="text-lg">Bank-Level Security</CardTitle>
+              <CardTitle className="card-title">Bank-Level Security</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
@@ -59,12 +39,12 @@ const Privacy = () => {
             </CardContent>
           </Card>
 
-          <Card className="text-center">
+          <Card className="card-elevated text-center">
             <CardHeader>
               <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
                 <Eye className="h-6 w-6 text-blue-600" />
               </div>
-              <CardTitle className="text-lg">No Data Selling</CardTitle>
+              <CardTitle className="card-title">No Data Selling</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
@@ -73,12 +53,12 @@ const Privacy = () => {
             </CardContent>
           </Card>
 
-          <Card className="text-center">
+          <Card className="card-elevated text-center">
             <CardHeader>
               <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                 <Database className="h-6 w-6 text-purple-600" />
               </div>
-              <CardTitle className="text-lg">Minimal Data</CardTitle>
+              <CardTitle className="card-title">Minimal Data</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
@@ -92,7 +72,7 @@ const Privacy = () => {
           <div className="space-y-8">
             
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">1. Information We Collect</h2>
+              <h2 className="section-title">1. Information We Collect</h2>
               
               <h3 className="text-xl font-medium text-foreground mb-3">Account Information</h3>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-6">
@@ -244,23 +224,7 @@ const Privacy = () => {
           </Button>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-background border-t border-border/10 py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <img 
-              src="/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png" 
-              alt="DivTrkr Logo" 
-              className="h-6 w-auto"
-            />
-          </div>
-          <p className="text-muted-foreground">
-            © 2024 DivTrkr. Building wealth through intelligent dividend investing.
-          </p>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 };
 
