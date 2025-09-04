@@ -279,7 +279,18 @@ export const DividendDashboard = () => {
   const handleSyncInvestments = async () => {
     if (!user?.id) return;
     
-    if (connectedAccounts === 0) {
+    // Perform a fresh check for connected accounts before blocking
+    console.log('Checking for connected accounts before sync...');
+    const { data: freshAccounts, error: accountsError } = await supabase
+      .from('plaid_accounts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+    
+    const actualConnectedAccounts = freshAccounts?.length || 0;
+    console.log('Fresh account count:', actualConnectedAccounts);
+    
+    if (actualConnectedAccounts === 0) {
       toast({
         title: "No Connected Accounts",
         description: "Please connect an investment account first before syncing.",
@@ -305,7 +316,7 @@ export const DividendDashboard = () => {
       }
 
       console.log('Sync successful:', data);
-      const stockCount = data.stocksProcessed || 0;
+      const stockCount = data.syncedStocks ?? data.stocksProcessed ?? 0;
       toast({
         title: "Sync Complete!",
         description: `Synced ${stockCount} stocks from your connected accounts`,
@@ -345,6 +356,18 @@ export const DividendDashboard = () => {
           setLastSyncedAt(latestSync);
         }
       }
+
+      // Refresh connected accounts count after successful sync
+      const { data: updatedAccounts } = await supabase
+        .from('plaid_accounts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+      
+      if (updatedAccounts) {
+        console.log('Updated connected accounts count:', updatedAccounts.length);
+        setConnectedAccounts(updatedAccounts.length);
+      }
     } catch (error) {
       console.error('Error syncing investments:', error);
       toast({
@@ -357,29 +380,52 @@ export const DividendDashboard = () => {
     }
   };
 
-  const handlePlaidSuccess = async () => {
+  const handlePlaidSuccess = async (connectionData?: { accounts_connected?: number, institution_name?: string }) => {
+    const accountsConnected = connectionData?.accounts_connected || 1;
+    const institutionName = connectionData?.institution_name || 'your bank';
+    
     toast({
       title: "Account Connected!",
-      description: "You can now sync your investment holdings to track dividends automatically.",
+      description: `Connected ${accountsConnected} account${accountsConnected > 1 ? 's' : ''} from ${institutionName}. Syncing holdings...`,
     });
     
-    // Refresh connected accounts count
+    // Poll for connected accounts with a timeout (up to 5 attempts, 1s apart)
     if (user?.id) {
-      const { data: accounts } = await supabase
-        .from('plaid_accounts')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('is_active', true);
+      let attempts = 0;
+      const maxAttempts = 5;
       
-      if (accounts) {
-        setConnectedAccounts(accounts.length);
-      }
+      const pollForAccounts = async (): Promise<void> => {
+        attempts++;
+        console.log(`Polling for accounts, attempt ${attempts}/${maxAttempts}`);
+        
+        const { data: accounts } = await supabase
+          .from('plaid_accounts')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+        
+        const accountCount = accounts?.length || 0;
+        console.log('Polling result - accounts found:', accountCount);
+        
+        if (accountCount > 0) {
+          setConnectedAccounts(accountCount);
+          // Trigger sync immediately after finding accounts
+          console.log('Accounts found, triggering immediate sync...');
+          handleSyncInvestments();
+          return;
+        }
+        
+        if (attempts < maxAttempts) {
+          setTimeout(pollForAccounts, 1000); // Wait 1 second before next attempt
+        } else {
+          console.log('Polling timeout - will try sync anyway');
+          // Try sync anyway, the fresh check in handleSyncInvestments will catch it
+          handleSyncInvestments();
+        }
+      };
+      
+      pollForAccounts();
     }
-    
-    // Auto-sync holdings after successful connection
-    setTimeout(() => {
-      handleSyncInvestments();
-    }, 2000); // Wait 2 seconds to ensure account is fully set up
   };
 
   const refreshStockPrices = async () => {
@@ -527,7 +573,29 @@ export const DividendDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Connected Accounts Status */}
             <div className="bg-card rounded-lg p-6 border">
-              <h3 className="text-lg font-semibold mb-4">Connected Accounts</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Connected Accounts</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    if (user?.id) {
+                      const { data: accounts } = await supabase
+                        .from('plaid_accounts')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .eq('is_active', true);
+                      
+                      if (accounts) {
+                        console.log('Refreshed connected accounts count:', accounts.length);
+                        setConnectedAccounts(accounts.length);
+                      }
+                    }
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">{connectedAccounts}</div>
                 <p className="text-muted-foreground mb-4">
@@ -553,7 +621,7 @@ export const DividendDashboard = () => {
                 </p>
                 <Button
                   onClick={handleSyncInvestments}
-                  disabled={isSyncing || connectedAccounts === 0}
+                  disabled={isSyncing}
                   className="w-full"
                 >
                   {isSyncing ? (

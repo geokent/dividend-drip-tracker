@@ -7,7 +7,7 @@ import { Loader2, Link } from 'lucide-react';
 
 interface PlaidLinkButtonProps {
   userId: string;
-  onSuccess?: () => void;
+  onSuccess?: (connectionData?: { accounts_connected?: number, institution_name?: string }) => void;
 }
 
 export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => {
@@ -44,7 +44,11 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
         setLinkToken(null);
         setHasOpened(false);
         
-        onSuccess?.();
+        // Pass connection data to parent
+        onSuccess?.({
+          accounts_connected: data?.accounts_connected || 1,
+          institution_name: data?.institution_name || 'your bank'
+        });
       } catch (error) {
         console.error('Error exchanging token:', error);
         toast.error('Connection setup incomplete. Please try connecting again.', { id: 'plaid-exchange' });
