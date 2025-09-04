@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,15 +18,12 @@ import {
   TrendingUp, 
   DollarSign, 
   Target, 
-  Calculator, 
   Brain, 
   BarChart3,
   Zap,
   Star,
   Home,
-  LogOut,
-  ChevronDown,
-  ChevronUp
+  LogOut
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
@@ -61,7 +57,6 @@ export const FutureIncomeProjects = () => {
   const [portfolioGrowthRate, setPortfolioGrowthRate] = useState(0.07); // 7% default
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
-  const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
   
 
@@ -169,9 +164,9 @@ export const FutureIncomeProjects = () => {
         currentPortfolioValue += currentAnnualDividends;
       }
       
-      // Apply market growth (7% average)
+      // Apply market growth using selected portfolio growth rate
       if (year > 0) {
-        currentPortfolioValue *= 1.07;
+        currentPortfolioValue *= (1 + portfolioGrowthRate);
       }
       
       // Calculate new annual dividends with growth
@@ -437,102 +432,6 @@ export const FutureIncomeProjects = () => {
           setReinvestDividends={setReinvestDividends}
         />
 
-        {/* How These Numbers Are Calculated - Now below charts */}
-        <Collapsible open={isCalculationOpen} onOpenChange={setIsCalculationOpen} className="mb-8">
-          <Card className="border-none shadow-none bg-transparent max-w-3xl mx-auto">
-            <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer rounded-md px-0 py-1">
-                <CardTitle className="text-sm text-muted-foreground font-medium flex items-center gap-2 justify-center">
-                  {isCalculationOpen ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                  How these numbers are calculated
-                </CardTitle>
-              </CardHeader>
-            </CollapsibleTrigger>
-            
-            <CollapsibleContent>
-              <CardContent className="space-y-4 pt-2 px-0 text-sm text-muted-foreground">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-foreground flex items-center gap-2">
-                      <Calculator className="h-4 w-4 text-primary" />
-                      Portfolio Growth Formula
-                    </h4>
-                    <div className="space-y-3 text-sm text-muted-foreground">
-                      <div className="bg-muted/30 p-2 rounded-md">
-                        <strong>Year N Portfolio Value =</strong><br />
-                        Previous Year Value × 1.07 (market growth) +<br />
-                        Monthly Investment × 12 +<br />
-                        Additional Yearly Contribution +<br />
-                        Reinvested Dividends (if enabled)
-                      </div>
-                      <p>
-                        We assume a 7% average annual market growth, which is based on historical S&P 500 performance over long periods.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-foreground flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-primary" />
-                      Dividend Calculation
-                    </h4>
-                    <div className="space-y-3 text-sm text-muted-foreground">
-                      <div className="bg-muted/30 p-2 rounded-md">
-                        <strong>Annual Dividends =</strong><br />
-                        Portfolio Value × Current Yield × <br />
-                        (1 + Growth Rate)^Year
-                      </div>
-                      <p>
-                        Current yield is calculated from your tracked stocks or defaults to 4% if you haven't added any dividend-paying stocks yet.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-foreground flex items-center gap-2">
-                    <Brain className="h-4 w-4 text-primary" />
-                    Key Assumptions
-                  </h4>
-                  <div className="grid md:grid-cols-3 gap-4 text-sm">
-                    <div className="bg-muted/30 p-2 rounded-md">
-                      <strong className="text-foreground">Market Growth</strong>
-                      <p className="text-muted-foreground mt-1">7% annual average based on historical data</p>
-                    </div>
-                    <div className="bg-muted/30 p-2 rounded-md">
-                      <strong className="text-foreground">Dividend Growth</strong>
-                      <p className="text-muted-foreground mt-1">Customizable rate (default 5% annually)</p>
-                    </div>
-                    <div className="bg-muted/30 p-2 rounded-md">
-                      <strong className="text-foreground">Reinvestment</strong>
-                      <p className="text-muted-foreground mt-1">Optional dividend reinvestment at market value</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                  <div className="flex items-start gap-2">
-                    <Brain className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm">
-                      <strong className="text-amber-800 dark:text-amber-200">Disclaimer:</strong>
-                      <p className="text-amber-700 dark:text-amber-300 mt-1">
-                        These projections are estimates based on historical patterns and your input parameters. 
-                        Actual results will vary due to market volatility, changes in dividend policies, economic conditions, and other factors. 
-                        This tool is for educational purposes and should not be considered financial advice.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
 
         {/* Projection Assumptions & Recommendations */}
         <Tabs defaultValue="assumptions" className="mb-12">
@@ -559,7 +458,7 @@ export const FutureIncomeProjects = () => {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                         <span className="text-sm">Average Annual Market Growth</span>
-                        <Badge>7%</Badge>
+                        <Badge>{(portfolioGrowthRate * 100).toFixed(1)}%</Badge>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                         <span className="text-sm">Dividend Growth Rate</span>
