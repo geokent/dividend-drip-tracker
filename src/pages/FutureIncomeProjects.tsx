@@ -148,39 +148,49 @@ export const FutureIncomeProjects = () => {
     const currentMetrics = calculateCurrentMetrics();
     const data = [];
     
-    let currentPortfolioValue = currentMetrics.totalPortfolioValue;
-    let currentAnnualDividends = currentMetrics.totalAnnualDividends;
+    let portfolioValue = currentMetrics.totalPortfolioValue;
     
     // Use current portfolio yield or default to 4% if no stocks
     const assumedYield = currentMetrics.portfolioYield > 0 ? currentMetrics.portfolioYield / 100 : 0.04;
     
     for (let year = 0; year <= 15; year++) {
-      // Add monthly investments
+      // For year 0, use current values
+      if (year === 0) {
+        const annualDividends = currentMetrics.totalAnnualDividends;
+        data.push({
+          year,
+          portfolioValue: Math.round(portfolioValue),
+          annualDividends: Math.round(annualDividends),
+          monthlyIncome: Math.round(annualDividends / 12),
+          quarterlyIncome: Math.round(annualDividends / 4)
+        });
+        continue;
+      }
+
+      // Add yearly investments (monthly + additional)
       const yearlyInvestment = monthlyInvestment * 12 + additionalYearlyContribution;
-      currentPortfolioValue += yearlyInvestment;
+      portfolioValue += yearlyInvestment;
       
-      // Add dividend reinvestment if enabled
-      if (reinvestDividends && year > 0) {
-        currentPortfolioValue += currentAnnualDividends;
-      }
+      // Apply portfolio growth
+      portfolioValue *= (1 + portfolioGrowthRate);
       
-      // Apply market growth using selected portfolio growth rate
-      if (year > 0) {
-        currentPortfolioValue *= (1 + portfolioGrowthRate);
-      }
+      // Calculate dividends based on new portfolio value
+      let annualDividends = portfolioValue * assumedYield;
       
-      // Calculate new annual dividends with growth
-      currentAnnualDividends = currentPortfolioValue * assumedYield;
-      if (year > 0) {
-        currentAnnualDividends *= Math.pow(1 + dividendGrowthRate / 100, year);
+      // Apply dividend growth
+      annualDividends *= Math.pow(1 + dividendGrowthRate / 100, year);
+      
+      // Add reinvested dividends to portfolio for next year
+      if (reinvestDividends) {
+        portfolioValue += annualDividends;
       }
 
       data.push({
         year,
-        portfolioValue: Math.round(currentPortfolioValue),
-        annualDividends: Math.round(currentAnnualDividends),
-        monthlyIncome: Math.round(currentAnnualDividends / 12),
-        quarterlyIncome: Math.round(currentAnnualDividends / 4)
+        portfolioValue: Math.round(portfolioValue),
+        annualDividends: Math.round(annualDividends),
+        monthlyIncome: Math.round(annualDividends / 12),
+        quarterlyIncome: Math.round(annualDividends / 4)
       });
     }
     
@@ -275,7 +285,7 @@ export const FutureIncomeProjects = () => {
                 {chartMode === "dividend" ? (
                    <BarChart 
                      data={projectionData}
-                     margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
+                     margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
@@ -288,9 +298,9 @@ export const FutureIncomeProjects = () => {
                         interval="preserveStartEnd"
                       />
         <YAxis 
-          width={56}
-          tickMargin={8}
-          tick={{ fontSize: 12, fill: 'hsl(var(--primary))' }}
+          width={72}
+          tickMargin={4}
+          tick={{ fontSize: 10, fill: 'hsl(var(--primary))' }}
           stroke="hsl(var(--primary))"
           tickLine={{ stroke: 'hsl(var(--primary))' }}
           axisLine={{ stroke: 'hsl(var(--primary))' }}
@@ -318,7 +328,7 @@ export const FutureIncomeProjects = () => {
                 ) : (
                    <LineChart 
                      data={projectionData}
-                     margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
+                     margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
@@ -330,9 +340,9 @@ export const FutureIncomeProjects = () => {
                         label={{ value: 'Years', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'hsl(var(--primary))' } }}
                       />
         <YAxis 
-          width={56}
-          tickMargin={8}
-          tick={{ fontSize: 12, fill: 'hsl(var(--primary))' }}
+          width={72}
+          tickMargin={4}
+          tick={{ fontSize: 10, fill: 'hsl(var(--primary))' }}
           stroke="hsl(var(--primary))"
           tickLine={{ stroke: 'hsl(var(--primary))' }}
           axisLine={{ stroke: 'hsl(var(--primary))' }}
