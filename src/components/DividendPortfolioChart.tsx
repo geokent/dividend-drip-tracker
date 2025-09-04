@@ -133,9 +133,9 @@ export const DividendPortfolioChart = ({
 
                    {/* Metrics Grid */}
                    <div className="grid grid-cols-2 gap-2">
-                     {/* Shares */}
-                     <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Shares</p>
+                      {/* Shares */}
+                      <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Shares</p>
                        {editingShares === stock.symbol ? (
                          <Input
                            type="number"
@@ -159,42 +159,42 @@ export const DividendPortfolioChart = ({
                        )}
                      </div>
 
-                     {/* Price */}
-                     <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Price</p>
+                      {/* Price */}
+                      <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Price</p>
                        <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
                      </div>
 
-                     {/* Value */}
-                     <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
-                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Value</p>
+                      {/* Value */}
+                      <div className="text-center px-2 py-1 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Value</p>
                        <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
                      </div>
 
-                     {/* Yield */}
-                     <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
-                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Yield</p>
+                      {/* Yield */}
+                      <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
+                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Yield</p>
                        <p className="text-sm font-semibold text-foreground">
                          {formatPercentage(stock.dividendYield)}
                        </p>
                      </div>
 
-                     {/* Monthly Income */}
-                     <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
-                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Monthly Income</p>
+                      {/* Monthly Income */}
+                      <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
+                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Monthly Income</p>
                        <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
                      </div>
 
-                     {/* Annual Income */}
-                     <div className="text-center px-2 py-1 bg-accent/10 rounded-lg col-span-2">
-                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
+                      {/* Annual Income */}
+                      <div className="text-center px-2 py-1 bg-accent/10 rounded-lg col-span-2">
+                        <p className="text-xs text-primary uppercase tracking-wide mb-1">Annual Income</p>
                        <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
                      </div>
                   </div>
 
-                  {/* Dividend Dates */}
-                  <div className="text-center px-2 py-1 bg-secondary/20 rounded-lg">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
+                   {/* Dividend Dates */}
+                   <div className="text-center px-2 py-1 bg-secondary/20 rounded-lg">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
                     <p className="text-xs font-medium">
                       {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
                         month: 'short', 
@@ -217,9 +217,9 @@ export const DividendPortfolioChart = ({
                      </div>
                    </div>
 
-                  {/* Shares - 1 column */}
-                  <div className="col-span-1 text-center">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Shares</p>
+                   {/* Shares - 1 column */}
+                   <div className="col-span-1 text-center">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Shares</p>
                     {editingShares === stock.symbol ? (
                       <Input
                         type="number"
@@ -243,41 +243,41 @@ export const DividendPortfolioChart = ({
                     )}
                   </div>
 
-                  {/* Price - 1 column */}
-                  <div className="col-span-1 text-center px-2 py-1 bg-muted/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Price</p>
+                   {/* Price - 1 column */}
+                   <div className="col-span-1 text-center px-2 py-1 bg-muted/30 rounded-lg">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Price</p>
                     <p className="text-sm font-semibold text-foreground">{formatCurrency(stock.currentPrice)}</p>
                   </div>
 
-                  {/* Value - 2 columns */}
-                  <div className="col-span-2 text-center px-2 py-1 bg-muted/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Value</p>
+                   {/* Value - 2 columns */}
+                   <div className="col-span-2 text-center px-2 py-1 bg-muted/30 rounded-lg">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Value</p>
                     <p className="text-sm font-bold text-foreground">{formatCurrency(portfolioValue)}</p>
                   </div>
 
-                  {/* Yield - 1 column */}
-                  <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Yield</p>
+                   {/* Yield - 1 column */}
+                   <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Yield</p>
                     <p className="text-sm font-semibold text-foreground">
                       {formatPercentage(stock.dividendYield)}
                     </p>
                   </div>
 
-                  {/* Monthly Income - 1 column */}
-                  <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Monthly</p>
+                   {/* Monthly Income - 1 column */}
+                   <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Monthly</p>
                     <p className="text-sm font-bold text-foreground">{formatCurrency(monthlyIncome)}</p>
                   </div>
 
-                  {/* Annual Income - 2 columns */}
-                  <div className="col-span-2 text-center px-2 py-1 bg-accent/10 rounded-lg">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
+                   {/* Annual Income - 2 columns */}
+                   <div className="col-span-2 text-center px-2 py-1 bg-accent/10 rounded-lg">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Annual Income</p>
                     <p className="text-sm font-bold text-foreground">{formatCurrency(annualIncome)}</p>
                   </div>
 
-                  {/* Ex-Dividend Date - 2 columns */}
-                  <div className="col-span-2 text-center px-2 py-1 bg-secondary/20 rounded-lg">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
+                   {/* Ex-Dividend Date - 2 columns */}
+                   <div className="col-span-2 text-center px-2 py-1 bg-secondary/20 rounded-lg">
+                     <p className="text-xs text-primary uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
                     <p className="text-xs font-medium">
                       {stock.exDividendDate ? new Date(stock.exDividendDate).toLocaleDateString('en-US', { 
                         month: 'short', 
