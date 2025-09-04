@@ -98,78 +98,15 @@ export const DividendPortfolioChart = ({
   }
 
   return (
-    <div className="space-y-3">
-      {/* Portfolio Metrics with Premium Features */}
-      <Card className="p-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10">
-        {/* Mobile: 2x3 grid, Desktop: single row */}
-        <div className="grid grid-cols-2 lg:flex lg:items-center lg:justify-center gap-4 lg:gap-6">
-          <div className="text-center">
-            <p className="text-base lg:text-lg font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
-            <p className="text-xs text-muted-foreground">Total Value</p>
-          </div>
-          <div className="text-center">
-            <p className="text-base lg:text-lg font-semibold text-accent">
-              {totalPortfolioValue > 0 ? 
-                formatPercentage((trackedStocks.reduce((sum, stock) => {
-                  const stockValue = calculatePortfolioValue(stock);
-                  return sum + (stockValue * (stock.dividendYield || 0) / 100);
-                }, 0) / totalPortfolioValue) * 100) : 
-                "0.00%"
-              }
-            </p>
-            <p className="text-xs text-muted-foreground">Weighted Avg Yield</p>
-          </div>
-          <div className="text-center">
-            <p className="text-base lg:text-lg font-semibold text-blue-600">
-              {totalPortfolioValue > 0 ? 
-                formatPercentage((trackedStocks.reduce((sum, stock) => {
-                  return sum + calculateAnnualIncome(stock);
-                }, 0) / totalPortfolioValue) * 100) : 
-                "0.00%"
-              }
-            </p>
-            <p className="text-xs text-muted-foreground">Portfolio Yield</p>
-          </div>
-          <div className="text-center opacity-60">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-xs lg:text-sm font-medium text-muted-foreground">Coming Soon</p>
-            </div>
-            <p className="text-xs text-muted-foreground">Yield on Cost</p>
-          </div>
-          
-          {/* Premium Features - Hidden on mobile */}
-          <div className="text-center opacity-60 hidden lg:block">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
-            </div>
-            <p className="text-xs text-muted-foreground">Dividend Growth Rate</p>
-          </div>
-          <div className="text-center opacity-60 hidden lg:block">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
-            </div>
-            <p className="text-xs text-muted-foreground">Dividend Safety Score</p>
-          </div>
-          <div className="text-center opacity-60 hidden lg:block">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
-            </div>
-            <p className="text-xs text-muted-foreground">Tax Efficiency Score</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Stock Holdings Chart */}
+    <div className="space-y-6">
+      {/* Stock Holdings Chart - moved to top */}
       <div className="grid gap-4">
         {trackedStocks
           .sort((a, b) => calculatePortfolioValue(b) - calculatePortfolioValue(a))
           .map((stock) => {
             const portfolioValue = calculatePortfolioValue(stock);
             const annualIncome = calculateAnnualIncome(stock);
+            const monthlyIncome = annualIncome / 12;
             const portfolioPercentage = totalPortfolioValue > 0 ? (portfolioValue / totalPortfolioValue) * 100 : 0;
             const valueProgress = maxPortfolioValue > 0 ? (portfolioValue / maxPortfolioValue) * 100 : 0;
 
@@ -244,8 +181,14 @@ export const DividendPortfolioChart = ({
                       </p>
                     </div>
 
-                    {/* Annual Income */}
+                    {/* Monthly Income */}
                     <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Monthly Income</p>
+                      <p className="text-sm font-bold text-accent">{formatCurrency(monthlyIncome)}</p>
+                    </div>
+
+                    {/* Annual Income */}
+                    <div className="text-center px-2 py-1 bg-accent/10 rounded-lg col-span-2">
                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
                       <p className="text-sm font-bold text-accent">{formatCurrency(annualIncome)}</p>
                     </div>
@@ -268,8 +211,8 @@ export const DividendPortfolioChart = ({
 
                 {/* Desktop Layout */}
                 <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center">
-                  {/* Stock identification - 3 columns */}
-                  <div className="col-span-3 flex items-center gap-3">
+                  {/* Stock identification - 2 columns */}
+                  <div className="col-span-2 flex items-center gap-3">
                     <span className="font-mono text-sm font-bold text-foreground uppercase tracking-wide min-w-[3rem]">
                       {stock.symbol}
                     </span>
@@ -309,7 +252,7 @@ export const DividendPortfolioChart = ({
                     )}
                   </div>
 
-                  {/* Value - 1.5 columns */}
+                  {/* Value - 2 columns */}
                   <div className="col-span-2 text-center px-2 py-1 bg-muted/30 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Value</p>
                     <p className="text-sm font-bold text-primary">{formatCurrency(portfolioValue)}</p>
@@ -323,13 +266,19 @@ export const DividendPortfolioChart = ({
                     </p>
                   </div>
 
-                  {/* Annual Income - 1.5 columns */}
+                  {/* Monthly Income - 1 column */}
+                  <div className="col-span-1 text-center px-2 py-1 bg-accent/10 rounded-lg">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Monthly</p>
+                    <p className="text-sm font-bold text-accent">{formatCurrency(monthlyIncome)}</p>
+                  </div>
+
+                  {/* Annual Income - 2 columns */}
                   <div className="col-span-2 text-center px-2 py-1 bg-accent/10 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Annual Income</p>
                     <p className="text-sm font-bold text-accent">{formatCurrency(annualIncome)}</p>
                   </div>
 
-                  {/* Ex-Dividend Date - 1.5 columns */}
+                  {/* Ex-Dividend Date - 2 columns */}
                   <div className="col-span-2 text-center px-2 py-1 bg-secondary/20 rounded-lg">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Ex-Div / Last Div</p>
                     <p className="text-xs font-medium">
@@ -359,6 +308,56 @@ export const DividendPortfolioChart = ({
             );
           })}
       </div>
+
+      {/* Portfolio Metrics moved to bottom */}
+      <Card className="p-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10">
+        {/* Mobile: 2x3 grid, Desktop: single row */}
+        <div className="grid grid-cols-2 lg:flex lg:items-center lg:justify-center gap-4 lg:gap-8">
+          <div className="text-center">
+            <p className="text-lg lg:text-xl font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
+            <p className="text-sm text-muted-foreground">Total Value</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg lg:text-xl font-semibold text-accent">
+              {totalPortfolioValue > 0 ? 
+                formatPercentage((trackedStocks.reduce((sum, stock) => {
+                  const stockValue = calculatePortfolioValue(stock);
+                  return sum + (stockValue * (stock.dividendYield || 0) / 100);
+                }, 0) / totalPortfolioValue) * 100) : 
+                "0.00%"
+              }
+            </p>
+            <p className="text-sm text-muted-foreground">Weighted Avg Yield</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg lg:text-xl font-semibold text-blue-600">
+              {totalPortfolioValue > 0 ? 
+                formatPercentage((trackedStocks.reduce((sum, stock) => {
+                  return sum + calculateAnnualIncome(stock);
+                }, 0) / totalPortfolioValue) * 100) : 
+                "0.00%"
+              }
+            </p>
+            <p className="text-sm text-muted-foreground">Portfolio Yield</p>
+          </div>
+          <div className="text-center opacity-60">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Lock className="h-3 w-3 text-muted-foreground" />
+              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
+            </div>
+            <p className="text-sm text-muted-foreground">Yield on Cost</p>
+          </div>
+          
+          {/* Premium Features - Hidden on mobile */}
+          <div className="text-center opacity-60 hidden lg:block">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Lock className="h-3 w-3 text-muted-foreground" />
+              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
+            </div>
+            <p className="text-sm text-muted-foreground">Dividend Growth Rate</p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

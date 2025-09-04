@@ -3,11 +3,12 @@ import { DividendPortfolioChart } from "./DividendPortfolioChart";
 import { CompactToolbar } from "./CompactToolbar";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
-import { Header } from "./Header";
-import { Footer } from "./Footer";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Building2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Lightbulb, Building2, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StockData {
@@ -645,57 +646,84 @@ export const DividendDashboard = () => {
   const stats = calculateStats();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <AppLayout>
+      <PageHeader 
+        title="Your Dividend Portfolio"
+        icon={TrendingUp}
+      />
+      
+      {/* First-time user help banner */}
+      {connectedAccounts === 0 && trackedStocks.length === 0 && (
+        <Alert className="max-w-2xl mx-auto text-left mb-8">
+          <Lightbulb className="h-4 w-4" />
+          <AlertDescription className="space-y-3">
+            <div>
+              <p className="font-medium mb-2">Get started with your dividend portfolio:</p>
+              <div className="space-y-1 text-sm">
+                <p><Building2 className="h-3 w-3 inline mr-1" /> <strong>Connect account:</strong> Link your brokerage to automatically sync your holdings</p>
+                <p><strong>Or add stocks manually:</strong> Use "Add stock" to track specific dividend stocks</p>
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
-      <div className="container section-y">
-        {/* Portfolio Header and Compact Toolbar */}
-        <div className="space-y-6 mb-8 text-center">
-          <h1 className="text-3xl lg:text-4xl font-bold">Your Dividend Portfolio</h1>
-          
-          {/* First-time user help banner */}
-          {connectedAccounts === 0 && trackedStocks.length === 0 && (
-            <Alert className="max-w-2xl mx-auto text-left">
-              <Lightbulb className="h-4 w-4" />
-              <AlertDescription className="space-y-3">
+      {/* Portfolio Chart */}
+      <DividendPortfolioChart
+        trackedStocks={trackedStocks}
+        onRemoveStock={handleRemoveStock}
+        onUpdateShares={handleUpdateShares}
+      />
+
+      {/* Account Connections Card */}
+      {connectedInstitutions.length > 0 && (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Connected Accounts
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {connectedInstitutions.map((institution) => (
+              <div key={institution.item_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                 <div>
-                  <p className="font-medium mb-2">Get started with your dividend portfolio:</p>
-                  <div className="space-y-1 text-sm">
-                    <p><Building2 className="h-3 w-3 inline mr-1" /> <strong>Connect account:</strong> Link your brokerage to automatically sync your holdings</p>
-                    <p><strong>Or add stocks manually:</strong> Use "Add stock" to track specific dividend stocks</p>
-                  </div>
+                  <p className="font-medium">{institution.institution_name}</p>
+                  <p className="text-sm text-muted-foreground">{institution.account_count} accounts connected</p>
                 </div>
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <CompactToolbar
-            centered={true}
-            connectedAccounts={connectedAccounts}
-            connectedInstitutions={connectedInstitutions}
-            recentActivity={recentActivity}
-            stats={stats}
-            userId={user?.id}
-            isSyncing={isSyncing}
-            isRefreshingPrices={isRefreshingPrices}
-            lastSyncedAt={lastSyncedAt}
-            isMaintenanceWindow={isMaintenanceWindow()}
-            onUpdate={handleUpdatePortfolio}
-            onPlaidSuccess={handlePlaidSuccess}
-            onStockFound={handleStockFound}
-            onDisconnectInstitution={handleDisconnectInstitution}
-          />
-        </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDisconnectInstitution(institution.item_id, institution.institution_name)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  Disconnect
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Full-Width Portfolio Chart */}
-        <DividendPortfolioChart
-          trackedStocks={trackedStocks}
-          onRemoveStock={handleRemoveStock}
-          onUpdateShares={handleUpdateShares}
+      {/* Compact Toolbar at bottom */}
+      <div className="mt-8">
+        <CompactToolbar
+          centered={true}
+          connectedAccounts={connectedAccounts}
+          connectedInstitutions={connectedInstitutions}
+          recentActivity={recentActivity}
+          stats={stats}
+          userId={user?.id}
+          isSyncing={isSyncing}
+          isRefreshingPrices={isRefreshingPrices}
+          lastSyncedAt={lastSyncedAt}
+          isMaintenanceWindow={isMaintenanceWindow()}
+          onUpdate={handleUpdatePortfolio}
+          onPlaidSuccess={handlePlaidSuccess}
+          onStockFound={handleStockFound}
+          onDisconnectInstitution={handleDisconnectInstitution}
         />
       </div>
-
-      <Footer />
-    </div>
+    </AppLayout>
   );
 };

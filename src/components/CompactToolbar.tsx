@@ -5,7 +5,7 @@ import { StockSymbolForm } from "./StockSymbolForm";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Bell, Plus, RefreshCw, ArrowUpDown, Building2, DollarSign, TrendingUp, PieChart } from "lucide-react";
+import { Clock, Plus, RefreshCw, ArrowUpDown, Building2, DollarSign, TrendingUp, PieChart } from "lucide-react";
 
 interface CompactToolbarProps {
   connectedAccounts: number;
@@ -47,7 +47,7 @@ export const CompactToolbar = ({
 }: CompactToolbarProps) => {
   const isUpdating = isSyncing || isRefreshingPrices;
   return (
-    <div className={`flex flex-wrap items-center gap-3 py-3 border-b border-border ${centered ? 'justify-center' : ''}`}>
+    <div className={`flex flex-wrap items-center gap-3 py-3 border-t border-border ${centered ? 'justify-center' : ''}`}>
       {/* Portfolio Stats with clear labels */}
       <div className="flex items-center gap-3 text-sm">
         <div className="flex items-center gap-1">
@@ -188,7 +188,7 @@ export const CompactToolbar = ({
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 px-2">
-              <Bell className="h-3 w-3" />
+              <Clock className="h-3 w-3" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80" align="end">
