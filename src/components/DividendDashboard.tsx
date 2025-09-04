@@ -604,6 +604,18 @@ export const DividendDashboard = () => {
     }
   };
 
+  const handleUpdatePortfolio = async () => {
+    // First sync connected accounts, then refresh prices
+    await handleSyncInvestments();
+    await refreshStockPrices();
+  };
+
+  // Check if we're in maintenance window (02:00-04:00 UTC)
+  const isMaintenanceWindow = () => {
+    const currentHour = new Date().getUTCHours();
+    return currentHour >= 2 && currentHour < 4;
+  };
+
   const calculateStats = () => {
     const totalAnnualDividends = trackedStocks.reduce((sum, stock) => {
       if (stock.shares > 0) {
@@ -667,8 +679,8 @@ export const DividendDashboard = () => {
             isSyncing={isSyncing}
             isRefreshingPrices={isRefreshingPrices}
             lastSyncedAt={lastSyncedAt}
-            onSync={handleSyncInvestments}
-            onRefresh={refreshStockPrices}
+            isMaintenanceWindow={isMaintenanceWindow()}
+            onUpdate={handleUpdatePortfolio}
             onPlaidSuccess={handlePlaidSuccess}
             onStockFound={handleStockFound}
             onDisconnectInstitution={handleDisconnectInstitution}

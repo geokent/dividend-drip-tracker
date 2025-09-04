@@ -22,8 +22,8 @@ interface CompactToolbarProps {
   isRefreshingPrices: boolean;
   lastSyncedAt: Date | null;
   centered?: boolean;
-  onSync: () => void;
-  onRefresh: () => void;
+  isMaintenanceWindow?: boolean;
+  onUpdate: () => void;
   onPlaidSuccess: (data?: any) => void;
   onStockFound: (stockData: any) => void;
   onDisconnectInstitution: (itemId: string, institutionName: string) => void;
@@ -39,12 +39,13 @@ export const CompactToolbar = ({
   isRefreshingPrices,
   lastSyncedAt,
   centered = false,
-  onSync,
-  onRefresh,
+  isMaintenanceWindow = false,
+  onUpdate,
   onPlaidSuccess,
   onStockFound,
   onDisconnectInstitution
 }: CompactToolbarProps) => {
+  const isUpdating = isSyncing || isRefreshingPrices;
   return (
     <div className={`flex flex-wrap items-center gap-3 py-3 border-b border-border ${centered ? 'justify-center' : ''}`}>
       {/* Portfolio Stats with clear labels */}
@@ -117,6 +118,11 @@ export const CompactToolbar = ({
                       </Button>
                     </div>
                   ))}
+                  {isMaintenanceWindow && (
+                    <p className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
+                      ℹ️ Account details may be temporarily unavailable during maintenance (02:00–04:00 UTC)
+                    </p>
+                  )}
                 </div>
               )}
               
@@ -159,41 +165,22 @@ export const CompactToolbar = ({
           </PopoverContent>
         </Popover>
 
-        {/* Sync */}
+        {/* Update (merged sync + refresh) */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={onSync}
-              disabled={isSyncing}
+              onClick={onUpdate}
+              disabled={isUpdating}
               variant="ghost"
               size="sm"
               className="h-8 px-3 gap-1"
             >
-              <ArrowUpDown className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span className="text-xs">{isSyncing ? 'Syncing' : 'Sync'}</span>
+              <RefreshCw className={`h-3 w-3 ${isUpdating ? 'animate-spin' : ''}`} />
+              <span className="text-xs">{isUpdating ? 'Updating' : 'Update'}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Sync holdings from connected accounts</p>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Refresh */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onRefresh}
-              disabled={isRefreshingPrices}
-              variant="ghost"
-              size="sm"
-              className="h-8 px-3 gap-1"
-            >
-              <RefreshCw className={`h-3 w-3 ${isRefreshingPrices ? 'animate-spin' : ''}`} />
-              <span className="text-xs">{isRefreshingPrices ? 'Updating' : 'Refresh'}</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Update stock prices and dividend data</p>
+            <p>Sync connected accounts and refresh prices</p>
           </TooltipContent>
         </Tooltip>
 
