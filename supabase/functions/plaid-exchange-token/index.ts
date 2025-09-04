@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
         // Only store investment accounts
         if (account.type === 'investment') {
           // Use the secure encrypted token storage function
-          const success = await supabase.rpc('store_encrypted_access_token', {
+          const { data: success, error: rpcError } = await supabase.rpc('store_encrypted_access_token', {
             p_user_id: user_id,
             p_account_id: account.account_id,
             p_access_token: access_token,
@@ -146,8 +146,8 @@ Deno.serve(async (req) => {
             p_institution_id: accountsData.item.institution_id
           })
 
-          if (!success) {
-            console.error(`Error storing encrypted account ${account.account_id}`)
+          if (rpcError || !success) {
+            console.error(`Error storing encrypted account ${account.account_id}:`, rpcError?.message || 'RPC returned false')
             // Log failed account storage
             try {
               await supabase.rpc('log_plaid_access', {
