@@ -507,7 +507,7 @@ export const FutureIncomeProjects = () => {
                     {chartMode === "dividend" ? (
                       <BarChart 
                         data={projectionData.filter((_, index) => index % 2 === 0)}
-                        margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
+                        margin={{ top: 8, right: 16, left: 92, bottom: 24 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis 
@@ -516,7 +516,7 @@ export const FutureIncomeProjects = () => {
                           label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
                         />
                         <YAxis 
-                          width={72}
+                          width={80}
                           tickMargin={8}
                           tick={{ fontSize: 12 }}
                           stroke="hsl(var(--muted-foreground))"
@@ -541,7 +541,7 @@ export const FutureIncomeProjects = () => {
                     ) : (
                       <LineChart 
                         data={projectionData}
-                        margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
+                        margin={{ top: 8, right: 16, left: 92, bottom: 24 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis 
@@ -550,7 +550,7 @@ export const FutureIncomeProjects = () => {
                           label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
                         />
                         <YAxis 
-                          width={72}
+                          width={80}
                           tickMargin={8}
                           tick={{ fontSize: 12 }}
                           stroke="hsl(var(--muted-foreground))"
@@ -656,14 +656,17 @@ export const FutureIncomeProjects = () => {
 
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">
-                      Portfolio Growth: {portfolioGrowthRate * 100}%
+                      Portfolio Growth: {(portfolioGrowthRate * 100).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 })}%
                     </label>
                     <Slider
                       min={0}
                       max={20}
                       step={0.5}
                       value={[portfolioGrowthRate * 100]}
-                      onValueChange={([value]) => setPortfolioGrowthRate(value / 100)}
+                      onValueChange={([value]) => {
+                        const halfStep = Math.round(value * 2) / 2;
+                        setPortfolioGrowthRate(halfStep / 100);
+                      }}
                       className="w-full"
                     />
                     <p className="text-xs text-muted-foreground mt-1">Expected annual portfolio appreciation</p>
@@ -728,28 +731,22 @@ export const FutureIncomeProjects = () => {
 
         {/* How These Numbers Are Calculated - Now below charts */}
         <Collapsible open={isCalculationOpen} onOpenChange={setIsCalculationOpen} className="mb-8">
-          <Card className="shadow-elegant bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/10">
+          <Card className="border-none shadow-none bg-transparent max-w-3xl mx-auto">
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-primary/5 transition-colors rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Brain className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-xl">How These Numbers Are Calculated</CardTitle>
-                  </div>
+              <CardHeader className="cursor-pointer rounded-md px-0 py-1">
+                <CardTitle className="text-sm text-muted-foreground font-medium flex items-center gap-2 justify-center">
                   {isCalculationOpen ? (
-                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                    <ChevronUp className="h-4 w-4" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    <ChevronDown className="h-4 w-4" />
                   )}
-                </div>
-                <CardDescription>
-                  Click to {isCalculationOpen ? 'hide' : 'view'} the methodology behind your dividend income projections
-                </CardDescription>
+                  How these numbers are calculated
+                </CardTitle>
               </CardHeader>
             </CollapsibleTrigger>
             
             <CollapsibleContent>
-              <CardContent className="space-y-6 pt-0">
+              <CardContent className="space-y-4 pt-2 px-0 text-sm text-muted-foreground">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h4 className="font-semibold text-foreground flex items-center gap-2">
@@ -757,7 +754,7 @@ export const FutureIncomeProjects = () => {
                       Portfolio Growth Formula
                     </h4>
                     <div className="space-y-3 text-sm text-muted-foreground">
-                      <div className="bg-muted/50 p-3 rounded-lg">
+                      <div className="bg-muted/30 p-2 rounded-md">
                         <strong>Year N Portfolio Value =</strong><br />
                         Previous Year Value × 1.07 (market growth) +<br />
                         Monthly Investment × 12 +<br />
@@ -776,7 +773,7 @@ export const FutureIncomeProjects = () => {
                       Dividend Calculation
                     </h4>
                     <div className="space-y-3 text-sm text-muted-foreground">
-                      <div className="bg-muted/50 p-3 rounded-lg">
+                      <div className="bg-muted/30 p-2 rounded-md">
                         <strong>Annual Dividends =</strong><br />
                         Portfolio Value × Current Yield × <br />
                         (1 + Growth Rate)^Year
@@ -796,15 +793,15 @@ export const FutureIncomeProjects = () => {
                     Key Assumptions
                   </h4>
                   <div className="grid md:grid-cols-3 gap-4 text-sm">
-                    <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="bg-muted/30 p-2 rounded-md">
                       <strong className="text-foreground">Market Growth</strong>
                       <p className="text-muted-foreground mt-1">7% annual average based on historical data</p>
                     </div>
-                    <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="bg-muted/30 p-2 rounded-md">
                       <strong className="text-foreground">Dividend Growth</strong>
                       <p className="text-muted-foreground mt-1">Customizable rate (default 5% annually)</p>
                     </div>
-                    <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="bg-muted/30 p-2 rounded-md">
                       <strong className="text-foreground">Reinvestment</strong>
                       <p className="text-muted-foreground mt-1">Optional dividend reinvestment at market value</p>
                     </div>
@@ -813,7 +810,7 @@ export const FutureIncomeProjects = () => {
 
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                   <div className="flex items-start gap-2">
-                    <Brain className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <Brain className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                     <div className="text-sm">
                       <strong className="text-amber-800 dark:text-amber-200">Disclaimer:</strong>
                       <p className="text-amber-700 dark:text-amber-300 mt-1">
