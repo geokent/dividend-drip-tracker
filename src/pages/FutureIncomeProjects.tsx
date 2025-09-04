@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -63,6 +63,7 @@ export const FutureIncomeProjects = () => {
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
   const [monthlyInvestment, setMonthlyInvestment] = useState(0);
   const [dividendGrowthRate, setDividendGrowthRate] = useState(5);
+  const [portfolioGrowthRate, setPortfolioGrowthRate] = useState(0.07); // 7% default
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
@@ -469,275 +470,260 @@ export const FutureIncomeProjects = () => {
           onDisconnectInstitution={handleDisconnectInstitution}
         />
 
-        {/* Combined Chart Section - Much Larger */}
-        <Card className="shadow-elegant mb-8">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  {chartMode === "dividend" ? (
-                    <BarChart3 className="h-6 w-6 text-primary" />
-                  ) : (
-                    <TrendingUp className="h-6 w-6 text-primary" />
-                  )}
-                  {chartMode === "dividend" ? "Monthly Dividend Income" : "Portfolio Growth Projection"}
-                </CardTitle>
-                <CardDescription className="text-base">
-                  {chartMode === "dividend" 
-                    ? "Projected monthly dividend income over time" 
-                    : "Portfolio value and annual dividend income over 15 years"
-                  }
-                </CardDescription>
-              </div>
+        {/* Main Content Flex Layout */}
+        <div className="flex flex-col lg:flex-row gap-6 mb-8">
+          {/* Chart Section - Main Content */}
+          <div className="flex-1">
+            <Card className="shadow-card hover:shadow-hover transition-smooth gradient-card">
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                      {chartMode === "dividend" ? (
+                        <BarChart3 className="h-5 w-5 text-primary" />
+                      ) : (
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                      )}
+                      {chartMode === "dividend" ? "Monthly Dividend Income" : "Portfolio Growth Projection"}
+                    </CardTitle>
+                    <CardDescription className="text-sm text-muted-foreground">
+                      {chartMode === "dividend" 
+                        ? "Projected monthly dividend income over time" 
+                        : "Portfolio value and annual dividend income over 15 years"
+                      }
+                    </CardDescription>
+                  </div>
+                  <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
+                      <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-4">
+                <div className="h-[500px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    {chartMode === "dividend" ? (
+                      <BarChart 
+                        data={projectionData.filter((_, index) => index % 2 === 0)}
+                        margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis 
+                          dataKey="year" 
+                          stroke="hsl(var(--muted-foreground))"
+                          label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                        />
+                        <YAxis 
+                          width={72}
+                          tickMargin={8}
+                          tick={{ fontSize: 12 }}
+                          stroke="hsl(var(--muted-foreground))"
+                          tickFormatter={(value) => `$${value.toLocaleString()}`}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                            boxShadow: 'var(--shadow-card)'
+                          }}
+                          formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
+                          labelFormatter={(label) => `Year ${label}`}
+                        />
+                        <Bar 
+                          dataKey="monthlyIncome" 
+                          fill="hsl(var(--primary))"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    ) : (
+                      <LineChart 
+                        data={projectionData}
+                        margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis 
+                          dataKey="year" 
+                          stroke="hsl(var(--muted-foreground))"
+                          label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                        />
+                        <YAxis 
+                          width={72}
+                          tickMargin={8}
+                          tick={{ fontSize: 12 }}
+                          stroke="hsl(var(--muted-foreground))"
+                          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                            boxShadow: 'var(--shadow-card)'
+                          }}
+                          formatter={(value: number, name: string) => [
+                            `$${value.toLocaleString()}`, 
+                            name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
+                          ]}
+                          labelFormatter={(label) => `Year ${label}`}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="portfolioValue" 
+                          stroke="hsl(var(--primary))" 
+                          strokeWidth={3}
+                          dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="annualDividends" 
+                          stroke="hsl(var(--financial-green))" 
+                          strokeWidth={2}
+                          dot={{ fill: 'hsl(var(--financial-green))', strokeWidth: 2, r: 3 }}
+                        />
+                      </LineChart>
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
               
-              {/* Chart Mode Toggle */}
-              <div className="flex bg-muted rounded-lg p-1">
-                <Button
-                  variant={chartMode === "dividend" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setChartMode("dividend")}
-                  className="text-sm"
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Monthly Income
-                </Button>
-                <Button
-                  variant={chartMode === "growth" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setChartMode("growth")}
-                  className="text-sm"
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Portfolio Growth
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[500px]">
-              <ResponsiveContainer width="100%" height="100%">
-                {chartMode === "dividend" ? (
-                  <BarChart 
-                    data={projectionData.filter((_, index) => index % 2 === 0)}
-                    margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="year" 
-                      stroke="hsl(var(--muted-foreground))"
-                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                    />
-                    <YAxis 
-                      width={72}
-                      tickMargin={8}
-                      tick={{ fontSize: 12 }}
-                      stroke="hsl(var(--muted-foreground))"
-                      tickFormatter={(value) => `$${value.toLocaleString()}`}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
-                      labelFormatter={(label) => `Year ${label}`}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Bar 
-                      dataKey="monthlyIncome" 
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                ) : (
-                  <LineChart 
-                    data={projectionData}
-                    margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="year" 
-                      stroke="hsl(var(--muted-foreground))"
-                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                    />
-                    <YAxis 
-                      width={72}
-                      tickMargin={8}
-                      tick={{ fontSize: 12 }}
-                      stroke="hsl(var(--muted-foreground))"
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip 
-                      formatter={(value: number, name: string) => [
-                        `$${value.toLocaleString()}`, 
-                        name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
-                      ]}
-                      labelFormatter={(label) => `Year ${label}`}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="portfolioValue" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="annualDividends" 
-                      stroke="hsl(var(--secondary))" 
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--secondary))', strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                )}
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Key Milestones integrated into chart footer */}
+              <CardFooter className="pt-4 border-t border-border bg-secondary/20">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+                  <div className="text-center p-3 rounded-lg bg-card border border-border shadow-sm">
+                    <div className="text-sm font-medium text-muted-foreground mb-1">2 Years</div>
+                    <div className="text-lg font-bold text-foreground">
+                      ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
+                    </div>
+                    <div className="text-xs text-financial-green font-medium">
+                      ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                    </div>
+                  </div>
+                  
+                  <div className="text-center p-3 rounded-lg bg-primary/5 border border-primary/20 shadow-sm">
+                    <div className="text-sm font-medium text-muted-foreground mb-1">10 Years</div>
+                    <div className="text-lg font-bold text-primary">
+                      ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
+                    </div>
+                    <div className="text-xs text-financial-green font-medium">
+                      ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                    </div>
+                  </div>
+                  
+                  <div className="text-center p-3 rounded-lg bg-accent/5 border border-accent/20 shadow-sm">
+                    <div className="text-sm font-medium text-muted-foreground mb-1">15 Years</div>
+                    <div className="text-lg font-bold text-accent">
+                      ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
+                    </div>
+                    <div className="text-xs text-financial-green font-medium">
+                      ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                    </div>
+                  </div>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
 
-        {/* Compact Parameters and Milestones Grid - Smaller */}
-        <div className="grid lg:grid-cols-2 gap-4 mb-6">
-          {/* Key Milestones - Much Smaller */}
-          <Card className="shadow-sm border-muted/50">
-            <CardHeader className="py-2 px-4">
-              <CardTitle className="text-sm flex items-center gap-1.5">
-                <Target className="h-3.5 w-3.5 text-primary" />
-                Key Milestones
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Important achievements in your dividend journey.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="py-2 px-4 space-y-2">
-              {/* 1 Year */}
-              <div className="bg-muted/30 border rounded-md p-2">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-muted-foreground">1 Year</span>
-                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                    ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                  </Badge>
-                </div>
-                <div className="text-2xl font-bold text-primary">
-                  ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  ${projectionData[1]?.annualDividends?.toLocaleString() || '0'} annual
-                </div>
-              </div>
+          {/* Parameters Panel - Sticky on Desktop */}
+          <div className="lg:w-80 lg:sticky lg:top-6 lg:self-start">
+            <Card className="shadow-card gradient-card border-primary/20">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                  </svg>
+                  Projection Parameters
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">
+                      Monthly Investment: ${monthlyInvestment.toLocaleString()}
+                    </label>
+                    <Slider
+                      min={0}
+                      max={5000}
+                      step={100}
+                      value={[monthlyInvestment]}
+                      onValueChange={([value]) => setMonthlyInvestment(value)}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Additional monthly contribution</p>
+                  </div>
 
-              {/* 10 Year */}
-              <div className="bg-muted/30 border rounded-md p-2">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-muted-foreground">10 Years</span>
-                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                    ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                  </Badge>
-                </div>
-                <div className="text-2xl font-bold text-primary">
-                  ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  ${projectionData[10]?.annualDividends?.toLocaleString() || '0'} annual
-                </div>
-              </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">
+                      Portfolio Growth: {portfolioGrowthRate * 100}%
+                    </label>
+                    <Slider
+                      min={0}
+                      max={20}
+                      step={0.5}
+                      value={[portfolioGrowthRate * 100]}
+                      onValueChange={([value]) => setPortfolioGrowthRate(value / 100)}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Expected annual portfolio appreciation</p>
+                  </div>
 
-              {/* 15 Year */}
-              <div className="bg-muted/30 border rounded-md p-2">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-muted-foreground">15 Years</span>
-                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                    ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                  </Badge>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">
+                      Dividend Growth: {dividendGrowthRate}%
+                    </label>
+                    <Slider
+                      min={0}
+                      max={15}
+                      step={0.5}
+                      value={[dividendGrowthRate]}
+                      onValueChange={([value]) => setDividendGrowthRate(value)}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Expected annual dividend increase</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">
+                      Additional Yearly: ${additionalYearlyContribution.toLocaleString()}
+                    </label>
+                    <Slider
+                      min={0}
+                      max={50000}
+                      step={1000}
+                      value={[additionalYearlyContribution]}
+                      onValueChange={([value]) => setAdditionalYearlyContribution(value)}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Extra annual contribution</p>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={reinvestDividends}
+                      onCheckedChange={(checked) => setReinvestDividends(checked as boolean)}
+                    />
+                    <label className="text-sm font-medium text-foreground">
+                      Reinvest Dividends
+                    </label>
+                  </div>
                 </div>
-                <div className="text-2xl font-bold text-primary">
-                  ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
+
+                <div className="pt-4 border-t border-border">
+                  <div className="text-xs text-muted-foreground space-y-2">
+                    <p><strong>Key Assumptions:</strong></p>
+                    <ul className="space-y-1 ml-4 list-disc">
+                      <li>Dividends reinvested automatically</li>
+                      <li>Tax implications not included</li>
+                      <li>Historical market averages ~7-10%</li>
+                      <li>No inflation adjustments</li>
+                    </ul>
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  ${projectionData[15]?.annualDividends?.toLocaleString() || '0'} annual
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Projection Parameters - Much Smaller */}
-          <Card className="shadow-sm border-muted/50">
-            <CardHeader className="py-2 px-4">
-              <CardTitle className="text-sm flex items-center gap-1.5">
-                <Calculator className="h-3.5 w-3.5 text-primary" />
-                Projection Parameters
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Adjust these values to see different scenarios.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="py-2 px-4 space-y-3">
-              {/* Monthly Investment */}
-              <div className="space-y-1.5">
-                <Label htmlFor="monthly-investment" className="text-xs font-medium">
-                  Monthly Investment: ${monthlyInvestment.toLocaleString()}
-                </Label>
-                <Slider
-                  id="monthly-investment"
-                  min={0}
-                  max={5000}
-                  step={100}
-                  value={[monthlyInvestment]}
-                  onValueChange={([value]) => setMonthlyInvestment(value)}
-                  className="w-full h-1"
-                />
-              </div>
-
-              {/* Dividend Growth Rate */}
-              <div className="space-y-1.5">
-                <Label htmlFor="dividend-growth" className="text-xs font-medium">
-                  Dividend Growth Rate: {dividendGrowthRate}%
-                </Label>
-                <Slider
-                  id="dividend-growth"
-                  min={0}
-                  max={15}
-                  step={0.5}
-                  value={[dividendGrowthRate]}
-                  onValueChange={([value]) => setDividendGrowthRate(value)}
-                  className="w-full h-1"
-                />
-              </div>
-
-              {/* Additional Yearly Contribution */}
-              <div className="space-y-1.5">
-                <Label htmlFor="yearly-contribution" className="text-xs font-medium">
-                  Additional Yearly: ${additionalYearlyContribution.toLocaleString()}
-                </Label>
-                <Slider
-                  id="yearly-contribution"
-                  min={0}
-                  max={50000}
-                  step={1000}
-                  value={[additionalYearlyContribution]}
-                  onValueChange={([value]) => setAdditionalYearlyContribution(value)}
-                  className="w-full h-1"
-                />
-              </div>
-
-              {/* Reinvest Dividends */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="reinvest-dividends"
-                  checked={reinvestDividends}
-                  onCheckedChange={(checked) => setReinvestDividends(checked as boolean)}
-                  className="h-3.5 w-3.5"
-                />
-                <Label htmlFor="reinvest-dividends" className="text-xs font-medium">
-                  Reinvest Dividends
-                </Label>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* How These Numbers Are Calculated - Now below charts */}
