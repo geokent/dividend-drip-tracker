@@ -10,9 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { StatsCard } from "@/components/StatsCard";
+import { CompactToolbar } from "@/components/CompactToolbar";
+import { PlaidLinkButton } from "@/components/PlaidLinkButton";
+import { StockSymbolForm } from "@/components/StockSymbolForm";
+import { toast } from "@/hooks/use-toast";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -62,25 +66,29 @@ export const FutureIncomeProjects = () => {
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
+  
+  // Dashboard-compatible state for CompactToolbar
+  const [connectedAccountsData, setConnectedAccountsData] = useState<any[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
 
-  // Load tracked stocks from Supabase database
+  // Load tracked stocks and connected accounts from Supabase database
   useEffect(() => {
-    const loadTrackedStocks = async () => {
+    const loadData = async () => {
       if (!user) return;
 
       try {
-        const { data, error } = await supabase
+        // Load tracked stocks
+        const { data: stocksData, error: stocksError } = await supabase
           .from('user_stocks')
           .select('*')
           .eq('user_id', user.id);
 
-        if (error) {
-          console.error('Error loading tracked stocks:', error);
-          return;
-        }
-
-        if (data) {
-          const formattedStocks = data.map(stock => ({
+        if (stocksError) {
+          console.error('Error loading tracked stocks:', stocksError);
+        } else if (stocksData) {
+          const formattedStocks = stocksData.map(stock => ({
             symbol: stock.symbol,
             companyName: stock.company_name || '',
             currentPrice: stock.current_price,
@@ -97,12 +105,25 @@ export const FutureIncomeProjects = () => {
           }));
           setTrackedStocks(formattedStocks);
         }
+
+        // Load connected accounts (for toolbar display)
+        const { data: accountsData, error: accountsError } = await supabase
+          .from('plaid_accounts')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        if (accountsError) {
+          console.error('Error loading connected accounts:', accountsError);
+        } else if (accountsData) {
+          setConnectedAccountsData(accountsData);
+        }
       } catch (error) {
-        console.error('Failed to load tracked stocks:', error);
+        console.error('Failed to load data:', error);
       }
     };
 
-    loadTrackedStocks();
+    loadData();
   }, [user]);
 
   // Calculate current portfolio metrics
@@ -194,6 +215,181 @@ export const FutureIncomeProjects = () => {
   const projectionData = generateProjectionData();
   const currentMetrics = calculateCurrentMetrics();
 
+  // Dashboard-compatible handlers for CompactToolbar
+  const handleStockFound = async (stockData: any) => {
+    try {
+      const { error } = await supabase
+        .from('user_stocks')
+        .upsert({
+          user_id: user?.id,
+          symbol: stockData.symbol,
+          company_name: stockData.companyName,
+          current_price: stockData.currentPrice,
+          dividend_yield: stockData.dividendYield,
+          dividend_per_share: stockData.dividendPerShare,
+          annual_dividend: stockData.annualDividend,
+          sector: stockData.sector,
+          industry: stockData.industry,
+          market_cap: stockData.marketCap,
+          pe_ratio: stockData.peRatio,
+          shares: 1, // Default to 1 share
+          last_synced: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      // Reload data
+      const { data: stocksData } = await supabase
+        .from('user_stocks')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (stocksData) {
+        const formattedStocks = stocksData.map(stock => ({
+          symbol: stock.symbol,
+          companyName: stock.company_name || '',
+          currentPrice: stock.current_price,
+          dividendYield: stock.dividend_yield,
+          dividendPerShare: stock.dividend_per_share,
+          annualDividend: stock.annual_dividend,
+          exDividendDate: stock.ex_dividend_date,
+          dividendDate: stock.dividend_date,
+          sector: stock.sector,
+          industry: stock.industry,
+          marketCap: stock.market_cap?.toString(),
+          peRatio: stock.pe_ratio?.toString(),
+          shares: Number(stock.shares)
+        }));
+        setTrackedStocks(formattedStocks);
+      }
+
+      toast({
+        title: "Stock Added",
+        description: `${stockData.symbol} has been added to your portfolio.`,
+      });
+    } catch (error) {
+      console.error('Error adding stock:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add stock. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSyncInvestments = async () => {
+    setIsSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-dividends', {
+        body: { user_id: user?.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sync Complete",
+        description: "Your investment accounts have been synced successfully.",
+      });
+      
+      setLastSyncedAt(new Date());
+    } catch (error) {
+      console.error('Sync error:', error);
+      toast({
+        title: "Sync Failed",
+        description: "Unable to sync accounts. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const refreshStockPrices = async () => {
+    setIsRefreshingPrices(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('refresh-stock-prices', {
+        body: { user_id: user?.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Prices Updated",
+        description: "Stock prices and dividend data have been refreshed.",
+      });
+    } catch (error) {
+      console.error('Refresh error:', error);
+      toast({
+        title: "Update Failed",
+        description: "Unable to refresh prices. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshingPrices(false);
+    }
+  };
+
+  const handleUpdatePortfolio = async () => {
+    await handleSyncInvestments();
+    await refreshStockPrices();
+  };
+
+  const handlePlaidSuccess = async (data?: any) => {
+    toast({
+      title: "Account Connected",
+      description: "Your account has been connected successfully.",
+    });
+    
+    // Reload connected accounts
+    const { data: accountsData } = await supabase
+      .from('plaid_accounts')
+      .select('*')
+      .eq('user_id', user?.id)
+      .eq('is_active', true);
+    
+    if (accountsData) {
+      setConnectedAccountsData(accountsData);
+    }
+  };
+
+  const handleDisconnectInstitution = async (itemId: string, institutionName: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('plaid-disconnect-item', {
+        body: { item_id: itemId, user_id: user?.id }
+      });
+
+      if (error) throw error;
+
+      // Reload connected accounts
+      const { data: accountsData } = await supabase
+        .from('plaid_accounts')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('is_active', true);
+      
+      if (accountsData) {
+        setConnectedAccountsData(accountsData);
+      }
+
+      toast({
+        title: "Account Disconnected",
+        description: `${institutionName} has been disconnected.`,
+      });
+    } catch (error) {
+      console.error('Disconnect error:', error);
+      toast({
+        title: "Disconnect Failed",
+        description: "Unable to disconnect account. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const isMaintenanceWindow = () => {
+    const currentHour = new Date().getUTCHours();
+    return currentHour >= 2 && currentHour < 4;
+  };
+
   // Redirect to login if not authenticated
   if (!user) {
     return (
@@ -222,59 +418,55 @@ export const FutureIncomeProjects = () => {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Hero Section */}
-        <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
+        {/* Page Title */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
             <Brain className="h-4 w-4" />
             <span>AI-Powered Analysis</span>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
             Future Dividend 
             <span className="gradient-text block">Income Projections</span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            AI-powered projections based on your current portfolio of {currentMetrics.uniqueStocks} dividend stocks. 
-            Customize parameters below to see how different strategies affect your long-term income.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            AI-powered projections based on your current portfolio. Customize parameters below to see how different strategies affect your long-term income.
           </p>
         </div>
 
-        {/* Current Portfolio Summary */}
-        {trackedStocks.length > 0 && (
-          <section className="py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-              <StatsCard
-                title="Current Portfolio"
-                value={`$${currentMetrics.totalPortfolioValue.toLocaleString()}`}
-                subtitle="Total portfolio value"
-                trend="up"
-              />
-              <StatsCard
-                title="Annual Dividends"
-                value={`$${currentMetrics.totalAnnualDividends.toLocaleString()}`}
-                subtitle="Projected yearly income"
-                trend="up"
-              />
-              <StatsCard
-                title="Portfolio Yield"
-                value={`${currentMetrics.portfolioYield.toFixed(2)}%`}
-                subtitle="Current dividend yield"
-                trend="neutral"
-              />
-              <StatsCard
-                title="Weighted Avg Yield"
-                value={`${currentMetrics.weightedAvgYield.toFixed(2)}%`}
-                subtitle="Portfolio-weighted yield"
-                trend="neutral"
-              />
-              <StatsCard
-                title="Dividend Stocks"
-                value={currentMetrics.uniqueStocks.toString()}
-                subtitle="Tracked dividend stocks"
-                trend="neutral"
-              />
-            </div>
-          </section>
-        )}
+        {/* Compact Toolbar */}
+        <CompactToolbar
+          connectedAccounts={connectedAccountsData.length}
+          connectedInstitutions={connectedAccountsData.reduce((acc, account) => {
+            const existing = acc.find(inst => inst.item_id === account.item_id);
+            if (existing) {
+              existing.account_count++;
+            } else {
+              acc.push({
+                item_id: account.item_id,
+                institution_name: account.institution_name || 'Unknown',
+                account_count: 1
+              });
+            }
+            return acc;
+          }, [] as Array<{item_id: string, institution_name: string, account_count: number}>)}
+          recentActivity={[]}
+          stats={{
+            totalAnnualDividends: currentMetrics.totalAnnualDividends,
+            totalQuarterlyDividends: currentMetrics.totalAnnualDividends / 4,
+            totalMonthlyDividends: currentMetrics.totalAnnualDividends / 12,
+            uniqueStocks: currentMetrics.uniqueStocks
+          }}
+          userId={user?.id}
+          isSyncing={isSyncing}
+          isRefreshingPrices={isRefreshingPrices}
+          lastSyncedAt={lastSyncedAt}
+          centered={true}
+          isMaintenanceWindow={isMaintenanceWindow()}
+          onUpdate={handleUpdatePortfolio}
+          onPlaidSuccess={handlePlaidSuccess}
+          onStockFound={handleStockFound}
+          onDisconnectInstitution={handleDisconnectInstitution}
+        />
 
         {/* How These Numbers Are Calculated - Collapsible Section */}
         <Collapsible open={isCalculationOpen} onOpenChange={setIsCalculationOpen} className="mb-8">
