@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -197,10 +197,17 @@ export const FutureIncomeProjects = () => {
     return data;
   };
 
-  const projectionData = generateProjectionData();
+  const projectionData = useMemo(() => {
+    return generateProjectionData();
+  }, [trackedStocks, monthlyInvestment, dividendGrowthRate, portfolioGrowthRate, additionalYearlyContribution, reinvestDividends]);
   
   // Filter out Year 0 for chart display (Years 1-15)
-  const chartData = projectionData.filter(data => data.year > 0);
+  const chartData = useMemo(() => {
+    return projectionData.filter(data => data.year > 0);
+  }, [projectionData]);
+  
+  // Create a key for forcing chart re-renders
+  const chartKey = `${monthlyInvestment}-${dividendGrowthRate}-${portfolioGrowthRate}-${additionalYearlyContribution}-${reinvestDividends}`;
   
   const currentMetrics = calculateCurrentMetrics();
 
@@ -288,6 +295,7 @@ export const FutureIncomeProjects = () => {
               <ResponsiveContainer width="100%" height="100%">
                  {chartMode === "dividend" ? (
                    <BarChart 
+                     key={chartKey}
                      data={chartData}
                      margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
                    >
@@ -331,6 +339,7 @@ export const FutureIncomeProjects = () => {
                   </BarChart>
                 ) : (
                    <LineChart 
+                     key={chartKey}
                      data={chartData}
                      margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
                    >
