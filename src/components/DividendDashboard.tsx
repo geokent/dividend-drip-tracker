@@ -5,6 +5,7 @@ import { GettingStartedCard } from "./GettingStartedCard";
 import { PortfolioTopStrip } from "./PortfolioTopStrip";
 import { PlaidLinkButton } from "./PlaidLinkButton";
 import { StockSymbolForm } from "./StockSymbolForm";
+import { BulkUploadStocksDialog } from "./BulkUploadStocksDialog";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -689,6 +690,7 @@ export const DividendDashboard = () => {
 
   const headerActions = (
     <div className="flex items-center gap-2">
+      <BulkUploadStocksDialog onSuccess={() => window.location.reload()} />
       {user?.id && (
         <PlaidLinkButton
           userId={user.id}
