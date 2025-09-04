@@ -4,6 +4,7 @@ import { PlaidLinkButton } from "./PlaidLinkButton";
 import { StockSymbolForm } from "./StockSymbolForm";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Bell, Plus, RefreshCw, ArrowUpDown, Building2, DollarSign, TrendingUp, PieChart } from "lucide-react";
 
 interface CompactToolbarProps {
@@ -45,30 +46,50 @@ export const CompactToolbar = ({
   onDisconnectInstitution
 }: CompactToolbarProps) => {
   return (
-    <div className={`flex flex-wrap items-center gap-2 py-3 border-b border-border ${centered ? 'justify-center' : ''}`}>
-      {/* Portfolio Stats Chips */}
-      <div className="flex items-center gap-2 text-sm">
-        <Badge variant="secondary" className="gap-1">
-          <DollarSign className="h-3 w-3" />
-          ${stats.totalAnnualDividends.toFixed(0)}/yr
-        </Badge>
-        <Badge variant="secondary" className="gap-1">
-          <PieChart className="h-3 w-3" />
-          {stats.uniqueStocks} stocks
-        </Badge>
+    <div className={`flex flex-wrap items-center gap-3 py-3 border-b border-border ${centered ? 'justify-center' : ''}`}>
+      {/* Portfolio Stats with clear labels */}
+      <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-1">
+          <span className="text-muted-foreground">Annual dividends:</span>
+          <Badge variant="secondary" className="gap-1 font-medium">
+            <DollarSign className="h-3 w-3" />
+            ${stats.totalAnnualDividends.toFixed(0)}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-muted-foreground">Stocks:</span>
+          <Badge variant="secondary" className="gap-1 font-medium">
+            <PieChart className="h-3 w-3" />
+            {stats.uniqueStocks}
+          </Badge>
+        </div>
       </div>
 
       <div className="h-4 w-px bg-border mx-1" />
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-1">
-        {/* Connected Accounts */}
+      {/* Action Buttons with clear labels */}
+      <div className="flex items-center gap-2">
+        {/* Connected Accounts - conditional button */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2 gap-1">
-              <Building2 className="h-3 w-3" />
-              <span className="text-xs">{connectedAccounts}</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {connectedAccounts > 0 ? (
+                  <Button variant="ghost" size="sm" className="h-8 px-3 gap-1">
+                    <Building2 className="h-3 w-3" />
+                    <span className="text-xs">Accounts ({connectedAccounts})</span>
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" className="h-8 px-3 gap-1">
+                    <Building2 className="h-3 w-3" />
+                    <span className="text-xs">Connect account</span>
+                  </Button>
+                )}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{connectedAccounts > 0 ? 'Manage connected investment accounts' : 'Connect your investment account to sync holdings automatically'}</p>
+              </TooltipContent>
+            </Tooltip>
           </PopoverTrigger>
           <PopoverContent className="w-80" align="start">
             <div className="space-y-3">
@@ -115,10 +136,17 @@ export const CompactToolbar = ({
         {/* Add Stock */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2 gap-1">
-              <Plus className="h-3 w-3" />
-              <span className="text-xs">Add</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 px-3 gap-1">
+                  <Plus className="h-3 w-3" />
+                  <span className="text-xs">Add stock</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Manually add dividend stocks to track</p>
+              </TooltipContent>
+            </Tooltip>
           </PopoverTrigger>
           <PopoverContent className="w-80" align="start">
             <div className="space-y-3">
@@ -132,28 +160,42 @@ export const CompactToolbar = ({
         </Popover>
 
         {/* Sync */}
-        <Button
-          onClick={onSync}
-          disabled={isSyncing}
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 gap-1"
-        >
-          <ArrowUpDown className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
-          <span className="text-xs">{isSyncing ? 'Syncing' : 'Sync'}</span>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={onSync}
+              disabled={isSyncing}
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 gap-1"
+            >
+              <ArrowUpDown className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="text-xs">{isSyncing ? 'Syncing' : 'Sync'}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Sync holdings from connected accounts</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* Refresh */}
-        <Button
-          onClick={onRefresh}
-          disabled={isRefreshingPrices}
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 gap-1"
-        >
-          <RefreshCw className={`h-3 w-3 ${isRefreshingPrices ? 'animate-spin' : ''}`} />
-          <span className="text-xs">{isRefreshingPrices ? 'Updating' : 'Refresh'}</span>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={onRefresh}
+              disabled={isRefreshingPrices}
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 gap-1"
+            >
+              <RefreshCw className={`h-3 w-3 ${isRefreshingPrices ? 'animate-spin' : ''}`} />
+              <span className="text-xs">{isRefreshingPrices ? 'Updating' : 'Refresh'}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Update stock prices and dividend data</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* Recent Activity */}
         <Popover>

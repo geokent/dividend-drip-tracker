@@ -5,6 +5,9 @@ import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Lightbulb, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StockData {
@@ -635,8 +638,25 @@ export const DividendDashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Portfolio Header and Compact Toolbar */}
-        <div className="space-y-1 mb-6 text-center">
+        <div className="space-y-4 mb-6 text-center">
           <h1 className="text-2xl font-bold">Your Dividend Portfolio</h1>
+          
+          {/* First-time user help banner */}
+          {connectedAccounts === 0 && trackedStocks.length === 0 && (
+            <Alert className="max-w-2xl mx-auto text-left">
+              <Lightbulb className="h-4 w-4" />
+              <AlertDescription className="space-y-3">
+                <div>
+                  <p className="font-medium mb-2">Get started with your dividend portfolio:</p>
+                  <div className="space-y-1 text-sm">
+                    <p><Building2 className="h-3 w-3 inline mr-1" /> <strong>Connect account:</strong> Link your brokerage to automatically sync your holdings</p>
+                    <p><strong>Or add stocks manually:</strong> Use "Add stock" to track specific dividend stocks</p>
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <CompactToolbar
             centered={true}
             connectedAccounts={connectedAccounts}
