@@ -276,28 +276,35 @@ export const FutureIncomeProjects = () => {
         margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                     <XAxis 
-                       dataKey="year" 
-                       stroke="hsl(var(--muted-foreground))"
-                       label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                     />
+                      <XAxis 
+                        dataKey="year" 
+                        stroke="hsl(var(--primary))"
+                        tick={{ fontSize: 12 }}
+                        tickLine={{ stroke: 'hsl(var(--primary))' }}
+                        axisLine={{ stroke: 'hsl(var(--primary))' }}
+                        label={{ value: 'Years', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'hsl(var(--primary))' } }}
+                      />
         <YAxis 
           width={56}
           tickMargin={8}
-          tick={{ fontSize: 12 }}
-          stroke="hsl(var(--muted-foreground))"
+          tick={{ fontSize: 12, fill: 'hsl(var(--primary))' }}
+          stroke="hsl(var(--primary))"
+          tickLine={{ stroke: 'hsl(var(--primary))' }}
+          axisLine={{ stroke: 'hsl(var(--primary))' }}
           tickFormatter={(value) => `$${value.toLocaleString()}`}
         />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        boxShadow: 'var(--shadow-card)'
-                      }}
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
-                      labelFormatter={(label) => `Year ${label}`}
-                    />
+                     <Tooltip 
+                       contentStyle={{
+                         backgroundColor: 'hsl(var(--card))',
+                         border: '1px solid hsl(var(--primary))',
+                         borderRadius: '8px',
+                         boxShadow: 'var(--shadow-card)',
+                         fontSize: 12
+                       }}
+                       formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
+                       labelFormatter={(label) => `Year ${label}`}
+                       labelStyle={{ fontSize: 12, color: 'hsl(var(--primary))' }}
+                     />
                     <Bar 
                       dataKey="monthlyIncome" 
                       fill="hsl(var(--primary))"
@@ -310,45 +317,53 @@ export const FutureIncomeProjects = () => {
                      margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                     <XAxis 
-                       dataKey="year" 
-                       stroke="hsl(var(--muted-foreground))"
-                       label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                     />
+                      <XAxis 
+                        dataKey="year" 
+                        stroke="hsl(var(--primary))"
+                        tick={{ fontSize: 12 }}
+                        tickLine={{ stroke: 'hsl(var(--primary))' }}
+                        axisLine={{ stroke: 'hsl(var(--primary))' }}
+                        label={{ value: 'Years', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'hsl(var(--primary))' } }}
+                      />
         <YAxis 
           width={56}
           tickMargin={8}
-          tick={{ fontSize: 12 }}
-          stroke="hsl(var(--muted-foreground))"
+          tick={{ fontSize: 12, fill: 'hsl(var(--primary))' }}
+          stroke="hsl(var(--primary))"
+          tickLine={{ stroke: 'hsl(var(--primary))' }}
+          axisLine={{ stroke: 'hsl(var(--primary))' }}
           tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
         />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        boxShadow: 'var(--shadow-card)'
-                      }}
-                      formatter={(value: number, name: string) => [
-                        `$${value.toLocaleString()}`, 
-                        name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
-                      ]}
-                      labelFormatter={(label) => `Year ${label}`}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="portfolioValue" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="annualDividends" 
-                      stroke="hsl(var(--financial-green))" 
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--financial-green))', strokeWidth: 2, r: 3 }}
-                    />
+                     <Tooltip 
+                       contentStyle={{
+                         backgroundColor: 'hsl(var(--card))',
+                         border: '1px solid hsl(var(--primary))',
+                         borderRadius: '8px',
+                         boxShadow: 'var(--shadow-card)',
+                         fontSize: 12
+                       }}
+                       formatter={(value: number, name: string) => [
+                         `$${value.toLocaleString()}`, 
+                         name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
+                       ]}
+                       labelFormatter={(label) => `Year ${label}`}
+                       labelStyle={{ fontSize: 12, color: 'hsl(var(--primary))' }}
+                     />
+                     <Line 
+                       type="monotone" 
+                       dataKey="portfolioValue" 
+                       stroke="hsl(var(--primary))" 
+                       strokeWidth={3}
+                       dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                     />
+                     <Line 
+                       type="monotone" 
+                       dataKey="annualDividends" 
+                       stroke="#2563eb" 
+                       strokeWidth={2}
+                       strokeDasharray="5 5"
+                       dot={{ fill: '#2563eb', strokeWidth: 2, r: 3 }}
+                     />
                   </LineChart>
                 )}
               </ResponsiveContainer>

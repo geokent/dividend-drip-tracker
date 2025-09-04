@@ -705,19 +705,9 @@ export const DividendDashboard = () => {
         </div>
       )}
 
-      {/* Dashboard Content */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          <PortfolioTable
-            stocks={trackedStocks}
-            onRemoveStock={handleRemoveStock}
-            onUpdateShares={handleUpdateShares}
-          />
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
+      {/* Getting Started Card - Prominent at top */}
+      {(trackedStocks.length === 0 || connectedAccounts === 0) && (
+        <div className="mb-8">
           <GettingStartedCard
             hasStocks={trackedStocks.length > 0}
             hasConnectedAccounts={connectedAccounts > 0}
@@ -730,9 +720,20 @@ export const DividendDashboard = () => {
             }}
             onAddStock={() => setShowStockForm(true)}
           />
-          
-          <UpcomingDividendsCard stocks={trackedStocks} />
         </div>
+      )}
+
+      {/* Dashboard Content */}
+      <div className="space-y-6">
+        {/* Main Content */}
+        <PortfolioTable
+          stocks={trackedStocks}
+          onRemoveStock={handleRemoveStock}
+          onUpdateShares={handleUpdateShares}
+        />
+        
+        {/* Upcoming Dividends - Below the chart */}
+        <UpcomingDividendsCard stocks={trackedStocks} />
       </div>
     </AppLayout>
   );
