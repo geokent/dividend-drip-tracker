@@ -41,15 +41,22 @@ All colors MUST be HSL.
     --financial-blue-light: 200 100% 50%;
     --financial-green: 142 86% 28%;
     --financial-gray: 210 11% 71%;
+    --financial-value: 210 11% 15%; /* For displaying monetary values */
+    --financial-value-positive: 142 86% 28%; /* For positive gains */
+    --financial-value-negative: 0 84% 60%; /* For losses */
     
-    /* Updated gradients with blue theme */
+    /* Enhanced gradients with blue theme */
     --gradient-primary: linear-gradient(135deg, hsl(200 100% 40%), hsl(200 100% 35%));
+    --gradient-secondary: linear-gradient(135deg, hsl(210 100% 97%), hsl(200 100% 95%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 100% 98%));
     --gradient-hero: linear-gradient(135deg, hsl(200 100% 40% / 0.1), hsl(200 100% 35% / 0.05));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 100% 99%));
     
-    /* Shadows */
+    /* Enhanced shadows with depth */
     --shadow-card: 0 4px 6px -1px hsl(210 11% 15% / 0.1), 0 2px 4px -1px hsl(210 11% 15% / 0.06);
     --shadow-hover: 0 10px 15px -3px hsl(210 11% 15% / 0.1), 0 4px 6px -2px hsl(210 11% 15% / 0.05);
+    --shadow-elevated: 0 25px 50px -12px hsl(210 11% 15% / 0.25);
+    --shadow-glow: 0 0 20px hsl(200 100% 40% / 0.15);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -131,12 +138,28 @@ All colors MUST be HSL.
     background: var(--gradient-card);
   }
   
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+  
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+  
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
   
   .shadow-hover {
     box-shadow: var(--shadow-hover);
+  }
+  
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
   }
   
   .transition-smooth {
@@ -150,11 +173,19 @@ All colors MUST be HSL.
 
   /* Card variants */
   .card-elevated {
-    @apply bg-card border border-border/20 shadow-card;
+    @apply bg-card border border-border/20 shadow-elevated hover:shadow-glow transition-smooth;
   }
 
   .card-subtle {
-    @apply bg-card border border-border/20 shadow-sm;
+    @apply bg-card border border-border/20 shadow-card hover:shadow-hover transition-smooth;
+  }
+  
+  .card-metric {
+    @apply bg-gradient-subtle border border-border/20 shadow-card hover:shadow-hover transition-smooth rounded-lg;
+  }
+  
+  .card-feature {
+    @apply bg-card/80 border border-border/20 shadow-card hover:shadow-hover backdrop-blur-sm transition-smooth;
   }
 
   /* Typography utilities */
@@ -163,6 +194,45 @@ All colors MUST be HSL.
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  
+  /* Page title hierarchy */
+  .page-title {
+    @apply text-3xl lg:text-4xl font-bold text-foreground;
+  }
+  
+  .section-title {
+    @apply text-2xl lg:text-3xl font-bold text-foreground;
+  }
+  
+  .card-title {
+    @apply text-xl font-semibold text-foreground;
+  }
+  
+  /* Value styling - neutral colors for financial data */
+  .financial-value {
+    @apply text-foreground font-semibold;
+  }
+  
+  .financial-value-large {
+    @apply text-lg font-semibold text-foreground;
+  }
+  
+  .financial-label {
+    @apply text-xs text-primary uppercase tracking-wide font-medium;
+  }
+  
+  /* Metric components */
+  .metric-card {
+    @apply card-metric p-5 text-center;
+  }
+  
+  .metric-value {
+    @apply text-lg font-semibold text-foreground;
+  }
+  
+  .metric-label {
+    @apply text-xs text-primary uppercase tracking-wide font-medium;
   }
 
   /* Animation utilities */

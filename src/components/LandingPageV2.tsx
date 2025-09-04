@@ -205,12 +205,12 @@ const LandingPageV2 = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
             <div className="text-center lg:text-left animate-fade-in">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 shadow-sm">
                 <Star className="h-4 w-4 mr-2" />
                 #1 Dividend Tracking Platform
               </div>
               
-              <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              <h1 className="page-title text-4xl lg:text-6xl mb-6 leading-tight">
                 Build Wealth Through
                 <span className="gradient-text block">Dividend Investing</span>
               </h1>
@@ -261,7 +261,7 @@ const LandingPageV2 = () => {
 
             {/* Right Column - Auth Form */}
             <div className="animate-scale-in">
-              <Card className="backdrop-blur-lg bg-card/80 shadow-elegant border-border/20">
+              <Card className="card-elevated backdrop-blur-lg bg-card/95">
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-2xl">
                     {isSignUp ? "Start Your Journey" : "Welcome Back"}
@@ -372,7 +372,7 @@ const LandingPageV2 = () => {
       <section className="py-20 bg-gradient-to-b from-background to-accent/5">
         <div className="container">
           <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="section-title text-3xl lg:text-5xl mb-6">
               Trusted by Smart
               <span className="gradient-text block">Investors</span>
             </h2>
@@ -382,7 +382,7 @@ const LandingPageV2 = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-card p-6 rounded-xl border border-border/20 shadow-sm hover-scale">
+            <div className="card-feature p-6 rounded-xl hover-scale">
               <div className="flex items-center mb-4">
                 <div className="flex text-yellow-400">
                   {"★".repeat(5)}
@@ -395,7 +395,7 @@ const LandingPageV2 = () => {
               <div className="text-sm text-muted-foreground">Retired Teacher</div>
             </div>
             
-            <div className="bg-card p-6 rounded-xl border border-border/20 shadow-sm hover-scale">
+            <div className="card-feature p-6 rounded-xl hover-scale">
               <div className="flex items-center mb-4">
                 <div className="flex text-yellow-400">
                   {"★".repeat(5)}
@@ -408,7 +408,7 @@ const LandingPageV2 = () => {
               <div className="text-sm text-muted-foreground">Software Engineer</div>
             </div>
             
-            <div className="bg-card p-6 rounded-xl border border-border/20 shadow-sm hover-scale">
+            <div className="card-feature p-6 rounded-xl hover-scale">
               <div className="flex items-center mb-4">
                 <div className="flex text-yellow-400">
                   {"★".repeat(5)}
@@ -428,7 +428,7 @@ const LandingPageV2 = () => {
       <section className="py-20">
         <div className="container">
           <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="section-title text-3xl lg:text-5xl mb-6">
               Everything You Need to
               <span className="gradient-text block">Master Dividend Investing</span>
             </h2>
@@ -481,12 +481,12 @@ const LandingPageV2 = () => {
               if (feature.link) {
                 return (
                   <Link key={index} to={feature.link}>
-                    <Card className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm h-full cursor-pointer">
+                    <Card className="card-feature group hover-scale h-full cursor-pointer">
                       <CardHeader>
                         <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
                           <feature.icon className="h-6 w-6" />
                         </div>
-                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                        <CardTitle className="card-title">{feature.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <CardDescription className="text-base leading-relaxed">
@@ -498,12 +498,12 @@ const LandingPageV2 = () => {
                 );
               } else {
                 return (
-                  <Card key={index} className="group hover-scale border-border/20 bg-card/50 backdrop-blur-sm">
+                  <Card key={index} className="card-feature group hover-scale">
                     <CardHeader>
                       <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
                         <feature.icon className="h-6 w-6" />
                       </div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardTitle className="card-title">{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base leading-relaxed">
@@ -525,7 +525,7 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              <h2 className="section-title mb-6">
                 New to Dividend Investing?
                 <span className="gradient-text block">We'll Guide You</span>
               </h2>
@@ -577,7 +577,7 @@ const LandingPageV2 = () => {
               />
             </div>
             <div className="order-1 lg:order-2 animate-fade-in">
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              <h2 className="section-title mb-6">
                 The Power of the
                 <span className="gradient-text block">Dividend Snowball</span>
               </h2>
@@ -587,14 +587,14 @@ const LandingPageV2 = () => {
                 to buy more shares, those shares generate even more dividends, creating an 
                 exponential growth effect.
               </p>
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="text-center p-6 rounded-2xl bg-background/80 border border-border/20">
-                  <div className="text-3xl font-bold text-primary mb-2">$500</div>
-                  <div className="text-sm text-muted-foreground">Monthly Investment</div>
+                <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="metric-card">
+                  <div className="text-3xl font-bold text-foreground mb-2">$500</div>
+                  <div className="metric-label">Monthly Investment</div>
                 </div>
-                 <div className="text-center p-6 rounded-2xl bg-background/80 border border-border/20">
-                   <div className="text-3xl font-bold text-financial-green mb-2">$2.1M</div>
-                   <div className="text-sm text-muted-foreground">30-Year Total</div>
+                 <div className="metric-card">
+                   <div className="text-3xl font-bold text-foreground mb-2">$2.1M</div>
+                   <div className="metric-label">30-Year Total</div>
                  </div>
               </div>
               <div className="flex flex-col items-center">
@@ -615,7 +615,7 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              <h2 className="section-title mb-6">
                 Achieve Financial Independence
                 <span className="gradient-text block">The FIRE Way</span>
               </h2>
@@ -678,7 +678,7 @@ const LandingPageV2 = () => {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="section-title text-3xl lg:text-5xl mb-6">
               Advanced Features for
               <span className="gradient-text block">Serious Investors</span>
             </h2>
@@ -686,7 +686,7 @@ const LandingPageV2 = () => {
 
           <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
             <div className="animate-fade-in">
-              <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-2 text-center">
+              <h3 className="card-title text-2xl lg:text-3xl mb-2 text-center">
                 Automatic Portfolio Syncing
               </h3>
               <p className="text-xs text-muted-foreground mb-6 font-medium text-center">Coming Soon</p>
@@ -727,7 +727,7 @@ const LandingPageV2 = () => {
               />
             </div>
             <div className="order-1 lg:order-2 animate-fade-in">
-              <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-6">
+              <h3 className="card-title text-2xl lg:text-3xl mb-6">
                 Future Income Projections
               </h3>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
@@ -735,20 +735,20 @@ const LandingPageV2 = () => {
                 to project your future dividend income. Plan your retirement and financial 
                 goals with confidence using our advanced modeling tools.
               </p>
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="text-center p-4 rounded-xl bg-background/80 border border-border/20">
-                  <div className="text-2xl font-bold text-primary mb-1">5Y</div>
-                  <div className="text-xs text-muted-foreground">Projection</div>
+               <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="metric-card p-4">
+                  <div className="text-2xl font-bold text-foreground mb-1">5Y</div>
+                  <div className="metric-label">Projection</div>
                 </div>
-                 <div className="text-center p-4 rounded-xl bg-background/80 border border-border/20">
-                   <div className="text-2xl font-bold text-financial-green mb-1">10Y</div>
-                   <div className="text-xs text-muted-foreground">Timeline</div>
+                 <div className="metric-card p-4">
+                   <div className="text-2xl font-bold text-foreground mb-1">10Y</div>
+                   <div className="metric-label">Timeline</div>
                  </div>
-                 <div className="text-center p-4 rounded-xl bg-background/80 border border-border/20">
-                   <div className="text-2xl font-bold text-primary mb-1">25Y</div>
-                   <div className="text-xs text-muted-foreground">Long-term</div>
+                 <div className="metric-card p-4">
+                   <div className="text-2xl font-bold text-foreground mb-1">25Y</div>
+                   <div className="metric-label">Long-term</div>
                  </div>
-              </div>
+               </div>
               <div className="flex flex-col items-center">
                 <Button variant="outline" size="lg" className="px-8" asChild>
                   <Link to="/future-income-projects">
@@ -766,7 +766,7 @@ const LandingPageV2 = () => {
       <section className="py-12 bg-accent/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-card rounded-xl p-6 border border-border/20 flex flex-col md:flex-row items-center justify-between gap-4 hover-scale">
+            <div className="card-feature rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 hover-scale">
               <div className="text-center md:text-left">
                 <h3 className="font-semibold text-lg mb-2">Install DivTrkr on Your Device</h3>
                 <p className="text-muted-foreground">Get the full app experience with offline access and notifications</p>

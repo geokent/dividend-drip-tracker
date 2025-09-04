@@ -421,15 +421,15 @@ export const FutureIncomeProjects = () => {
 
       <div className="container section-y space-y-8">
         {/* Page Title */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-sm">
             <Brain className="h-4 w-4" />
             <span>AI-Powered Analysis</span>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
+          <h1 className="page-title mb-4">
             Future Dividend Income Projections
           </h1>
-          <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             <span className="block">AI-powered projections based on your current portfolio.</span>
             <span className="block">Customize parameters below to see how different strategies affect your long-term income.</span>
           </p>
@@ -474,11 +474,11 @@ export const FutureIncomeProjects = () => {
         <div className="flex flex-col lg:flex-row gap-6 mb-8">
           {/* Chart Section - Main Content */}
           <div className="flex-1">
-            <Card className="shadow-card hover:shadow-hover transition-smooth gradient-card">
+            <Card className="card-elevated gradient-card">
               <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                    <CardTitle className="card-title flex items-center gap-2">
                       {chartMode === "dividend" ? (
                         <BarChart3 className="h-5 w-5 text-primary" />
                       ) : (

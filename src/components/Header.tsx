@@ -19,7 +19,7 @@ export const Header = () => {
   const isActivePath = (path: string) => location.pathname === path;
 
   return (
-    <header className="border-b border-border/5 backdrop-blur-lg bg-white/95 sticky top-0 z-50 shadow-sm">
+    <header className="border-b border-border/10 backdrop-blur-lg bg-background/95 sticky top-0 z-50 shadow-card">
       <div className="container">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -41,9 +41,9 @@ export const Header = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-smooth ${
                     isActivePath(item.href)
-                      ? "text-primary bg-primary/10"
+                      ? "text-primary bg-primary/10 shadow-sm"
                       : "text-foreground/80 hover:text-primary hover:bg-primary/5"
                   }`}
                 >
@@ -106,9 +106,9 @@ export const Header = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${
+                    className={`block px-3 py-2 text-base font-medium rounded-lg transition-smooth ${
                       isActivePath(item.href)
-                        ? "text-primary bg-primary/10"
+                        ? "text-primary bg-primary/10 shadow-sm"
                         : "text-foreground/80 hover:text-primary hover:bg-primary/5"
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
