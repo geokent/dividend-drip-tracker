@@ -66,6 +66,7 @@ export const FutureIncomeProjects = () => {
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
+  const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
   
   // Dashboard-compatible state for CompactToolbar
   const [connectedAccountsData, setConnectedAccountsData] = useState<any[]>([]);
@@ -468,22 +469,81 @@ export const FutureIncomeProjects = () => {
           onDisconnectInstitution={handleDisconnectInstitution}
         />
 
-        {/* Charts Section - Now prioritized */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Portfolio Growth Chart */}
-          <Card className="shadow-elegant">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Portfolio Growth Projection
-              </CardTitle>
-              <CardDescription>
-                Portfolio value and annual dividend income over 15 years
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
+        {/* Combined Chart Section - Much Larger */}
+        <Card className="shadow-elegant mb-8">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  {chartMode === "dividend" ? (
+                    <BarChart3 className="h-6 w-6 text-primary" />
+                  ) : (
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                  )}
+                  {chartMode === "dividend" ? "Monthly Dividend Income" : "Portfolio Growth Projection"}
+                </CardTitle>
+                <CardDescription className="text-base">
+                  {chartMode === "dividend" 
+                    ? "Projected monthly dividend income over time" 
+                    : "Portfolio value and annual dividend income over 15 years"
+                  }
+                </CardDescription>
+              </div>
+              
+              {/* Chart Mode Toggle */}
+              <div className="flex bg-muted rounded-lg p-1">
+                <Button
+                  variant={chartMode === "dividend" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setChartMode("dividend")}
+                  className="text-sm"
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Monthly Income
+                </Button>
+                <Button
+                  variant={chartMode === "growth" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setChartMode("growth")}
+                  className="text-sm"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Portfolio Growth
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[500px]">
+              <ResponsiveContainer width="100%" height="100%">
+                {chartMode === "dividend" ? (
+                  <BarChart data={projectionData.filter((_, index) => index % 2 === 0)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="year" 
+                      stroke="hsl(var(--muted-foreground))"
+                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      tickFormatter={(value) => `$${value.toLocaleString()}`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
+                      labelFormatter={(label) => `Year ${label}`}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="monthlyIncome" 
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                ) : (
                   <LineChart data={projectionData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
@@ -522,136 +582,91 @@ export const FutureIncomeProjects = () => {
                       dot={{ fill: 'hsl(var(--secondary))', strokeWidth: 2, r: 4 }}
                     />
                   </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+                )}
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Monthly Dividend Income Chart */}
-          <Card className="shadow-elegant">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                Monthly Dividend Income
-              </CardTitle>
-              <CardDescription>
-                Projected monthly dividend income over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectionData.filter((_, index) => index % 2 === 0)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="year" 
-                      stroke="hsl(var(--muted-foreground))"
-                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))"
-                      tickFormatter={(value) => `$${value.toLocaleString()}`}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
-                      labelFormatter={(label) => `Year ${label}`}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Bar 
-                      dataKey="monthlyIncome" 
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Compact Parameters and Milestones Grid */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* Key Milestones - Compact */}
-          <Card className="shadow-card">
-            <CardHeader className="py-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Target className="h-4 w-4 text-primary" />
+        {/* Compact Parameters and Milestones Grid - Smaller */}
+        <div className="grid lg:grid-cols-2 gap-4 mb-6">
+          {/* Key Milestones - Much Smaller */}
+          <Card className="shadow-sm border-muted/50">
+            <CardHeader className="py-2 px-4">
+              <CardTitle className="text-sm flex items-center gap-1.5">
+                <Target className="h-3.5 w-3.5 text-primary" />
                 Key Milestones
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-xs">
                 Important achievements in your dividend journey.
               </CardDescription>
             </CardHeader>
-            <CardContent className="py-4 space-y-3">
+            <CardContent className="py-2 px-4 space-y-2">
               {/* 1 Year */}
-              <div className="bg-card border rounded-lg p-3">
+              <div className="bg-muted/30 border rounded-md p-2">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium text-muted-foreground">1 Year</span>
-                  <Badge variant="outline" className="text-xs">
-                    ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/month
+                  <span className="text-xs font-medium text-muted-foreground">1 Year</span>
+                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
+                    ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-lg font-bold text-primary">
                   ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  ${projectionData[1]?.annualDividends?.toLocaleString() || '0'} annual dividends
+                <div className="text-xs text-muted-foreground">
+                  ${projectionData[1]?.annualDividends?.toLocaleString() || '0'} annual
                 </div>
               </div>
 
               {/* 10 Year */}
-              <div className="bg-card border rounded-lg p-3">
+              <div className="bg-muted/30 border rounded-md p-2">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium text-muted-foreground">10 Years</span>
-                  <Badge variant="outline" className="text-xs">
-                    ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/month
+                  <span className="text-xs font-medium text-muted-foreground">10 Years</span>
+                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
+                    ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-lg font-bold text-primary">
                   ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  ${projectionData[10]?.annualDividends?.toLocaleString() || '0'} annual dividends
+                <div className="text-xs text-muted-foreground">
+                  ${projectionData[10]?.annualDividends?.toLocaleString() || '0'} annual
                 </div>
               </div>
 
               {/* 15 Year */}
-              <div className="bg-card border rounded-lg p-3">
+              <div className="bg-muted/30 border rounded-md p-2">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium text-muted-foreground">15 Years</span>
-                  <Badge variant="outline" className="text-xs">
-                    ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/month
+                  <span className="text-xs font-medium text-muted-foreground">15 Years</span>
+                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
+                    ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-lg font-bold text-primary">
                   ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  ${projectionData[15]?.annualDividends?.toLocaleString() || '0'} annual dividends
+                <div className="text-xs text-muted-foreground">
+                  ${projectionData[15]?.annualDividends?.toLocaleString() || '0'} annual
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Projection Parameters - Compact */}
-          <Card className="shadow-card">
-            <CardHeader className="py-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Calculator className="h-4 w-4 text-primary" />
+          {/* Projection Parameters - Much Smaller */}
+          <Card className="shadow-sm border-muted/50">
+            <CardHeader className="py-2 px-4">
+              <CardTitle className="text-sm flex items-center gap-1.5">
+                <Calculator className="h-3.5 w-3.5 text-primary" />
                 Projection Parameters
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-xs">
                 Adjust these values to see different scenarios.
               </CardDescription>
             </CardHeader>
-            <CardContent className="py-4 space-y-4">
+            <CardContent className="py-2 px-4 space-y-3">
               {/* Monthly Investment */}
-              <div className="space-y-2">
-                <Label htmlFor="monthly-investment" className="text-sm font-medium">
+              <div className="space-y-1.5">
+                <Label htmlFor="monthly-investment" className="text-xs font-medium">
                   Monthly Investment: ${monthlyInvestment.toLocaleString()}
                 </Label>
                 <Slider
@@ -661,13 +676,13 @@ export const FutureIncomeProjects = () => {
                   step={100}
                   value={[monthlyInvestment]}
                   onValueChange={([value]) => setMonthlyInvestment(value)}
-                  className="w-full"
+                  className="w-full h-1"
                 />
               </div>
 
               {/* Dividend Growth Rate */}
-              <div className="space-y-2">
-                <Label htmlFor="dividend-growth" className="text-sm font-medium">
+              <div className="space-y-1.5">
+                <Label htmlFor="dividend-growth" className="text-xs font-medium">
                   Dividend Growth Rate: {dividendGrowthRate}%
                 </Label>
                 <Slider
@@ -677,13 +692,13 @@ export const FutureIncomeProjects = () => {
                   step={0.5}
                   value={[dividendGrowthRate]}
                   onValueChange={([value]) => setDividendGrowthRate(value)}
-                  className="w-full"
+                  className="w-full h-1"
                 />
               </div>
 
               {/* Additional Yearly Contribution */}
-              <div className="space-y-2">
-                <Label htmlFor="yearly-contribution" className="text-sm font-medium">
+              <div className="space-y-1.5">
+                <Label htmlFor="yearly-contribution" className="text-xs font-medium">
                   Additional Yearly: ${additionalYearlyContribution.toLocaleString()}
                 </Label>
                 <Slider
@@ -693,7 +708,7 @@ export const FutureIncomeProjects = () => {
                   step={1000}
                   value={[additionalYearlyContribution]}
                   onValueChange={([value]) => setAdditionalYearlyContribution(value)}
-                  className="w-full"
+                  className="w-full h-1"
                 />
               </div>
 
@@ -703,8 +718,9 @@ export const FutureIncomeProjects = () => {
                   id="reinvest-dividends"
                   checked={reinvestDividends}
                   onCheckedChange={(checked) => setReinvestDividends(checked as boolean)}
+                  className="h-3.5 w-3.5"
                 />
-                <Label htmlFor="reinvest-dividends" className="text-sm font-medium">
+                <Label htmlFor="reinvest-dividends" className="text-xs font-medium">
                   Reinvest Dividends
                 </Label>
               </div>
