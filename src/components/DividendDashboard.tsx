@@ -532,6 +532,37 @@ export const DividendDashboard = () => {
     }
   };
 
+  const handlePlaidDisconnect = async () => {
+    // Refresh connection status after disconnect
+    if (!user?.id) return;
+    
+    const { data: accounts } = await supabase
+      .from('plaid_accounts')
+      .select('id, item_id, institution_name')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+
+    if (accounts) {
+      setConnectedAccounts(accounts.length);
+      
+      // Update institutions list
+      const institutionMap = new Map();
+      accounts.forEach(account => {
+        const key = account.item_id;
+        if (institutionMap.has(key)) {
+          institutionMap.get(key).account_count++;
+        } else {
+          institutionMap.set(key, {
+            item_id: account.item_id,
+            institution_name: account.institution_name || 'Unknown Institution',
+            account_count: 1
+          });
+        }
+      });
+      setConnectedInstitutions(Array.from(institutionMap.values()));
+    }
+  };
+
   const refreshStockPrices = async () => {
     if (!user?.id || trackedStocks.length === 0) return;
     
@@ -665,6 +696,9 @@ export const DividendDashboard = () => {
           userId={user.id}
           onSuccess={handlePlaidSuccess}
           size="sm"
+          isConnected={connectedInstitutions.length > 0}
+          connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
+          onDisconnect={handlePlaidDisconnect}
           data-plaid-link-button
         />
       )}

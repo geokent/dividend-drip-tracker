@@ -133,6 +133,12 @@ export const CompactToolbar = ({
                   disabled={connectedInstitutions.length >= 1}
                   limitMessage={connectedInstitutions.length >= 1 ? "Free tier allows only 1 institution" : undefined}
                   size="sm"
+                  isConnected={connectedInstitutions.length > 0}
+                  connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
+                  onDisconnect={() => {
+                    // Refresh will be handled by parent component
+                    window.location.reload();
+                  }}
                 />
               )}
             </div>

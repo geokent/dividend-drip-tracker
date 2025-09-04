@@ -11,9 +11,12 @@ interface PlaidLinkButtonProps {
   disabled?: boolean;
   limitMessage?: string;
   size?: "default" | "sm" | "lg";
+  isConnected?: boolean;
+  connectedItemId?: string;
+  onDisconnect?: () => void;
 }
 
-export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMessage, size = "default" }: PlaidLinkButtonProps) => {
+export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMessage, size = "default", isConnected = false, connectedItemId, onDisconnect }: PlaidLinkButtonProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
@@ -137,26 +140,80 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
     }
   };
 
-  const handleClick = () => {
-    if (disabled) {
-      if (limitMessage) {
-        toast.info(limitMessage);
-      }
-      return;
-    }
+  const handleDisconnect = async () => {
+    if (!connectedItemId) return;
     
-    if (linkToken && ready) {
-      open();
-    } else {
-      createLinkToken();
+    setIsLoading(true);
+    toast.loading('Disconnecting your account...', { id: 'plaid-disconnect' });
+    
+    try {
+      console.log('Disconnecting item:', connectedItemId);
+      
+      const { data, error } = await supabase.functions.invoke('plaid-disconnect-item', {
+        body: {
+          user_id: userId,
+          item_id: connectedItemId
+        }
+      });
+
+      if (error) {
+        console.error('Disconnect error:', error);
+        toast.error('Failed to disconnect account. Please try again.', { id: 'plaid-disconnect' });
+        return;
+      }
+
+      console.log('Disconnect successful:', data);
+      toast.success('Investment account disconnected successfully!', { id: 'plaid-disconnect' });
+      
+      // Notify parent component
+      onDisconnect?.();
+    } catch (error) {
+      console.error('Error disconnecting account:', error);
+      toast.error('Disconnect failed. Please check your connection and try again.', { id: 'plaid-disconnect' });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleClick = () => {
+    if (isConnected) {
+      handleDisconnect();
+    } else {
+      if (disabled) {
+        if (limitMessage) {
+          toast.info(limitMessage);
+        }
+        return;
+      }
+      
+      if (linkToken && ready) {
+        open();
+      } else {
+        createLinkToken();
+      }
+    }
+  };
+
+  const getButtonVariant = () => {
+    if (disabled) return "secondary";
+    if (isConnected) return "destructive";
+    return "default";
+  };
+
+  const getButtonText = () => {
+    if (isLoading) {
+      return isConnected ? 'Disconnecting...' : 'Connecting...';
+    }
+    if (disabled) return 'Account Limit Reached';
+    if (isConnected) return 'Unlink Investment Account';
+    return 'Connect Investment Account';
   };
 
   return (
     <Button
       onClick={handleClick}
       disabled={isLoading || disabled}
-      variant={disabled ? "secondary" : "default"}
+      variant={getButtonVariant()}
       size={size}
       className="flex items-center gap-2"
     >
@@ -165,7 +222,7 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
       ) : (
         <Link className="h-4 w-4" />
       )}
-      {isLoading ? 'Connecting...' : disabled ? 'Account Limit Reached' : 'Connect Investment Account'}
+      {getButtonText()}
     </Button>
   );
 };
