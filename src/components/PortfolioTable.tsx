@@ -73,8 +73,8 @@ export const PortfolioTable = ({ stocks, onRemoveStock, onUpdateShares }: Portfo
               <TableHead className="text-right">Price</TableHead>
               <TableHead className="text-right">Value</TableHead>
               <TableHead className="text-right">Yield</TableHead>
-              <TableHead className="text-right">Annual Div.</TableHead>
               <TableHead className="text-right">Monthly Div.</TableHead>
+              <TableHead className="text-right">Annual Div.</TableHead>
               <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -157,7 +157,7 @@ export const PortfolioTable = ({ stocks, onRemoveStock, onUpdateShares }: Portfo
                 <TableCell className="text-right">
                   <span className="financial-value">
                     {stock.annualDividend && stock.shares
-                      ? formatCurrency(stock.annualDividend * stock.shares)
+                      ? formatCurrency((stock.annualDividend * stock.shares) / 12)
                       : "—"
                     }
                   </span>
@@ -165,7 +165,7 @@ export const PortfolioTable = ({ stocks, onRemoveStock, onUpdateShares }: Portfo
                 <TableCell className="text-right">
                   <span className="financial-value">
                     {stock.annualDividend && stock.shares
-                      ? formatCurrency((stock.annualDividend * stock.shares) / 12)
+                      ? formatCurrency(stock.annualDividend * stock.shares)
                       : "—"
                     }
                   </span>
