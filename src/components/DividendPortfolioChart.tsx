@@ -117,19 +117,12 @@ export const DividendPortfolioChart = ({
                 <div className="block lg:hidden space-y-3">
                   {/* Header Row */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-sm font-bold text-foreground uppercase tracking-wide min-w-[3rem]">
-                        {stock.symbol}
-                      </span>
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
-                          {stock.companyName}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {formatCurrency(stock.currentPrice)}
-                        </p>
-                      </div>
-                    </div>
+                     <div className="flex flex-col space-y-1">
+                       <span className="font-semibold tracking-tight text-base text-foreground">{stock.symbol}</span>
+                       <span className="text-xs text-muted-foreground">
+                         {formatCurrency(stock.currentPrice)}
+                       </span>
+                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -212,20 +205,15 @@ export const DividendPortfolioChart = ({
 
                 {/* Desktop Layout */}
                 <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center">
-                  {/* Stock identification - 2 columns */}
-                  <div className="col-span-2 flex items-center gap-3">
-                    <span className="font-mono text-sm font-bold text-foreground uppercase tracking-wide min-w-[3rem]">
-                      {stock.symbol}
-                    </span>
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
-                        {stock.companyName}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {formatCurrency(stock.currentPrice)}
-                      </p>
-                    </div>
-                  </div>
+                   {/* Stock identification - 2 columns */}
+                   <div className="col-span-2 flex items-center gap-3">
+                     <div className="flex flex-col space-y-1">
+                       <span className="font-semibold tracking-tight text-base text-foreground">{stock.symbol}</span>
+                       <span className="text-xs text-muted-foreground">
+                         {formatCurrency(stock.currentPrice)}
+                       </span>
+                     </div>
+                   </div>
 
                   {/* Shares - 1 column */}
                   <div className="col-span-1 text-center">

@@ -652,6 +652,9 @@ export const DividendDashboard = () => {
     return sum + (stock.currentPrice * stock.shares);
   }, 0);
 
+  // Calculate total yield percentage
+  const totalYield = totalPortfolioValue > 0 ? (stats.totalAnnualDividends / totalPortfolioValue) * 100 : 0;
+
   const [showStockForm, setShowStockForm] = useState(false);
 
   const headerActions = (
@@ -669,7 +672,7 @@ export const DividendDashboard = () => {
         variant="outline"
       >
         <Plus className="h-4 w-4 mr-2" />
-        Add Stock
+        Manually Add Stock
       </Button>
     </div>
   );
@@ -685,7 +688,9 @@ export const DividendDashboard = () => {
       {/* Portfolio Top Strip */}
       <PortfolioTopStrip 
         totalValue={totalPortfolioValue}
-        connectedAccounts={connectedAccounts}
+        totalYield={totalYield}
+        totalMonthlyDividends={stats.totalMonthlyDividends}
+        totalAnnualDividends={stats.totalAnnualDividends}
       />
       
       {/* First-time user help banner */}
