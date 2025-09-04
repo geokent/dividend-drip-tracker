@@ -233,30 +233,19 @@ export const FutureIncomeProjects = () => {
           <h1 className="page-title mb-4">
             Future Dividend Income Projections
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            <span className="block">AI-powered projections based on your current portfolio.</span>
-            <span className="block">Customize parameters below to see how different strategies affect your long-term income.</span>
-          </p>
         </div>
 
         {/* Main Chart - Full Width */}
         <Card className="card-elevated gradient-card mb-8">
-          <CardHeader className="pb-4">
+          <CardHeader className={`pb-4 ${chartMode === "dividend" ? "hidden" : ""}`}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <CardTitle className="card-title flex items-center gap-2">
-                  {chartMode === "dividend" ? (
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                  ) : (
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                  )}
-                  {chartMode === "dividend" ? "Monthly Dividend Income" : "Portfolio Growth Projection"}
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Portfolio Growth Projection
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
-                  {chartMode === "dividend" 
-                    ? "Projected monthly dividend income over time" 
-                    : "Portfolio value and annual dividend income over 15 years"
-                  }
+                  Portfolio value and annual dividend income over 15 years
                 </CardDescription>
               </div>
               <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
@@ -267,13 +256,31 @@ export const FutureIncomeProjects = () => {
               </Tabs>
             </div>
           </CardHeader>
-          <CardContent className="pb-4">
-            <div className="h-[600px]">
+          {chartMode === "dividend" && (
+            <div className="flex justify-between items-center p-4 pb-2">
+              <div></div>
+              <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
+                  <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
+          <CardContent className="pb-4 relative">
+            {chartMode === "dividend" && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <h3 className="text-2xl font-bold text-primary bg-background/80 px-4 py-2 rounded-lg backdrop-blur-sm">
+                  Monthly Dividend Income
+                </h3>
+              </div>
+            )}
+            <div className="h-[280px] md:h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
                 {chartMode === "dividend" ? (
                    <BarChart 
-                     data={projectionData.filter((_, index) => index % 2 === 0)}
-        margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
+                     data={projectionData}
+                     margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
@@ -283,6 +290,7 @@ export const FutureIncomeProjects = () => {
                         tickLine={{ stroke: 'hsl(var(--primary))' }}
                         axisLine={{ stroke: 'hsl(var(--primary))' }}
                         label={{ value: 'Years', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'hsl(var(--primary))' } }}
+                        interval="preserveStartEnd"
                       />
         <YAxis 
           width={56}
@@ -309,6 +317,7 @@ export const FutureIncomeProjects = () => {
                       dataKey="monthlyIncome" 
                       fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
+                      maxBarSize={12}
                     />
                   </BarChart>
                 ) : (
@@ -405,6 +414,14 @@ export const FutureIncomeProjects = () => {
             </div>
           </CardFooter>
         </Card>
+
+        {/* Explanatory Text - moved from header */}
+        <div className="text-center mb-8">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <span className="block">AI-powered projections based on your current portfolio.</span>
+            <span className="block">Customize parameters below to see how different strategies affect your long-term income.</span>
+          </p>
+        </div>
 
         {/* Projection Parameters Strip */}
         <ProjectionParametersStrip
