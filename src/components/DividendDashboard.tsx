@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { DividendPortfolioChart } from "./DividendPortfolioChart";
-import { CompactToolbar } from "./CompactToolbar";
+import { PortfolioTopStrip } from "./PortfolioTopStrip";
+import { PlaidLinkButton } from "./PlaidLinkButton";
+import { StockSymbolForm } from "./StockSymbolForm";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lightbulb, Building2, TrendingUp } from "lucide-react";
+import { Lightbulb, Building2, TrendingUp, Plus, Link } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StockData {
@@ -645,11 +646,46 @@ export const DividendDashboard = () => {
 
   const stats = calculateStats();
 
+  // Calculate total portfolio value
+  const totalPortfolioValue = trackedStocks.reduce((sum, stock) => {
+    if (!stock.currentPrice || stock.shares === 0) return sum;
+    return sum + (stock.currentPrice * stock.shares);
+  }, 0);
+
+  const [showStockForm, setShowStockForm] = useState(false);
+
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      {user?.id && (
+        <PlaidLinkButton
+          userId={user.id}
+          onSuccess={handlePlaidSuccess}
+          size="sm"
+        />
+      )}
+      <Button 
+        onClick={() => setShowStockForm(!showStockForm)}
+        size="sm"
+        variant="outline"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Add Stock
+      </Button>
+    </div>
+  );
+
   return (
     <AppLayout>
       <PageHeader 
         title="Your Dividend Portfolio"
         icon={TrendingUp}
+        actions={headerActions}
+      />
+      
+      {/* Portfolio Top Strip */}
+      <PortfolioTopStrip 
+        totalValue={totalPortfolioValue}
+        connectedAccounts={connectedAccounts}
       />
       
       {/* First-time user help banner */}
@@ -668,35 +704,22 @@ export const DividendDashboard = () => {
         </Alert>
       )}
 
+      {/* Stock Form */}
+      {showStockForm && (
+        <div className="mb-6">
+          <StockSymbolForm onStockFound={(stock) => {
+            handleStockFound(stock);
+            setShowStockForm(false);
+          }} />
+        </div>
+      )}
+
       {/* Portfolio Chart */}
-        <DividendPortfolioChart
-          trackedStocks={trackedStocks}
-          onRemoveStock={handleRemoveStock}
-          onUpdateShares={handleUpdateShares}
-          connectedInstitutions={connectedInstitutions}
-          onDisconnectInstitution={handleDisconnectInstitution}
-        />
-
-
-      {/* Compact Toolbar at bottom */}
-      <div className="mt-8">
-        <CompactToolbar
-          centered={true}
-          connectedAccounts={connectedAccounts}
-          connectedInstitutions={connectedInstitutions}
-          recentActivity={recentActivity}
-          stats={stats}
-          userId={user?.id}
-          isSyncing={isSyncing}
-          isRefreshingPrices={isRefreshingPrices}
-          lastSyncedAt={lastSyncedAt}
-          isMaintenanceWindow={isMaintenanceWindow()}
-          onUpdate={handleUpdatePortfolio}
-          onPlaidSuccess={handlePlaidSuccess}
-          onStockFound={handleStockFound}
-          onDisconnectInstitution={handleDisconnectInstitution}
-        />
-      </div>
+      <DividendPortfolioChart
+        trackedStocks={trackedStocks}
+        onRemoveStock={handleRemoveStock}
+        onUpdateShares={handleUpdateShares}
+      />
     </AppLayout>
   );
 };

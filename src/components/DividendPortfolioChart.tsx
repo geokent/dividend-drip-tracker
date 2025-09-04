@@ -29,19 +29,12 @@ interface DividendPortfolioChartProps {
   trackedStocks: TrackedStock[];
   onRemoveStock: (symbol: string) => void;
   onUpdateShares: (symbol: string, shares: number) => void;
-  connectedInstitutions?: Array<{
-    item_id: string;
-    institution_name: string;
-  }>;
-  onDisconnectInstitution?: (itemId: string, institutionName: string) => void;
 }
 
 export const DividendPortfolioChart = ({ 
   trackedStocks, 
   onRemoveStock, 
   onUpdateShares,
-  connectedInstitutions = [],
-  onDisconnectInstitution,
 }: DividendPortfolioChartProps) => {
   const [editingShares, setEditingShares] = useState<string | null>(null);
 
@@ -317,87 +310,6 @@ export const DividendPortfolioChart = ({
           })}
       </div>
 
-      {/* Portfolio Metrics moved to bottom */}
-      <Card className="p-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10">
-        {/* Mobile: 2x3 grid, Desktop: single row */}
-        <div className="grid grid-cols-2 lg:flex lg:items-center lg:justify-center gap-4 lg:gap-8">
-          <div className="text-center">
-            <p className="text-lg lg:text-xl font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
-            <p className="text-sm text-muted-foreground">Total Value</p>
-            {connectedInstitutions.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-border">
-                <div className="text-xs text-muted-foreground mb-1">
-                  {connectedInstitutions.length} account{connectedInstitutions.length > 1 ? 's' : ''} connected
-                </div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
-                      Manage
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64" align="center">
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Connected Accounts</h4>
-                      {connectedInstitutions.map((institution) => (
-                        <div key={institution.item_id} className="flex items-center justify-between p-2 rounded border">
-                          <span className="text-sm">{institution.institution_name}</span>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="h-6 px-2 text-xs"
-                            onClick={() => onDisconnectInstitution?.(institution.item_id, institution.institution_name)}
-                          >
-                            Disconnect
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
-          </div>
-          <div className="text-center">
-            <p className="text-lg lg:text-xl font-semibold text-accent">
-              {totalPortfolioValue > 0 ? 
-                formatPercentage((trackedStocks.reduce((sum, stock) => {
-                  const stockValue = calculatePortfolioValue(stock);
-                  return sum + (stockValue * (stock.dividendYield || 0) / 100);
-                }, 0) / totalPortfolioValue) * 100) : 
-                "0.00%"
-              }
-            </p>
-            <p className="text-sm text-muted-foreground">Weighted Avg Yield</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg lg:text-xl font-semibold text-blue-600">
-              {totalPortfolioValue > 0 ? 
-                formatPercentage((trackedStocks.reduce((sum, stock) => {
-                  return sum + calculateAnnualIncome(stock);
-                }, 0) / totalPortfolioValue) * 100) : 
-                "0.00%"
-              }
-            </p>
-            <p className="text-sm text-muted-foreground">Portfolio Yield</p>
-          </div>
-          <div className="text-center opacity-60">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
-            </div>
-            <p className="text-sm text-muted-foreground">Yield on Cost</p>
-          </div>
-          
-          {/* Premium Features - Hidden on mobile */}
-          <div className="text-center opacity-60 hidden lg:block">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Lock className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm font-medium text-muted-foreground">Coming Soon</p>
-            </div>
-            <p className="text-sm text-muted-foreground">Dividend Growth Rate</p>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };
