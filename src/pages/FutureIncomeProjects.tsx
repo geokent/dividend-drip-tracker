@@ -426,10 +426,9 @@ export const FutureIncomeProjects = () => {
             <span>AI-Powered Analysis</span>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
-            Future Dividend 
-            <span className="gradient-text block">Income Projections</span>
+            Future Dividend Income Projections
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             AI-powered projections based on your current portfolio. Customize parameters below to see how different strategies affect your long-term income.
           </p>
         </div>
@@ -610,7 +609,7 @@ export const FutureIncomeProjects = () => {
                     ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-primary">
+                <div className="text-xl font-bold text-primary">
                   ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -626,7 +625,7 @@ export const FutureIncomeProjects = () => {
                     ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-primary">
+                <div className="text-xl font-bold text-primary">
                   ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -642,7 +641,7 @@ export const FutureIncomeProjects = () => {
                     ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-primary">
+                <div className="text-xl font-bold text-primary">
                   ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-muted-foreground">
