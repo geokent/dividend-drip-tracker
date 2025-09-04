@@ -635,9 +635,10 @@ export const DividendDashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Portfolio Header and Compact Toolbar */}
-        <div className="space-y-1 mb-6">
+        <div className="space-y-1 mb-6 text-center">
           <h1 className="text-2xl font-bold">Your Dividend Portfolio</h1>
           <CompactToolbar
+            centered={true}
             connectedAccounts={connectedAccounts}
             connectedInstitutions={connectedInstitutions}
             recentActivity={recentActivity}

@@ -20,6 +20,7 @@ interface CompactToolbarProps {
   isSyncing: boolean;
   isRefreshingPrices: boolean;
   lastSyncedAt: Date | null;
+  centered?: boolean;
   onSync: () => void;
   onRefresh: () => void;
   onPlaidSuccess: (data?: any) => void;
@@ -36,6 +37,7 @@ export const CompactToolbar = ({
   isSyncing,
   isRefreshingPrices,
   lastSyncedAt,
+  centered = false,
   onSync,
   onRefresh,
   onPlaidSuccess,
@@ -43,7 +45,7 @@ export const CompactToolbar = ({
   onDisconnectInstitution
 }: CompactToolbarProps) => {
   return (
-    <div className="flex flex-wrap items-center gap-2 py-3 border-b border-border">
+    <div className={`flex flex-wrap items-center gap-2 py-3 border-b border-border ${centered ? 'justify-center' : ''}`}>
       {/* Portfolio Stats Chips */}
       <div className="flex items-center gap-2 text-sm">
         <Badge variant="secondary" className="gap-1">
