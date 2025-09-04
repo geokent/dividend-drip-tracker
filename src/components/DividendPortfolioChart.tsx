@@ -3,6 +3,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Progress } from "./ui/progress";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Trash2, TrendingUp, TrendingDown, DollarSign, Calendar, Building, Lock } from "lucide-react";
 
 interface StockData {
@@ -28,12 +29,19 @@ interface DividendPortfolioChartProps {
   trackedStocks: TrackedStock[];
   onRemoveStock: (symbol: string) => void;
   onUpdateShares: (symbol: string, shares: number) => void;
+  connectedInstitutions?: Array<{
+    item_id: string;
+    institution_name: string;
+  }>;
+  onDisconnectInstitution?: (itemId: string, institutionName: string) => void;
 }
 
 export const DividendPortfolioChart = ({ 
   trackedStocks, 
   onRemoveStock, 
-  onUpdateShares 
+  onUpdateShares,
+  connectedInstitutions = [],
+  onDisconnectInstitution,
 }: DividendPortfolioChartProps) => {
   const [editingShares, setEditingShares] = useState<string | null>(null);
 
@@ -316,6 +324,38 @@ export const DividendPortfolioChart = ({
           <div className="text-center">
             <p className="text-lg lg:text-xl font-bold text-primary">{formatCurrency(totalPortfolioValue)}</p>
             <p className="text-sm text-muted-foreground">Total Value</p>
+            {connectedInstitutions.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-border">
+                <div className="text-xs text-muted-foreground mb-1">
+                  {connectedInstitutions.length} account{connectedInstitutions.length > 1 ? 's' : ''} connected
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
+                      Manage
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64" align="center">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Connected Accounts</h4>
+                      {connectedInstitutions.map((institution) => (
+                        <div key={institution.item_id} className="flex items-center justify-between p-2 rounded border">
+                          <span className="text-sm">{institution.institution_name}</span>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => onDisconnectInstitution?.(institution.item_id, institution.institution_name)}
+                          >
+                            Disconnect
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
           </div>
           <div className="text-center">
             <p className="text-lg lg:text-xl font-semibold text-accent">

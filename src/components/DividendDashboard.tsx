@@ -669,41 +669,14 @@ export const DividendDashboard = () => {
       )}
 
       {/* Portfolio Chart */}
-      <DividendPortfolioChart
-        trackedStocks={trackedStocks}
-        onRemoveStock={handleRemoveStock}
-        onUpdateShares={handleUpdateShares}
-      />
+        <DividendPortfolioChart
+          trackedStocks={trackedStocks}
+          onRemoveStock={handleRemoveStock}
+          onUpdateShares={handleUpdateShares}
+          connectedInstitutions={connectedInstitutions}
+          onDisconnectInstitution={handleDisconnectInstitution}
+        />
 
-      {/* Account Connections Card */}
-      {connectedInstitutions.length > 0 && (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Connected Accounts
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {connectedInstitutions.map((institution) => (
-              <div key={institution.item_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <div>
-                  <p className="font-medium">{institution.institution_name}</p>
-                  <p className="text-sm text-muted-foreground">{institution.account_count} accounts connected</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDisconnectInstitution(institution.item_id, institution.institution_name)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  Disconnect
-                </Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Compact Toolbar at bottom */}
       <div className="mt-8">
