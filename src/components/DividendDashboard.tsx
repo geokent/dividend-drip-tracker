@@ -669,14 +669,62 @@ export const DividendDashboard = () => {
           </div>
         </section>
 
-        {/* Main Content */}
-        <div className="space-y-6">
-          {/* Connection Status and Controls */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content - Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Portfolio Section */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Portfolio Actions Toolbar */}
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+              <Button
+                onClick={handleSyncInvestments}
+                disabled={isSyncing}
+                size="sm"
+                variant="outline"
+              >
+                {isSyncing ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                ) : null}
+                {isSyncing ? 'Syncing...' : 'Sync Holdings'}
+              </Button>
+              <Button
+                onClick={refreshStockPrices}
+                disabled={isRefreshingPrices}
+                variant="outline"
+                size="sm"
+              >
+                {isRefreshingPrices ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                ) : (
+                  <RefreshCw className="h-3 w-3 mr-2" />
+                )}
+                {isRefreshingPrices ? 'Refreshing...' : 'Refresh Prices'}
+              </Button>
+            </div>
+
+            {/* Portfolio Chart */}
+            <div className="space-y-4">
+              <div className="text-center lg:text-left">
+                <h2 className="text-xl font-semibold">Your Dividend Portfolio</h2>
+                {lastSyncedAt && (
+                  <p className="text-sm text-muted-foreground">
+                    Last synced: {lastSyncedAt.toLocaleString()}
+                  </p>
+                )}
+              </div>
+              <DividendPortfolioChart
+                trackedStocks={trackedStocks}
+                onRemoveStock={handleRemoveStock}
+                onUpdateShares={handleUpdateShares}
+              />
+            </div>
+          </div>
+
+          {/* Sidebar with Utilities */}
+          <div className="lg:col-span-1 space-y-4">
             {/* Connected Accounts Status */}
-            <div className="bg-card rounded-lg p-6 border">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Connected Accounts</h3>
+            <div className="bg-card rounded-lg p-4 border">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold">Connected Accounts</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -694,35 +742,36 @@ export const DividendDashboard = () => {
                       }
                     }
                   }}
+                  className="h-6 w-6 p-0"
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <RefreshCw className="h-3 w-3" />
                 </Button>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">{connectedAccounts}</div>
-                <p className="text-muted-foreground mb-4">
-                  {connectedAccounts === 0 ? 'No accounts connected' : 
-                   connectedAccounts === 1 ? 'Investment account connected' : 
-                   'Investment accounts connected'}
+                <div className="text-xl font-bold text-primary mb-1">{connectedAccounts}</div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {connectedAccounts === 0 ? 'No accounts' : 
+                   connectedAccounts === 1 ? 'Account connected' : 
+                   'Accounts connected'}
                 </p>
                 
                 {/* Connected Institutions List */}
                 {connectedInstitutions.length > 0 && (
-                  <div className="mb-4 space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">Connected Institutions:</p>
+                  <div className="mb-3 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Institutions:</p>
                     {connectedInstitutions.map((institution) => (
-                      <div key={institution.item_id} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+                      <div key={institution.item_id} className="flex items-center justify-between p-1.5 bg-muted/50 rounded-md">
                         <div className="text-left">
-                          <p className="text-sm font-medium">{institution.institution_name}</p>
-                          <p className="text-xs text-muted-foreground">{institution.account_count} account{institution.account_count > 1 ? 's' : ''}</p>
+                          <p className="text-xs font-medium truncate">{institution.institution_name}</p>
+                          <p className="text-xs text-muted-foreground">{institution.account_count} acc.</p>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDisconnectInstitution(institution.item_id, institution.institution_name)}
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive h-6 w-12 text-xs p-0"
                         >
-                          Disconnect
+                          Disc.
                         </Button>
                       </div>
                     ))}
@@ -735,92 +784,39 @@ export const DividendDashboard = () => {
                     onSuccess={handlePlaidSuccess}
                     disabled={connectedInstitutions.length >= 1}
                     limitMessage={connectedInstitutions.length >= 1 ? "Free tier allows only 1 institution" : undefined}
+                    size="sm"
                   />
                 )}
               </div>
             </div>
 
-            {/* Sync Controls */}
-            <div className="bg-card rounded-lg p-6 border">
-              <h3 className="text-lg font-semibold mb-4">Sync Holdings</h3>
-              <div className="text-center space-y-3">
-                <p className="text-muted-foreground text-sm">
-                  Sync your investment holdings to automatically track dividend stocks
-                </p>
-                <Button
-                  onClick={handleSyncInvestments}
-                  disabled={isSyncing}
-                  className="w-full"
-                >
-                  {isSyncing ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  {isSyncing ? 'Syncing...' : 'Sync Holdings'}
-                </Button>
-                <Button
-                  onClick={refreshStockPrices}
-                  disabled={isRefreshingPrices}
-                  variant="outline"
-                  className="w-full"
-                >
-                  {isRefreshingPrices ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                  )}
-                  {isRefreshingPrices ? 'Refreshing...' : 'Refresh Prices'}
-                </Button>
-              </div>
+            {/* Manual Stock Entry */}
+            <div className="bg-card rounded-lg p-4 border">
+              <h3 className="text-sm font-semibold mb-3 text-center">Add Stocks</h3>
+              <p className="text-xs text-muted-foreground mb-3 text-center">
+                Search and add dividend stocks manually.
+              </p>
+              <StockSymbolForm onStockFound={handleStockFound} />
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-card rounded-lg p-6 border">
-              <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-              <div className="space-y-2">
+            <div className="bg-card rounded-lg p-4 border">
+              <h3 className="text-sm font-semibold mb-3">Recent Activity</h3>
+              <div className="space-y-1">
                 {recentActivity.length > 0 ? (
-                  recentActivity.map((activity, index) => (
-                    <div key={index} className="text-sm">
-                      <div className="font-medium">{activity.action}</div>
+                  recentActivity.slice(0, 3).map((activity, index) => (
+                    <div key={index} className="text-xs">
+                      <div className="font-medium truncate">{activity.action}</div>
                       <div className="text-muted-foreground">
                         {new Date(activity.created_at).toLocaleDateString()}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-muted-foreground text-sm">No recent activity</p>
+                  <p className="text-muted-foreground text-xs">No recent activity</p>
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Manual Stock Entry */}
-          <div className="bg-card rounded-lg p-6 border text-center">
-            <h3 className="text-lg font-semibold mb-4">Add Stocks Manually</h3>
-            <p className="text-muted-foreground mb-4">
-              Search and add dividend stocks manually to track their performance.
-            </p>
-            <div className="flex justify-center">
-              <div className="w-full max-w-sm">
-                <StockSymbolForm onStockFound={handleStockFound} />
-              </div>
-            </div>
-          </div>
-
-          {/* Portfolio Chart */}
-          <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold">Your Dividend Portfolio</h3>
-              {lastSyncedAt && (
-                <p className="text-sm text-muted-foreground">
-                  Last synced: {lastSyncedAt.toLocaleString()}
-                </p>
-              )}
-            </div>
-            <DividendPortfolioChart
-              trackedStocks={trackedStocks}
-              onRemoveStock={handleRemoveStock}
-              onUpdateShares={handleUpdateShares}
-            />
           </div>
         </div>
       </div>

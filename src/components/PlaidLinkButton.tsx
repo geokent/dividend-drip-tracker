@@ -10,9 +10,10 @@ interface PlaidLinkButtonProps {
   onSuccess?: (connectionData?: { accounts_connected?: number, institution_name?: string }) => void;
   disabled?: boolean;
   limitMessage?: string;
+  size?: "default" | "sm" | "lg";
 }
 
-export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMessage }: PlaidLinkButtonProps) => {
+export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMessage, size = "default" }: PlaidLinkButtonProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
@@ -156,6 +157,7 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
       onClick={handleClick}
       disabled={isLoading || disabled}
       variant={disabled ? "secondary" : "default"}
+      size={size}
       className="flex items-center gap-2"
     >
       {isLoading ? (
