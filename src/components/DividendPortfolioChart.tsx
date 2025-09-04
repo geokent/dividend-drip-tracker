@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Progress } from "./ui/progress";
@@ -180,10 +179,10 @@ export const DividendPortfolioChart = ({
                 <div className="block lg:hidden space-y-3">
                   {/* Header Row */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-mono text-sm font-bold px-2 py-1 bg-primary/5">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-sm font-bold text-foreground uppercase tracking-wide min-w-[3rem]">
                         {stock.symbol}
-                      </Badge>
+                      </span>
                       <div className="min-w-0">
                         <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
                           {stock.companyName}
@@ -270,10 +269,10 @@ export const DividendPortfolioChart = ({
                 {/* Desktop Layout */}
                 <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center">
                   {/* Stock identification - 3 columns */}
-                  <div className="col-span-3 flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-sm font-bold px-2 py-1 w-16 justify-center bg-primary/5">
+                  <div className="col-span-3 flex items-center gap-3">
+                    <span className="font-mono text-sm font-bold text-foreground uppercase tracking-wide min-w-[3rem]">
                       {stock.symbol}
-                    </Badge>
+                    </span>
                     <div className="min-w-0">
                       <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
                         {stock.companyName}
