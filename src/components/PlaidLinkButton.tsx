@@ -8,9 +8,11 @@ import { Loader2, Link } from 'lucide-react';
 interface PlaidLinkButtonProps {
   userId: string;
   onSuccess?: (connectionData?: { accounts_connected?: number, institution_name?: string }) => void;
+  disabled?: boolean;
+  limitMessage?: string;
 }
 
-export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => {
+export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMessage }: PlaidLinkButtonProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
@@ -115,7 +117,11 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
 
       if (error) {
         console.error('Link token creation error:', error);
-        toast.error('Failed to initialize bank connection. Please try again.', { id: 'plaid-init' });
+        if (error.message?.includes('Free tier limit reached')) {
+          toast.error('Free tier allows only one connected institution. Please disconnect your current institution first.', { id: 'plaid-init' });
+        } else {
+          toast.error('Failed to initialize bank connection. Please try again.', { id: 'plaid-init' });
+        }
         return;
       }
 
@@ -131,6 +137,13 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
   };
 
   const handleClick = () => {
+    if (disabled) {
+      if (limitMessage) {
+        toast.info(limitMessage);
+      }
+      return;
+    }
+    
     if (linkToken && ready) {
       open();
     } else {
@@ -141,7 +154,8 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
   return (
     <Button
       onClick={handleClick}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
+      variant={disabled ? "secondary" : "default"}
       className="flex items-center gap-2"
     >
       {isLoading ? (
@@ -149,7 +163,7 @@ export const PlaidLinkButton = ({ userId, onSuccess }: PlaidLinkButtonProps) => 
       ) : (
         <Link className="h-4 w-4" />
       )}
-      {isLoading ? 'Connecting...' : 'Connect Investment Account'}
+      {isLoading ? 'Connecting...' : disabled ? 'Account Limit Reached' : 'Connect Investment Account'}
     </Button>
   );
 };

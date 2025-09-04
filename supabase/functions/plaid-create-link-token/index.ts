@@ -26,6 +26,35 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Check free tier limit - only allow one connected institution per user
+    const { data: existingAccounts, error: countError } = await supabase
+      .from('plaid_accounts')
+      .select('item_id')
+      .eq('user_id', user_id)
+      .eq('is_active', true)
+
+    if (countError) {
+      console.error('Error checking existing accounts:', countError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to check account limits' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Get unique item IDs (institutions)
+    const uniqueItems = new Set(existingAccounts?.map(acc => acc.item_id) || [])
+    
+    if (uniqueItems.size >= 1) {
+      console.log(`User ${user_id} already has ${uniqueItems.size} connected institution(s), blocking new connection`)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Free tier limit reached',
+          message: 'You can only connect one institution on the free tier. Please disconnect your current institution first.'
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Use production environment
     const plaidApiHost = 'https://production.plaid.com'
     

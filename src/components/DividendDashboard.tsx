@@ -36,6 +36,7 @@ export const DividendDashboard = () => {
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<number>(0);
+  const [connectedInstitutions, setConnectedInstitutions] = useState<Array<{item_id: string, institution_name: string, account_count: number}>>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
@@ -91,15 +92,32 @@ export const DividendDashboard = () => {
         }
       }
 
-      // Load connected accounts
+      // Load connected accounts and institutions
       const { data: accounts, error: accountsError } = await supabase
         .from('plaid_accounts')
-        .select('id, account_name, institution_name, is_active')
+        .select('id, account_name, institution_name, is_active, item_id')
         .eq('user_id', user.id)
         .eq('is_active', true);
 
       if (!accountsError && accounts) {
         setConnectedAccounts(accounts.length);
+        
+        // Group by institution
+        const institutionMap = new Map();
+        accounts.forEach(account => {
+          const key = account.item_id;
+          if (institutionMap.has(key)) {
+            institutionMap.get(key).account_count++;
+          } else {
+            institutionMap.set(key, {
+              item_id: account.item_id,
+              institution_name: account.institution_name || 'Unknown Institution',
+              account_count: 1
+            });
+          }
+        });
+        
+        setConnectedInstitutions(Array.from(institutionMap.values()));
       }
 
       // Load recent activity
@@ -400,7 +418,7 @@ export const DividendDashboard = () => {
         
         const { data: accounts } = await supabase
           .from('plaid_accounts')
-          .select('id')
+          .select('id, item_id, institution_name')
           .eq('user_id', user.id)
           .eq('is_active', true);
         
@@ -409,6 +427,23 @@ export const DividendDashboard = () => {
         
         if (accountCount > 0) {
           setConnectedAccounts(accountCount);
+          
+          // Update institutions
+          const institutionMap = new Map();
+          accounts.forEach(account => {
+            const key = account.item_id;
+            if (institutionMap.has(key)) {
+              institutionMap.get(key).account_count++;
+            } else {
+              institutionMap.set(key, {
+                item_id: account.item_id,
+                institution_name: account.institution_name || 'Unknown Institution',
+                account_count: 1
+              });
+            }
+          });
+          setConnectedInstitutions(Array.from(institutionMap.values()));
+          
           // Trigger sync immediately after finding accounts
           console.log('Accounts found, triggering immediate sync...');
           handleSyncInvestments();
@@ -425,6 +460,73 @@ export const DividendDashboard = () => {
       };
       
       pollForAccounts();
+    }
+  };
+
+  const handleDisconnectInstitution = async (itemId: string, institutionName: string) => {
+    if (!user) return;
+    
+    try {
+      toast({
+        title: "Disconnecting...",
+        description: `Disconnecting ${institutionName}...`,
+      });
+      
+      const { data, error } = await supabase.functions.invoke('plaid-disconnect-item', {
+        body: {
+          user_id: user.id,
+          item_id: itemId
+        }
+      });
+
+      if (error) {
+        console.error('Disconnect error:', error);
+        toast({
+          title: "Disconnect Failed",
+          description: "Failed to disconnect account. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Disconnected!",
+        description: `Successfully disconnected ${institutionName}`,
+      });
+      
+      // Refresh the accounts list
+      const { data: accounts } = await supabase
+        .from('plaid_accounts')
+        .select('id, item_id, institution_name')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (accounts) {
+        setConnectedAccounts(accounts.length);
+        
+        // Update institutions
+        const institutionMap = new Map();
+        accounts.forEach(account => {
+          const key = account.item_id;
+          if (institutionMap.has(key)) {
+            institutionMap.get(key).account_count++;
+          } else {
+            institutionMap.set(key, {
+              item_id: account.item_id,
+              institution_name: account.institution_name || 'Unknown Institution',
+              account_count: 1
+            });
+          }
+        });
+        setConnectedInstitutions(Array.from(institutionMap.values()));
+      }
+    } catch (error) {
+      console.error('Error disconnecting institution:', error);
+      toast({
+        title: "Error",
+        description: "Failed to disconnect account. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -603,10 +705,36 @@ export const DividendDashboard = () => {
                    connectedAccounts === 1 ? 'Investment account connected' : 
                    'Investment accounts connected'}
                 </p>
+                
+                {/* Connected Institutions List */}
+                {connectedInstitutions.length > 0 && (
+                  <div className="mb-4 space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Connected Institutions:</p>
+                    {connectedInstitutions.map((institution) => (
+                      <div key={institution.item_id} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+                        <div className="text-left">
+                          <p className="text-sm font-medium">{institution.institution_name}</p>
+                          <p className="text-xs text-muted-foreground">{institution.account_count} account{institution.account_count > 1 ? 's' : ''}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDisconnectInstitution(institution.item_id, institution.institution_name)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          Disconnect
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
                 {user?.id && (
                   <PlaidLinkButton 
                     userId={user.id} 
                     onSuccess={handlePlaidSuccess}
+                    disabled={connectedInstitutions.length >= 1}
+                    limitMessage={connectedInstitutions.length >= 1 ? "Free tier allows only 1 institution" : undefined}
                   />
                 )}
               </div>
