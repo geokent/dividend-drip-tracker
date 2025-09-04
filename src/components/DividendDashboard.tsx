@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { DividendPortfolioChart } from "./DividendPortfolioChart";
+import { PortfolioTable } from "./PortfolioTable";
+import { UpcomingDividendsCard } from "./UpcomingDividendsCard";
+import { GettingStartedCard } from "./GettingStartedCard";
 import { PortfolioTopStrip } from "./PortfolioTopStrip";
 import { PlaidLinkButton } from "./PlaidLinkButton";
 import { StockSymbolForm } from "./StockSymbolForm";
@@ -7,9 +9,8 @@ import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Building2, TrendingUp, Plus, Link } from "lucide-react";
+import { TrendingUp, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StockData {
@@ -664,6 +665,7 @@ export const DividendDashboard = () => {
           userId={user.id}
           onSuccess={handlePlaidSuccess}
           size="sm"
+          data-plaid-link-button
         />
       )}
       <Button 
@@ -672,7 +674,7 @@ export const DividendDashboard = () => {
         variant="outline"
       >
         <Plus className="h-4 w-4 mr-2" />
-        Manually Add Stock
+        Add Stock
       </Button>
     </div>
   );
@@ -692,26 +694,10 @@ export const DividendDashboard = () => {
         totalMonthlyDividends={stats.totalMonthlyDividends}
         totalAnnualDividends={stats.totalAnnualDividends}
       />
-      
-      {/* First-time user help banner */}
-      {connectedAccounts === 0 && trackedStocks.length === 0 && (
-        <Alert className="max-w-2xl mx-auto text-left mb-8">
-          <Lightbulb className="h-4 w-4" />
-          <AlertDescription className="space-y-3">
-            <div>
-              <p className="font-medium mb-2">Get started with your dividend portfolio:</p>
-              <div className="space-y-1 text-sm">
-                <p><Building2 className="h-3 w-3 inline mr-1" /> <strong>Connect account:</strong> Link your brokerage to automatically sync your holdings</p>
-                <p><strong>Or add stocks manually:</strong> Use "Add stock" to track specific dividend stocks</p>
-              </div>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Stock Form */}
       {showStockForm && (
-        <div className="mb-6">
+        <div className="mb-8">
           <StockSymbolForm onStockFound={(stock) => {
             handleStockFound(stock);
             setShowStockForm(false);
@@ -719,12 +705,35 @@ export const DividendDashboard = () => {
         </div>
       )}
 
-      {/* Portfolio Chart */}
-      <DividendPortfolioChart
-        trackedStocks={trackedStocks}
-        onRemoveStock={handleRemoveStock}
-        onUpdateShares={handleUpdateShares}
-      />
+      {/* Dashboard Content */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          <PortfolioTable
+            stocks={trackedStocks}
+            onRemoveStock={handleRemoveStock}
+            onUpdateShares={handleUpdateShares}
+          />
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <GettingStartedCard
+            hasStocks={trackedStocks.length > 0}
+            hasConnectedAccounts={connectedAccounts > 0}
+            onConnectAccount={() => {
+              // The PlaidLinkButton in header actions will handle this
+              const plaidButton = document.querySelector('[data-plaid-link-button]');
+              if (plaidButton) {
+                (plaidButton as HTMLElement).click();
+              }
+            }}
+            onAddStock={() => setShowStockForm(true)}
+          />
+          
+          <UpcomingDividendsCard stocks={trackedStocks} />
+        </div>
+      </div>
     </AppLayout>
   );
 };
