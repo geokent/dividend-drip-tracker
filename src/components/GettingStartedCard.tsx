@@ -29,7 +29,7 @@ export const GettingStartedCard = ({
     {
       id: 'stocks',
       title: 'Add dividend stocks',
-      description: 'Track stocks manually or via connected accounts',
+      description: 'Use the box above to add dividend stocks',
       completed: hasStocks,
       action: onAddStock,
       actionText: 'Add Stock',
@@ -95,7 +95,7 @@ export const GettingStartedCard = ({
                 </p>
               </div>
               
-              {!step.completed && (
+              {!step.completed && step.id !== 'stocks' && (
                 <Button
                   size="sm"
                   variant="outline"

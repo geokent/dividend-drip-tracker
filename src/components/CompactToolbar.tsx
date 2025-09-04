@@ -145,31 +145,6 @@ export const CompactToolbar = ({
           </PopoverContent>
         </Popover>
 
-        {/* Add Stock */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 px-3 gap-1">
-                  <Plus className="h-3 w-3" />
-                  <span className="text-xs">Add stock</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Manually add dividend stocks to track</p>
-              </TooltipContent>
-            </Tooltip>
-          </PopoverTrigger>
-          <PopoverContent className="w-80" align="start">
-            <div className="space-y-3">
-              <h4 className="font-medium">Add Dividend Stock</h4>
-              <p className="text-sm text-muted-foreground">
-                Search and add dividend stocks manually.
-              </p>
-              <StockSymbolForm onStockFound={onStockFound} />
-            </div>
-          </PopoverContent>
-        </Popover>
 
         {/* Update (merged sync + refresh) */}
         <Tooltip>

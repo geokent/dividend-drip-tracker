@@ -687,8 +687,6 @@ export const DividendDashboard = () => {
   // Calculate total yield percentage
   const totalYield = totalPortfolioValue > 0 ? (stats.totalAnnualDividends / totalPortfolioValue) * 100 : 0;
 
-  const [showStockForm, setShowStockForm] = useState(false);
-
   const headerActions = (
     <div className="flex items-center gap-2">
       {user?.id && (
@@ -702,14 +700,6 @@ export const DividendDashboard = () => {
           data-plaid-link-button
         />
       )}
-      <Button 
-        onClick={() => setShowStockForm(!showStockForm)}
-        size="sm"
-        variant="outline"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Stock
-      </Button>
     </div>
   );
 
@@ -729,15 +719,10 @@ export const DividendDashboard = () => {
         totalAnnualDividends={stats.totalAnnualDividends}
       />
 
-      {/* Stock Form */}
-      {showStockForm && (
-        <div className="mb-8">
-          <StockSymbolForm onStockFound={(stock) => {
-            handleStockFound(stock);
-            setShowStockForm(false);
-          }} />
-        </div>
-      )}
+      {/* Always visible Stock Form */}
+      <div className="mb-6">
+        <StockSymbolForm onStockFound={handleStockFound} />
+      </div>
 
       {/* Getting Started Card - Prominent at top */}
       {(trackedStocks.length === 0 || connectedAccounts === 0) && (
@@ -752,7 +737,7 @@ export const DividendDashboard = () => {
                 (plaidButton as HTMLElement).click();
               }
             }}
-            onAddStock={() => setShowStockForm(true)}
+            onAddStock={() => {}}
           />
         </div>
       )}
