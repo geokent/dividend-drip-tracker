@@ -198,6 +198,10 @@ export const FutureIncomeProjects = () => {
   };
 
   const projectionData = generateProjectionData();
+  
+  // Filter out Year 0 for chart display (Years 1-15)
+  const chartData = projectionData.filter(data => data.year > 0);
+  
   const currentMetrics = calculateCurrentMetrics();
 
 
@@ -282,9 +286,9 @@ export const FutureIncomeProjects = () => {
             )}
             <div className="h-[280px] md:h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
-                {chartMode === "dividend" ? (
+                 {chartMode === "dividend" ? (
                    <BarChart 
-                     data={projectionData}
+                     data={chartData}
                      margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -327,7 +331,7 @@ export const FutureIncomeProjects = () => {
                   </BarChart>
                 ) : (
                    <LineChart 
-                     data={projectionData}
+                     data={chartData}
                      margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -390,10 +394,10 @@ export const FutureIncomeProjects = () => {
               <div className="text-center p-3 rounded-lg bg-card border border-border shadow-sm">
                 <div className="text-sm font-medium text-muted-foreground mb-1">2 Years</div>
                 <div className="text-lg font-bold text-foreground">
-                  ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
+                  ${projectionData[2]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-financial-green font-medium">
-                  ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                  ${projectionData[2]?.monthlyIncome?.toLocaleString() || '0'}/mo
                 </div>
               </div>
               
