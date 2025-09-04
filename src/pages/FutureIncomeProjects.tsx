@@ -13,9 +13,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { CompactToolbar } from "@/components/CompactToolbar";
-import { PlaidLinkButton } from "@/components/PlaidLinkButton";
-import { StockSymbolForm } from "@/components/StockSymbolForm";
+import { ProjectionParametersStrip } from "@/components/ProjectionParametersStrip";
 import { toast } from "@/hooks/use-toast";
 import { 
   TrendingUp, 
@@ -23,9 +21,6 @@ import {
   Target, 
   Calculator, 
   Brain, 
-  ArrowRight, 
-  Calendar, 
-  PieChart,
   BarChart3,
   Zap,
   Star,
@@ -69,11 +64,6 @@ export const FutureIncomeProjects = () => {
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
   
-  // Dashboard-compatible state for CompactToolbar
-  const [connectedAccountsData, setConnectedAccountsData] = useState<any[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
 
   // Load tracked stocks and connected accounts from Supabase database
   useEffect(() => {
@@ -108,18 +98,6 @@ export const FutureIncomeProjects = () => {
           setTrackedStocks(formattedStocks);
         }
 
-        // Load connected accounts (for toolbar display)
-        const { data: accountsData, error: accountsError } = await supabase
-          .from('plaid_accounts')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_active', true);
-
-        if (accountsError) {
-          console.error('Error loading connected accounts:', accountsError);
-        } else if (accountsData) {
-          setConnectedAccountsData(accountsData);
-        }
       } catch (error) {
         console.error('Failed to load data:', error);
       }
@@ -217,180 +195,6 @@ export const FutureIncomeProjects = () => {
   const projectionData = generateProjectionData();
   const currentMetrics = calculateCurrentMetrics();
 
-  // Dashboard-compatible handlers for CompactToolbar
-  const handleStockFound = async (stockData: any) => {
-    try {
-      const { error } = await supabase
-        .from('user_stocks')
-        .upsert({
-          user_id: user?.id,
-          symbol: stockData.symbol,
-          company_name: stockData.companyName,
-          current_price: stockData.currentPrice,
-          dividend_yield: stockData.dividendYield,
-          dividend_per_share: stockData.dividendPerShare,
-          annual_dividend: stockData.annualDividend,
-          sector: stockData.sector,
-          industry: stockData.industry,
-          market_cap: stockData.marketCap,
-          pe_ratio: stockData.peRatio,
-          shares: 1, // Default to 1 share
-          last_synced: new Date().toISOString()
-        });
-
-      if (error) throw error;
-
-      // Reload data
-      const { data: stocksData } = await supabase
-        .from('user_stocks')
-        .select('*')
-        .eq('user_id', user?.id);
-
-      if (stocksData) {
-        const formattedStocks = stocksData.map(stock => ({
-          symbol: stock.symbol,
-          companyName: stock.company_name || '',
-          currentPrice: stock.current_price,
-          dividendYield: stock.dividend_yield,
-          dividendPerShare: stock.dividend_per_share,
-          annualDividend: stock.annual_dividend,
-          exDividendDate: stock.ex_dividend_date,
-          dividendDate: stock.dividend_date,
-          sector: stock.sector,
-          industry: stock.industry,
-          marketCap: stock.market_cap?.toString(),
-          peRatio: stock.pe_ratio?.toString(),
-          shares: Number(stock.shares)
-        }));
-        setTrackedStocks(formattedStocks);
-      }
-
-      toast({
-        title: "Stock Added",
-        description: `${stockData.symbol} has been added to your portfolio.`,
-      });
-    } catch (error) {
-      console.error('Error adding stock:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add stock. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSyncInvestments = async () => {
-    setIsSyncing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-dividends', {
-        body: { user_id: user?.id }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Sync Complete",
-        description: "Your investment accounts have been synced successfully.",
-      });
-      
-      setLastSyncedAt(new Date());
-    } catch (error) {
-      console.error('Sync error:', error);
-      toast({
-        title: "Sync Failed",
-        description: "Unable to sync accounts. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const refreshStockPrices = async () => {
-    setIsRefreshingPrices(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('refresh-stock-prices', {
-        body: { user_id: user?.id }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Prices Updated",
-        description: "Stock prices and dividend data have been refreshed.",
-      });
-    } catch (error) {
-      console.error('Refresh error:', error);
-      toast({
-        title: "Update Failed",
-        description: "Unable to refresh prices. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRefreshingPrices(false);
-    }
-  };
-
-  const handleUpdatePortfolio = async () => {
-    await handleSyncInvestments();
-    await refreshStockPrices();
-  };
-
-  const handlePlaidSuccess = async (data?: any) => {
-    toast({
-      title: "Account Connected",
-      description: "Your account has been connected successfully.",
-    });
-    
-    // Reload connected accounts
-    const { data: accountsData } = await supabase
-      .from('plaid_accounts')
-      .select('*')
-      .eq('user_id', user?.id)
-      .eq('is_active', true);
-    
-    if (accountsData) {
-      setConnectedAccountsData(accountsData);
-    }
-  };
-
-  const handleDisconnectInstitution = async (itemId: string, institutionName: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('plaid-disconnect-item', {
-        body: { item_id: itemId, user_id: user?.id }
-      });
-
-      if (error) throw error;
-
-      // Reload connected accounts
-      const { data: accountsData } = await supabase
-        .from('plaid_accounts')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('is_active', true);
-      
-      if (accountsData) {
-        setConnectedAccountsData(accountsData);
-      }
-
-      toast({
-        title: "Account Disconnected",
-        description: `${institutionName} has been disconnected.`,
-      });
-    } catch (error) {
-      console.error('Disconnect error:', error);
-      toast({
-        title: "Disconnect Failed",
-        description: "Unable to disconnect account. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const isMaintenanceWindow = () => {
-    const currentHour = new Date().getUTCHours();
-    return currentHour >= 2 && currentHour < 4;
-  };
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -435,299 +239,171 @@ export const FutureIncomeProjects = () => {
           </p>
         </div>
 
-        {/* Compact Toolbar */}
-        <CompactToolbar
-          connectedAccounts={connectedAccountsData.length}
-          connectedInstitutions={connectedAccountsData.reduce((acc, account) => {
-            const existing = acc.find(inst => inst.item_id === account.item_id);
-            if (existing) {
-              existing.account_count++;
-            } else {
-              acc.push({
-                item_id: account.item_id,
-                institution_name: account.institution_name || 'Unknown',
-                account_count: 1
-              });
-            }
-            return acc;
-          }, [] as Array<{item_id: string, institution_name: string, account_count: number}>)}
-          recentActivity={[]}
-          stats={{
-            totalAnnualDividends: currentMetrics.totalAnnualDividends,
-            totalQuarterlyDividends: currentMetrics.totalAnnualDividends / 4,
-            totalMonthlyDividends: currentMetrics.totalAnnualDividends / 12,
-            uniqueStocks: currentMetrics.uniqueStocks
-          }}
-          userId={user?.id}
-          isSyncing={isSyncing}
-          isRefreshingPrices={isRefreshingPrices}
-          lastSyncedAt={lastSyncedAt}
-          centered={true}
-          isMaintenanceWindow={isMaintenanceWindow()}
-          onUpdate={handleUpdatePortfolio}
-          onPlaidSuccess={handlePlaidSuccess}
-          onStockFound={handleStockFound}
-          onDisconnectInstitution={handleDisconnectInstitution}
-        />
-
-        {/* Main Content Flex Layout */}
-        <div className="flex flex-col lg:flex-row gap-6 mb-8">
-          {/* Chart Section - Main Content */}
-          <div className="flex-1">
-            <Card className="card-elevated gradient-card">
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <CardTitle className="card-title flex items-center gap-2">
-                      {chartMode === "dividend" ? (
-                        <BarChart3 className="h-5 w-5 text-primary" />
-                      ) : (
-                        <TrendingUp className="h-5 w-5 text-primary" />
-                      )}
-                      {chartMode === "dividend" ? "Monthly Dividend Income" : "Portfolio Growth Projection"}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground">
-                      {chartMode === "dividend" 
-                        ? "Projected monthly dividend income over time" 
-                        : "Portfolio value and annual dividend income over 15 years"
-                      }
-                    </CardDescription>
-                  </div>
-                  <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
-                      <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-4">
-                <div className="h-[500px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    {chartMode === "dividend" ? (
-                       <BarChart 
-                         data={projectionData.filter((_, index) => index % 2 === 0)}
-          margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
-                       >
-                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                         <XAxis 
-                           dataKey="year" 
-                           stroke="hsl(var(--muted-foreground))"
-                           label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                         />
-          <YAxis 
-            width={56}
-            tickMargin={8}
-            tick={{ fontSize: 12 }}
-            stroke="hsl(var(--muted-foreground))"
-            tickFormatter={(value) => `$${value.toLocaleString()}`}
-          />
-                        <Tooltip 
-                          contentStyle={{
-                            backgroundColor: 'hsl(var(--card))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px',
-                            boxShadow: 'var(--shadow-card)'
-                          }}
-                          formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
-                          labelFormatter={(label) => `Year ${label}`}
-                        />
-                        <Bar 
-                          dataKey="monthlyIncome" 
-                          fill="hsl(var(--primary))"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    ) : (
-                       <LineChart 
-                         data={projectionData}
-                         margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
-                       >
-                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                         <XAxis 
-                           dataKey="year" 
-                           stroke="hsl(var(--muted-foreground))"
-                           label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                         />
-          <YAxis 
-            width={56}
-            tickMargin={8}
-            tick={{ fontSize: 12 }}
-            stroke="hsl(var(--muted-foreground))"
-            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-          />
-                        <Tooltip 
-                          contentStyle={{
-                            backgroundColor: 'hsl(var(--card))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px',
-                            boxShadow: 'var(--shadow-card)'
-                          }}
-                          formatter={(value: number, name: string) => [
-                            `$${value.toLocaleString()}`, 
-                            name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
-                          ]}
-                          labelFormatter={(label) => `Year ${label}`}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="portfolioValue" 
-                          stroke="hsl(var(--primary))" 
-                          strokeWidth={3}
-                          dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="annualDividends" 
-                          stroke="hsl(var(--financial-green))" 
-                          strokeWidth={2}
-                          dot={{ fill: 'hsl(var(--financial-green))', strokeWidth: 2, r: 3 }}
-                        />
-                      </LineChart>
-                    )}
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-              
-              {/* Key Milestones integrated into chart footer */}
-              <CardFooter className="pt-4 border-t border-border bg-secondary/20">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-                  <div className="text-center p-3 rounded-lg bg-card border border-border shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">2 Years</div>
-                    <div className="text-lg font-bold text-foreground">
-                      ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
-                    </div>
-                    <div className="text-xs text-financial-green font-medium">
-                      ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                    </div>
-                  </div>
-                  
-                  <div className="text-center p-3 rounded-lg bg-primary/5 border border-primary/20 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">10 Years</div>
-                    <div className="text-lg font-bold text-primary">
-                      ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
-                    </div>
-                    <div className="text-xs text-financial-green font-medium">
-                      ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                    </div>
-                  </div>
-                  
-                  <div className="text-center p-3 rounded-lg bg-accent/5 border border-accent/20 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">15 Years</div>
-                    <div className="text-lg font-bold text-accent">
-                      ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
-                    </div>
-                    <div className="text-xs text-financial-green font-medium">
-                      ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                    </div>
-                  </div>
-                </div>
-              </CardFooter>
-            </Card>
-          </div>
-
-          {/* Parameters Panel - Sticky on Desktop */}
-          <div className="lg:w-80 lg:sticky lg:top-6 lg:self-start">
-            <Card className="shadow-card gradient-card border-primary/20">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                  </svg>
-                  Projection Parameters
+        {/* Main Chart - Full Width */}
+        <Card className="card-elevated gradient-card mb-8">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <CardTitle className="card-title flex items-center gap-2">
+                  {chartMode === "dividend" ? (
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                  ) : (
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                  )}
+                  {chartMode === "dividend" ? "Monthly Dividend Income" : "Portfolio Growth Projection"}
                 </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">
-                      Monthly Investment: ${monthlyInvestment.toLocaleString()}
-                    </label>
-                    <Slider
-                      min={0}
-                      max={5000}
-                      step={100}
-                      value={[monthlyInvestment]}
-                      onValueChange={([value]) => setMonthlyInvestment(value)}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Additional monthly contribution</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">
-                      Portfolio Growth: {(portfolioGrowthRate * 100).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 })}%
-                    </label>
-                    <Slider
-                      min={0}
-                      max={20}
-                      step={0.5}
-                      value={[portfolioGrowthRate * 100]}
-                      onValueChange={([value]) => {
-                        const halfStep = Math.round(value * 2) / 2;
-                        setPortfolioGrowthRate(halfStep / 100);
+                <CardDescription className="text-sm text-muted-foreground">
+                  {chartMode === "dividend" 
+                    ? "Projected monthly dividend income over time" 
+                    : "Portfolio value and annual dividend income over 15 years"
+                  }
+                </CardDescription>
+              </div>
+              <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
+                  <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="h-[600px]">
+              <ResponsiveContainer width="100%" height="100%">
+                {chartMode === "dividend" ? (
+                   <BarChart 
+                     data={projectionData.filter((_, index) => index % 2 === 0)}
+        margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
+                   >
+                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                     <XAxis 
+                       dataKey="year" 
+                       stroke="hsl(var(--muted-foreground))"
+                       label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                     />
+        <YAxis 
+          width={56}
+          tickMargin={8}
+          tick={{ fontSize: 12 }}
+          stroke="hsl(var(--muted-foreground))"
+          tickFormatter={(value) => `$${value.toLocaleString()}`}
+        />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: 'var(--shadow-card)'
                       }}
-                      className="w-full"
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
+                      labelFormatter={(label) => `Year ${label}`}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Expected annual portfolio appreciation</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">
-                      Dividend Growth: {dividendGrowthRate}%
-                    </label>
-                    <Slider
-                      min={0}
-                      max={15}
-                      step={0.5}
-                      value={[dividendGrowthRate]}
-                      onValueChange={([value]) => setDividendGrowthRate(value)}
-                      className="w-full"
+                    <Bar 
+                      dataKey="monthlyIncome" 
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Expected annual dividend increase</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">
-                      Additional Yearly: ${additionalYearlyContribution.toLocaleString()}
-                    </label>
-                    <Slider
-                      min={0}
-                      max={50000}
-                      step={1000}
-                      value={[additionalYearlyContribution]}
-                      onValueChange={([value]) => setAdditionalYearlyContribution(value)}
-                      className="w-full"
+                  </BarChart>
+                ) : (
+                   <LineChart 
+                     data={projectionData}
+                     margin={{ top: 8, right: 16, left: 8, bottom: 24 }}
+                   >
+                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                     <XAxis 
+                       dataKey="year" 
+                       stroke="hsl(var(--muted-foreground))"
+                       label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                     />
+        <YAxis 
+          width={56}
+          tickMargin={8}
+          tick={{ fontSize: 12 }}
+          stroke="hsl(var(--muted-foreground))"
+          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+        />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: 'var(--shadow-card)'
+                      }}
+                      formatter={(value: number, name: string) => [
+                        `$${value.toLocaleString()}`, 
+                        name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
+                      ]}
+                      labelFormatter={(label) => `Year ${label}`}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Extra annual contribution</p>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={reinvestDividends}
-                      onCheckedChange={(checked) => setReinvestDividends(checked as boolean)}
+                    <Line 
+                      type="monotone" 
+                      dataKey="portfolioValue" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={3}
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
                     />
-                    <label className="text-sm font-medium text-foreground">
-                      Reinvest Dividends
-                    </label>
-                  </div>
+                    <Line 
+                      type="monotone" 
+                      dataKey="annualDividends" 
+                      stroke="hsl(var(--financial-green))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--financial-green))', strokeWidth: 2, r: 3 }}
+                    />
+                  </LineChart>
+                )}
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+          
+          {/* Key Milestones integrated into chart footer */}
+          <CardFooter className="pt-4 border-t border-border bg-secondary/20">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+              <div className="text-center p-3 rounded-lg bg-card border border-border shadow-sm">
+                <div className="text-sm font-medium text-muted-foreground mb-1">2 Years</div>
+                <div className="text-lg font-bold text-foreground">
+                  ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
-
-                <div className="pt-4 border-t border-border">
-                  <div className="text-xs text-muted-foreground space-y-2">
-                    <p><strong>Key Assumptions:</strong></p>
-                    <ul className="space-y-1 ml-4 list-disc">
-                      <li>Dividends reinvested automatically</li>
-                      <li>Tax implications not included</li>
-                      <li>Historical market averages ~7-10%</li>
-                      <li>No inflation adjustments</li>
-                    </ul>
-                  </div>
+                <div className="text-xs text-financial-green font-medium">
+                  ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+              
+              <div className="text-center p-3 rounded-lg bg-primary/5 border border-primary/20 shadow-sm">
+                <div className="text-sm font-medium text-muted-foreground mb-1">10 Years</div>
+                <div className="text-lg font-bold text-primary">
+                  ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
+                </div>
+                <div className="text-xs text-financial-green font-medium">
+                  ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                </div>
+              </div>
+              
+              <div className="text-center p-3 rounded-lg bg-accent/5 border border-accent/20 shadow-sm">
+                <div className="text-sm font-medium text-muted-foreground mb-1">15 Years</div>
+                <div className="text-lg font-bold text-accent">
+                  ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
+                </div>
+                <div className="text-xs text-financial-green font-medium">
+                  ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                </div>
+              </div>
+            </div>
+          </CardFooter>
+        </Card>
+
+        {/* Projection Parameters Strip */}
+        <ProjectionParametersStrip
+          monthlyInvestment={monthlyInvestment}
+          setMonthlyInvestment={setMonthlyInvestment}
+          portfolioGrowthRate={portfolioGrowthRate}
+          setPortfolioGrowthRate={setPortfolioGrowthRate}
+          dividendGrowthRate={dividendGrowthRate}
+          setDividendGrowthRate={setDividendGrowthRate}
+          additionalYearlyContribution={additionalYearlyContribution}
+          setAdditionalYearlyContribution={setAdditionalYearlyContribution}
+          reinvestDividends={reinvestDividends}
+          setReinvestDividends={setReinvestDividends}
+        />
 
         {/* How These Numbers Are Calculated - Now below charts */}
         <Collapsible open={isCalculationOpen} onOpenChange={setIsCalculationOpen} className="mb-8">
