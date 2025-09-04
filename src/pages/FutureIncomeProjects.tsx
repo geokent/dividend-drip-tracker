@@ -505,23 +505,23 @@ export const FutureIncomeProjects = () => {
                 <div className="h-[500px]">
                   <ResponsiveContainer width="100%" height="100%">
                     {chartMode === "dividend" ? (
-                      <BarChart 
-                        data={projectionData.filter((_, index) => index % 2 === 0)}
-                        margin={{ top: 8, right: 16, left: 92, bottom: 24 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis 
-                          dataKey="year" 
-                          stroke="hsl(var(--muted-foreground))"
-                          label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                        />
-                        <YAxis 
-                          width={80}
-                          tickMargin={8}
-                          tick={{ fontSize: 12 }}
-                          stroke="hsl(var(--muted-foreground))"
-                          tickFormatter={(value) => `$${value.toLocaleString()}`}
-                        />
+                       <BarChart 
+                         data={projectionData.filter((_, index) => index % 2 === 0)}
+                         margin={{ top: 8, right: 16, left: 28, bottom: 24 }}
+                       >
+                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                         <XAxis 
+                           dataKey="year" 
+                           stroke="hsl(var(--muted-foreground))"
+                           label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                         />
+                         <YAxis 
+                           width={40}
+                           tickMargin={4}
+                           tick={{ fontSize: 12 }}
+                           stroke="hsl(var(--muted-foreground))"
+                           tickFormatter={(value) => `$${value.toLocaleString()}`}
+                         />
                         <Tooltip 
                           contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
@@ -539,23 +539,23 @@ export const FutureIncomeProjects = () => {
                         />
                       </BarChart>
                     ) : (
-                      <LineChart 
-                        data={projectionData}
-                        margin={{ top: 8, right: 16, left: 92, bottom: 24 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis 
-                          dataKey="year" 
-                          stroke="hsl(var(--muted-foreground))"
-                          label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                        />
-                        <YAxis 
-                          width={80}
-                          tickMargin={8}
-                          tick={{ fontSize: 12 }}
-                          stroke="hsl(var(--muted-foreground))"
-                          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                        />
+                       <LineChart 
+                         data={projectionData}
+                         margin={{ top: 8, right: 16, left: 28, bottom: 24 }}
+                       >
+                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                         <XAxis 
+                           dataKey="year" 
+                           stroke="hsl(var(--muted-foreground))"
+                           label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                         />
+                         <YAxis 
+                           width={40}
+                           tickMargin={4}
+                           tick={{ fontSize: 12 }}
+                           stroke="hsl(var(--muted-foreground))"
+                           tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                         />
                         <Tooltip 
                           contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
