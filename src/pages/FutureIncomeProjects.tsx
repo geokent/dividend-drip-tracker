@@ -429,7 +429,8 @@ export const FutureIncomeProjects = () => {
             Future Dividend Income Projections
           </h1>
           <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            AI-powered projections based on your current portfolio. Customize parameters below to see how different strategies affect your long-term income.
+            <span className="block">AI-powered projections based on your current portfolio.</span>
+            <span className="block">Customize parameters below to see how different strategies affect your long-term income.</span>
           </p>
         </div>
 
@@ -516,7 +517,10 @@ export const FutureIncomeProjects = () => {
             <div className="h-[500px]">
               <ResponsiveContainer width="100%" height="100%">
                 {chartMode === "dividend" ? (
-                  <BarChart data={projectionData.filter((_, index) => index % 2 === 0)}>
+                  <BarChart 
+                    data={projectionData.filter((_, index) => index % 2 === 0)}
+                    margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
                       dataKey="year" 
@@ -524,6 +528,9 @@ export const FutureIncomeProjects = () => {
                       label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
                     />
                     <YAxis 
+                      width={72}
+                      tickMargin={8}
+                      tick={{ fontSize: 12 }}
                       stroke="hsl(var(--muted-foreground))"
                       tickFormatter={(value) => `$${value.toLocaleString()}`}
                     />
@@ -543,7 +550,10 @@ export const FutureIncomeProjects = () => {
                     />
                   </BarChart>
                 ) : (
-                  <LineChart data={projectionData}>
+                  <LineChart 
+                    data={projectionData}
+                    margin={{ top: 8, right: 16, left: 64, bottom: 24 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
                       dataKey="year" 
@@ -551,6 +561,9 @@ export const FutureIncomeProjects = () => {
                       label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
                     />
                     <YAxis 
+                      width={72}
+                      tickMargin={8}
+                      tick={{ fontSize: 12 }}
                       stroke="hsl(var(--muted-foreground))"
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                     />
@@ -609,7 +622,7 @@ export const FutureIncomeProjects = () => {
                     ${projectionData[1]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-2xl font-bold text-primary">
                   ${projectionData[1]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -625,7 +638,7 @@ export const FutureIncomeProjects = () => {
                     ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-2xl font-bold text-primary">
                   ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -641,7 +654,7 @@ export const FutureIncomeProjects = () => {
                     ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
                   </Badge>
                 </div>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-2xl font-bold text-primary">
                   ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-muted-foreground">
