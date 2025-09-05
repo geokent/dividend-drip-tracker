@@ -210,7 +210,7 @@ const LandingPageV2 = () => {
                 #1 Dividend Tracking Platform
               </div>
               
-              <h1 className="page-title text-4xl lg:text-6xl mb-6 leading-tight">
+              <h1 className="page-title text-4xl lg:text-6xl mb-6 leading-normal">
                 Build Wealth Through
                 <span className="gradient-text block">Dividend Investing</span>
               </h1>
