@@ -14,6 +14,10 @@ import { Link } from "react-router-dom";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { FAQ } from "@/components/FAQ";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ExitIntentModal } from "@/components/ExitIntentModal";
+import { useExitIntent } from "@/hooks/useExitIntent";
+import { DemoPortfolio } from "@/components/DemoPortfolio";
+import { SEOHead } from "@/components/SEOHead";
 
 // Import images
 import snowball from "@/assets/snowball.jpg";
@@ -37,6 +41,7 @@ const LandingPageV2 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { showExitIntent, hideExitIntent } = useExitIntent();
 
   useEffect(() => {
     document.title = "Divtrkr - Track Your Dividend Income & Build Wealth";
@@ -196,6 +201,25 @@ const LandingPageV2 = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="Divtrkr - Track Your Dividend Income & Build Wealth"
+        description="Track your dividend income, monitor portfolio performance, and build passive wealth with our comprehensive dividend tracking platform. Start your journey to financial independence today."
+        keywords="dividend tracker, dividend investing, passive income, FIRE, financial independence, investment portfolio, dividend stocks, portfolio tracking, dividend snowball"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Divtrkr",
+          "description": "Track your dividend income, monitor portfolio performance, and build passive wealth",
+          "url": "https://divtrkr.lovable.app",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }}
+      />
       <Header />
 
       {/* Hero Section */}
@@ -364,6 +388,37 @@ const LandingPageV2 = () => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Demo Portfolio Section */}
+      <section className="py-20 bg-gradient-to-b from-background to-accent/5">
+        <div className="container">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="section-title text-3xl lg:text-5xl mb-6">
+              See Your Portfolio in Action
+              <span className="gradient-text block">Live Demo</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              This is what a real dividend portfolio looks like in Divtrkr. Track your holdings, 
+              monitor yields, and watch your passive income grow month by month.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto animate-scale-in">
+            <DemoPortfolio />
+          </div>
+          
+          <div className="text-center mt-12">
+            <Button 
+              size="lg" 
+              className="font-semibold shadow-elegant hover:shadow-lg transition-all duration-300"
+              onClick={() => setShowAuthCard(true)}
+            >
+              Start Tracking Your Portfolio
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </div>
       </section>
@@ -939,6 +994,8 @@ const LandingPageV2 = () => {
           </Card>
         </div>
       )}
+      
+      <ExitIntentModal isOpen={showExitIntent} onClose={hideExitIntent} />
     </div>
   );
 };

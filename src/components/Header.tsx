@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { useAuth } from "@/components/AuthProvider";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -55,6 +56,11 @@ export const Header = () => {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            {!user && (
+              <div className="w-64">
+                <NewsletterSignup />
+              </div>
+            )}
             <PWAInstallButton />
             
             {user ? (
