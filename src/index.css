@@ -255,6 +255,12 @@ All colors MUST be HSL.
   .animate-scale-in {
     animation: scaleIn 0.6s ease-out;
   }
+
+  /* Text descender fix for browsers that clip descenders */
+  .text-descender-fix {
+    line-height: 1.2;
+    padding-bottom: 0.1em;
+  }
 }
 
 @keyframes fadeIn {

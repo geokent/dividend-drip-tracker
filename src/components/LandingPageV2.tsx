@@ -199,20 +199,20 @@ const LandingPageV2 = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      <section className="relative py-20 lg:py-32">
         <div className="absolute inset-0 gradient-primary opacity-5"></div>
         <div className="container relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
-            <div className="text-center lg:text-left animate-fade-in">
+            <div className="relative z-20 text-center lg:text-left animate-fade-in">
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 shadow-sm">
                 <Star className="h-4 w-4 mr-2" />
                 #1 Dividend Tracking Platform
               </div>
               
-              <h1 className="page-title text-4xl lg:text-6xl mb-6 leading-normal">
+              <h1 className="page-title text-4xl lg:text-6xl mb-10 leading-relaxed">
                 Build Wealth Through
-                <span className="gradient-text block">Dividend Investing</span>
+                <span className="gradient-text block pb-2">Dividend Investing</span>
               </h1>
               
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
@@ -260,7 +260,7 @@ const LandingPageV2 = () => {
             </div>
 
             {/* Right Column - Auth Form */}
-            <div className="animate-scale-in">
+            <div className="relative z-10 animate-scale-in">
               <Card className="card-elevated backdrop-blur-lg bg-card/95">
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-2xl">
