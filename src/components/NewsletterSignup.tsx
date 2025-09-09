@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mail, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const NewsletterSignup = () => {
   const [email, setEmail] = useState('');
@@ -14,10 +15,10 @@ export const NewsletterSignup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email) {
+    if (!email || !email.includes('@')) {
       toast({
-        title: "Email required",
-        description: "Please enter your email address",
+        title: "Valid email required",
+        description: "Please enter a valid email address",
         variant: "destructive"
       });
       return;
@@ -26,14 +27,23 @@ export const NewsletterSignup = () => {
     setIsLoading(true);
     
     try {
-      // TODO: Replace with actual newsletter service integration
-      // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.functions.invoke('newsletter-signup', {
+        body: { 
+          email: email.toLowerCase().trim(),
+          source: 'website'
+        }
+      });
+
+      if (error) {
+        console.error('Newsletter signup error:', error);
+        throw error;
+      }
       
       setIsSubscribed(true);
+      setEmail('');
       toast({
         title: "Success!",
-        description: "You've been subscribed to our dividend investing newsletter"
+        description: data.message || "You've been subscribed to our dividend investing newsletter"
       });
       
       // Track conversion event
@@ -45,6 +55,7 @@ export const NewsletterSignup = () => {
       }
       
     } catch (error) {
+      console.error('Newsletter signup error:', error);
       toast({
         title: "Subscription failed",
         description: "Please try again later",
