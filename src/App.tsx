@@ -12,7 +12,6 @@ import { Auth } from "./pages/Auth";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
-import Analytics from "./pages/Analytics";
 import { LearnDividends } from "./pages/LearnDividends";
 import { LearnDividendSnowball } from "./pages/LearnDividendSnowball";
 import { LearnFIRE } from "./pages/LearnFIRE";
@@ -69,14 +68,6 @@ const App = () => {
             <Route path="/faq" element={<FAQ />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
-            <Route 
-              path="/analytics" 
-              element={
-                <ProtectedRoute>
-                  <Analytics />
-                </ProtectedRoute>
-              } 
-            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
