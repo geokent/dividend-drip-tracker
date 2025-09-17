@@ -112,6 +112,33 @@ export type Database = {
           },
         ]
       }
+      exit_intent_leads: {
+        Row: {
+          created_at: string
+          email: string
+          guide_sent: boolean | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          guide_sent?: boolean | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          guide_sent?: boolean | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
