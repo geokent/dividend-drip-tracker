@@ -30,12 +30,27 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
     setIsLoading(true);
     
     try {
-      // TODO: Replace with actual lead capture service
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const response = await fetch('https://fdvpmommvnakoxggnjvt.supabase.co/functions/v1/exit-intent-capture', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          userAgent: navigator.userAgent,
+          ipAddress: null // Can't get client IP from frontend
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send guide');
+      }
+
       toast({
         title: "Success!",
-        description: "Check your email for the free dividend investing guide"
+        description: data.message || "Check your email for the free dividend investing guide"
       });
       
       // Track conversion
@@ -48,10 +63,11 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
       
       onClose();
       
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Exit intent capture error:', error);
       toast({
         title: "Something went wrong",
-        description: "Please try again later",
+        description: error.message || "Please try again later",
         variant: "destructive"
       });
     } finally {
