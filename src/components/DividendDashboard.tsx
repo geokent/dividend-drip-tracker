@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { PlaidDisconnectDialog } from "./PlaidDisconnectDialog";
 
 interface StockData {
   symbol: string;
@@ -41,6 +42,18 @@ export const DividendDashboard = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<number>(0);
   const [connectedInstitutions, setConnectedInstitutions] = useState<Array<{item_id: string, institution_name: string, account_count: number}>>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [disconnectDialog, setDisconnectDialog] = useState<{
+    open: boolean;
+    itemId: string;
+    institutionName: string;
+    affectedStocks: any[];
+  }>({
+    open: false,
+    itemId: '',
+    institutionName: '',
+    affectedStocks: []
+  });
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -79,7 +92,10 @@ export const DividendDashboard = () => {
         industry: stock.industry,
         marketCap: stock.market_cap?.toString() || null,
         peRatio: stock.pe_ratio?.toString() || null,
-        shares: Number(stock.shares) || 0
+        shares: Number(stock.shares) || 0,
+        source: stock.source,
+        plaid_item_id: stock.plaid_item_id,
+        last_synced: stock.last_synced
       }));
       setTrackedStocks(formattedStocks);
       
@@ -546,8 +562,31 @@ export const DividendDashboard = () => {
     }
   };
 
-  const handleDisconnectInstitution = async (itemId: string, institutionName: string, cleanupAction: 'keep' | 'remove' | 'convert' = 'keep') => {
+  const handleDisconnectInstitution = async (itemId: string, institutionName: string, affectedStocks?: any[]) => {
     if (!user) return;
+    
+    // If no affected stocks provided, this came from the toolbar button
+    // We need to show the dialog to let user choose what to do
+    if (!affectedStocks) {
+      // Query affected stocks for this item
+      const { data: stocks } = await supabase
+        .from('user_stocks')
+        .select('symbol, company_name, shares, current_price, annual_dividend, source, plaid_item_id')
+        .eq('user_id', user.id)
+        .eq('plaid_item_id', itemId)
+        .eq('source', 'plaid_sync');
+
+      setDisconnectDialog({
+        open: true,
+        itemId,
+        institutionName,
+        affectedStocks: stocks || []
+      });
+      return;
+    }
+
+    // This comes from the dialog with a cleanup action
+    setIsDisconnecting(true);
     
     try {
       toast({
@@ -559,7 +598,7 @@ export const DividendDashboard = () => {
         body: {
           user_id: user.id,
           item_id: itemId,
-          cleanup_action: cleanupAction
+          cleanup_action: 'keep' // Default cleanup action
         }
       });
 
@@ -614,6 +653,58 @@ export const DividendDashboard = () => {
         description: "Failed to disconnect account. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsDisconnecting(false);
+      setDisconnectDialog({ open: false, itemId: '', institutionName: '', affectedStocks: [] });
+    }
+  };
+
+  const handleConfirmDisconnect = async (itemId: string, institutionName: string, cleanupAction: 'keep' | 'remove' | 'convert') => {
+    if (!user) return;
+    
+    setIsDisconnecting(true);
+    
+    try {
+      toast({
+        title: "Disconnecting...",
+        description: `Disconnecting ${institutionName}...`,
+      });
+      
+      const { data, error } = await supabase.functions.invoke('plaid-disconnect-item', {
+        body: {
+          user_id: user.id,
+          item_id: itemId,
+          cleanup_action: cleanupAction
+        }
+      });
+
+      if (error) {
+        console.error('Disconnect error:', error);
+        toast({
+          title: "Disconnect Failed",
+          description: "Failed to disconnect account. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Disconnected!",
+        description: data.message || `Successfully disconnected ${institutionName}`,
+      });
+      
+      // Refresh both accounts and stocks
+      await Promise.all([loadConnectedAccounts(), loadUserStocks()]);
+    } catch (error) {
+      console.error('Error disconnecting institution:', error);
+      toast({
+        title: "Error",
+        description: "Failed to disconnect account. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDisconnecting(false);
+      setDisconnectDialog({ open: false, itemId: '', institutionName: '', affectedStocks: [] });
     }
   };
 
@@ -840,6 +931,16 @@ export const DividendDashboard = () => {
         {/* Upcoming Dividends - Below the chart */}
         <UpcomingDividendsCard stocks={trackedStocks} />
       </div>
+      
+      <PlaidDisconnectDialog
+        open={disconnectDialog.open}
+        onOpenChange={(open) => setDisconnectDialog({ ...disconnectDialog, open })}
+        institutionName={disconnectDialog.institutionName}
+        itemId={disconnectDialog.itemId}
+        affectedStocks={disconnectDialog.affectedStocks}
+        onConfirmDisconnect={handleConfirmDisconnect}
+        isDisconnecting={isDisconnecting}
+      />
     </AppLayout>
   );
 };

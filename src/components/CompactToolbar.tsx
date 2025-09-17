@@ -26,7 +26,7 @@ interface CompactToolbarProps {
   onUpdate: () => void;
   onPlaidSuccess: (data?: any) => void;
   onStockFound: (stockData: any) => void;
-  onDisconnectInstitution: (itemId: string, institutionName: string) => void;
+  onDisconnectInstitution: (itemId: string, institutionName: string, affectedStocks?: any[]) => void;
 }
 
 export const CompactToolbar = ({
@@ -111,7 +111,7 @@ export const CompactToolbar = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onDisconnectInstitution(institution.item_id, institution.institution_name)}
+                        onClick={() => onDisconnectInstitution(institution.item_id, institution.institution_name, [])}
                         className="text-destructive hover:text-destructive"
                       >
                         Disconnect

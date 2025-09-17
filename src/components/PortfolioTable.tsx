@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Badge } from "./ui/badge";
-import { Trash2, Edit3, Check, X } from "lucide-react";
+import { Trash2, Edit3, Check, X, Building2, User } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 interface TrackedStock {
@@ -16,6 +16,9 @@ interface TrackedStock {
   annualDividend: number | null;
   shares: number;
   sector: string | null;
+  source?: string;
+  plaid_item_id?: string | null;
+  last_synced?: string;
 }
 
 interface PortfolioTableProps {
@@ -83,15 +86,35 @@ export const PortfolioTable = ({ stocks, onRemoveStock, onUpdateShares }: Portfo
               <TableRow key={stock.symbol}>
                 <TableCell>
                   <div>
-                    <div className="font-medium">{stock.symbol}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{stock.symbol}</span>
+                      {stock.source === 'plaid_sync' ? (
+                        <Badge variant="outline" className="text-xs">
+                          <Building2 className="h-3 w-3 mr-1" />
+                          Synced
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">
+                          <User className="h-3 w-3 mr-1" />
+                          Manual
+                        </Badge>
+                      )}
+                    </div>
                     <div className="text-sm text-muted-foreground truncate max-w-[200px]">
                       {stock.companyName}
                     </div>
-                    {stock.sector && (
-                      <Badge variant="secondary" className="text-xs mt-1">
-                        {stock.sector}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      {stock.sector && (
+                        <Badge variant="secondary" className="text-xs">
+                          {stock.sector}
+                        </Badge>
+                      )}
+                      {stock.last_synced && stock.source === 'plaid_sync' && (
+                        <span className="text-xs text-muted-foreground">
+                          Synced: {new Date(stock.last_synced).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
