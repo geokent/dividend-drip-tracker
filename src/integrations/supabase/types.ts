@@ -315,8 +315,11 @@ export type Database = {
           last_synced: string
           market_cap: number | null
           pe_ratio: number | null
+          plaid_account_id: string | null
+          plaid_item_id: string | null
           sector: string | null
           shares: number
+          source: string | null
           symbol: string
           updated_at: string
           user_id: string
@@ -335,8 +338,11 @@ export type Database = {
           last_synced?: string
           market_cap?: number | null
           pe_ratio?: number | null
+          plaid_account_id?: string | null
+          plaid_item_id?: string | null
           sector?: string | null
           shares?: number
+          source?: string | null
           symbol: string
           updated_at?: string
           user_id: string
@@ -355,8 +361,11 @@ export type Database = {
           last_synced?: string
           market_cap?: number | null
           pe_ratio?: number | null
+          plaid_account_id?: string | null
+          plaid_item_id?: string | null
           sector?: string | null
           shares?: number
+          source?: string | null
           symbol?: string
           updated_at?: string
           user_id?: string

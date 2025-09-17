@@ -230,6 +230,9 @@ Deno.serve(async (req) => {
               shares: aggregatedHolding.quantity,
               company_name: aggregatedHolding.companyName,
               current_price: aggregatedHolding.currentPrice,
+              source: 'plaid_sync',
+              plaid_item_id: account.item_id,
+              plaid_account_id: account.account_id,
               last_synced: new Date().toISOString(),
             }
 

@@ -106,6 +106,72 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Get affected stocks from this Plaid item
+    const { data: affectedStocks, error: stocksError } = await supabase
+      .from('user_stocks')
+      .select('id, symbol, company_name, shares')
+      .eq('user_id', user_id)
+      .eq('plaid_item_id', item_id)
+      .eq('source', 'plaid_sync')
+
+    if (stocksError) {
+      console.error('Error fetching affected stocks:', stocksError)
+    }
+
+    // Parse cleanup action from request body (default to 'keep')
+    let cleanupAction = 'keep'
+    try {
+      const body = await req.text()
+      if (body) {
+        const parsed = JSON.parse(body)
+        cleanupAction = parsed.cleanup_action || 'keep'
+      }
+    } catch (e) {
+      // Use default cleanup action
+    }
+
+    let cleanupMessage = ''
+    const affectedCount = affectedStocks?.length || 0
+
+    // Handle cleanup based on user choice
+    if (affectedCount > 0 && cleanupAction !== 'keep') {
+      if (cleanupAction === 'remove') {
+        // Remove all Plaid-synced stocks from this item
+        const { error: deleteError } = await supabase
+          .from('user_stocks')
+          .delete()
+          .eq('user_id', user_id)
+          .eq('plaid_item_id', item_id)
+          .eq('source', 'plaid_sync')
+
+        if (deleteError) {
+          console.error('Error removing stocks:', deleteError)
+          cleanupMessage = ` Warning: Could not remove ${affectedCount} associated holdings.`
+        } else {
+          cleanupMessage = ` Removed ${affectedCount} associated holdings.`
+        }
+      } else if (cleanupAction === 'convert') {
+        // Convert Plaid-synced stocks to manual
+        const { error: convertError } = await supabase
+          .from('user_stocks')
+          .update({ 
+            source: 'manual',
+            plaid_item_id: null,
+            plaid_account_id: null 
+          })
+          .eq('user_id', user_id)
+          .eq('plaid_item_id', item_id)
+          .eq('source', 'plaid_sync')
+
+        if (convertError) {
+          console.error('Error converting stocks:', convertError)
+          cleanupMessage = ` Warning: Could not convert ${affectedCount} associated holdings.`
+        } else {
+          cleanupMessage = ` Converted ${affectedCount} holdings to manual tracking.`
+        }
+      }
+    }
+
     // Log the disconnection
     try {
       await supabase.rpc('log_plaid_access', {
@@ -124,7 +190,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: `Successfully disconnected ${account.institution_name || 'institution'}`
+        message: `Successfully disconnected ${account.institution_name || 'institution'}.${cleanupMessage}`,
+        affected_stocks: affectedStocks || [],
+        cleanup_action: cleanupAction
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

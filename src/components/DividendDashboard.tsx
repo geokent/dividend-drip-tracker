@@ -45,6 +45,86 @@ export const DividendDashboard = () => {
   const { signOut, user } = useAuth();
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
+  // Load user stocks from database
+  const loadUserStocks = async () => {
+    if (!user?.id) return;
+    
+    const { data: stocks, error } = await supabase
+      .from('user_stocks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading stocks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your stocks",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (stocks) {
+      const formattedStocks = stocks.map(stock => ({
+        symbol: stock.symbol,
+        companyName: stock.company_name || '',
+        currentPrice: stock.current_price,
+        dividendYield: stock.dividend_yield,
+        dividendPerShare: stock.dividend_per_share,
+        annualDividend: stock.annual_dividend,
+        exDividendDate: stock.ex_dividend_date,
+        dividendDate: stock.dividend_date,
+        sector: stock.sector,
+        industry: stock.industry,
+        marketCap: stock.market_cap?.toString() || null,
+        peRatio: stock.pe_ratio?.toString() || null,
+        shares: Number(stock.shares) || 0
+      }));
+      setTrackedStocks(formattedStocks);
+      
+      // Update last synced timestamp from the latest stock sync
+      const latestSync = stocks.reduce((latest, stock) => {
+        const stockSync = new Date(stock.last_synced);
+        return stockSync > latest ? stockSync : latest;
+      }, new Date(0));
+      if (latestSync.getTime() > 0) {
+        setLastSyncedAt(latestSync);
+      }
+    }
+  };
+
+  // Load connected accounts from database
+  const loadConnectedAccounts = async () => {
+    if (!user?.id) return;
+    
+    const { data: accounts, error: accountsError } = await supabase
+      .from('plaid_accounts')
+      .select('id, account_name, institution_name, is_active, item_id')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+
+    if (!accountsError && accounts) {
+      setConnectedAccounts(accounts.length);
+      
+      // Group by institution
+      const institutionMap = new Map();
+      accounts.forEach(account => {
+        const key = account.item_id;
+        if (institutionMap.has(key)) {
+          institutionMap.get(key).account_count++;
+        } else {
+          institutionMap.set(key, {
+            item_id: account.item_id,
+            institution_name: account.institution_name || 'Unknown Institution',
+            account_count: 1
+          });
+        }
+      });
+      setConnectedInstitutions(Array.from(institutionMap.values()));
+    }
+  };
+
   // Load tracked stocks and connection status from database on component mount
   useEffect(() => {
     const loadData = async () => {
@@ -466,7 +546,7 @@ export const DividendDashboard = () => {
     }
   };
 
-  const handleDisconnectInstitution = async (itemId: string, institutionName: string) => {
+  const handleDisconnectInstitution = async (itemId: string, institutionName: string, cleanupAction: 'keep' | 'remove' | 'convert' = 'keep') => {
     if (!user) return;
     
     try {
@@ -478,7 +558,8 @@ export const DividendDashboard = () => {
       const { data, error } = await supabase.functions.invoke('plaid-disconnect-item', {
         body: {
           user_id: user.id,
-          item_id: itemId
+          item_id: itemId,
+          cleanup_action: cleanupAction
         }
       });
 
@@ -494,10 +575,10 @@ export const DividendDashboard = () => {
 
       toast({
         title: "Disconnected!",
-        description: `Successfully disconnected ${institutionName}`,
+        description: data.message || `Successfully disconnected ${institutionName}`,
       });
       
-      // Refresh the accounts list
+      // Refresh both accounts and stocks
       const { data: accounts } = await supabase
         .from('plaid_accounts')
         .select('id, item_id, institution_name')
@@ -523,6 +604,9 @@ export const DividendDashboard = () => {
         });
         setConnectedInstitutions(Array.from(institutionMap.values()));
       }
+      
+      // Refresh stocks to reflect any cleanup
+      await loadUserStocks();
     } catch (error) {
       console.error('Error disconnecting institution:', error);
       toast({
