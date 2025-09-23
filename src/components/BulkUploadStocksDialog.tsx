@@ -28,10 +28,23 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
   const [isUploading, setIsUploading] = useState(false);
   const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  const [csvFormat, setCsvFormat] = useState<string>("");
   const { toast } = useToast();
 
+  const detectHeaders = (firstRow: any): boolean => {
+    if (Array.isArray(firstRow)) {
+      return firstRow.some(cell => 
+        typeof cell === 'string' && 
+        /^(symbol|shares|company|name)/i.test(cell.toString().trim())
+      );
+    }
+    return Object.keys(firstRow).some(key => 
+      /^(symbol|shares|company|name)/i.test(key)
+    );
+  };
+
   const downloadTemplate = () => {
-    const template = "symbol,shares,company_name\nAAPL,100,Apple Inc.\nMSFT,50,Microsoft Corporation\nKO,75,The Coca-Cola Company";
+    const template = "symbol,shares,company_name\nAAPL,100,Apple Inc.\nMSFT,50,Microsoft Corporation\nKO,75,The Coca-Cola Company\n\nAlternatively, you can upload without headers:\nAAPL,100,Apple Inc.\nMSFT,50,Microsoft Corporation\nKO,75,The Coca-Cola Company";
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -45,49 +58,71 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // First, detect if the CSV has headers
     Papa.parse(file, {
-      header: true,
+      header: false,
       skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data as any[];
-        const validatedData: CSVRow[] = [];
-        const validationErrors: string[] = [];
+      preview: 1,
+      complete: (previewResults) => {
+        const firstRow = previewResults.data[0] as any[];
+        const hasHeaders = detectHeaders(firstRow);
+        const formatMessage = hasHeaders ? "Headers detected" : "Using column positions (symbol, shares, company_name)";
+        setCsvFormat(formatMessage);
 
-        const symbolsSeen = new Set<string>();
+        // Now parse the full file with the correct configuration
+        Papa.parse(file, {
+          header: hasHeaders,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const data = results.data as any[];
+            const validatedData: CSVRow[] = [];
+            const validationErrors: string[] = [];
 
-        data.forEach((row, index) => {
-          const symbol = row.symbol?.toString().trim().toUpperCase();
-          const shares = parseFloat(row.shares);
-          const company_name = row.company_name?.toString().trim();
+            const symbolsSeen = new Set<string>();
 
-          if (!symbol) {
-            validationErrors.push(`Row ${index + 1}: Symbol is required`);
-            return;
+            data.forEach((row, index) => {
+              // Handle both header and column-based access
+              const symbol = hasHeaders 
+                ? row.symbol?.toString().trim().toUpperCase()
+                : row[0]?.toString().trim().toUpperCase();
+              
+              const sharesStr = hasHeaders ? row.shares : row[1];
+              const shares = parseFloat(sharesStr?.toString().replace(/,/g, '') || '0');
+              
+              const company_name = hasHeaders 
+                ? row.company_name?.toString().trim()
+                : row[2]?.toString().trim();
+
+              if (!symbol) {
+                validationErrors.push(`Row ${index + 1}: Symbol is required (column 1)`);
+                return;
+              }
+
+              if (symbolsSeen.has(symbol)) {
+                validationErrors.push(`Row ${index + 1}: Duplicate symbol ${symbol} found in CSV`);
+                return;
+              }
+              symbolsSeen.add(symbol);
+
+              if (isNaN(shares) || shares <= 0) {
+                validationErrors.push(`Row ${index + 1}: Shares must be a positive number (column 2)`);
+                return;
+              }
+
+              validatedData.push({
+                symbol,
+                shares,
+                company_name: company_name || undefined
+              });
+            });
+
+            setCsvData(validatedData);
+            setErrors(validationErrors);
+          },
+          error: (error) => {
+            setErrors([`Failed to parse CSV: ${error.message}`]);
           }
-
-          if (symbolsSeen.has(symbol)) {
-            validationErrors.push(`Row ${index + 1}: Duplicate symbol ${symbol} found in CSV`);
-            return;
-          }
-          symbolsSeen.add(symbol);
-
-          if (isNaN(shares) || shares <= 0) {
-            validationErrors.push(`Row ${index + 1}: Shares must be a positive number`);
-            return;
-          }
-
-          validatedData.push({
-            symbol,
-            shares,
-            company_name: company_name || undefined
-          });
         });
-
-        setCsvData(validatedData);
-        setErrors(validationErrors);
-      },
-      error: (error) => {
-        setErrors([`Failed to parse CSV: ${error.message}`]);
       }
     });
   };
@@ -202,7 +237,7 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
             <div className="space-y-1">
               <h4 className="text-sm font-medium">CSV Template</h4>
               <p className="text-xs text-muted-foreground">
-                Required: symbol, shares. Optional: company_name
+                Column 1: symbol, Column 2: shares, Column 3: company_name (optional). Works with or without headers.
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={downloadTemplate}>
@@ -241,6 +276,12 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
                 </div>
               </AlertDescription>
             </Alert>
+          )}
+
+          {csvFormat && (
+            <div className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
+              Format: {csvFormat}
+            </div>
           )}
 
           {csvData.length > 0 && errors.length === 0 && (
