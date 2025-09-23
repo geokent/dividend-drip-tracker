@@ -14,6 +14,11 @@ interface CSVRow {
   company_name?: string;
 }
 
+interface UploadError {
+  symbol: string;
+  error: string;
+}
+
 interface BulkUploadStocksDialogProps {
   onSuccess: () => void;
 }
@@ -48,6 +53,8 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
         const validatedData: CSVRow[] = [];
         const validationErrors: string[] = [];
 
+        const symbolsSeen = new Set<string>();
+
         data.forEach((row, index) => {
           const symbol = row.symbol?.toString().trim().toUpperCase();
           const shares = parseFloat(row.shares);
@@ -57,6 +64,12 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
             validationErrors.push(`Row ${index + 1}: Symbol is required`);
             return;
           }
+
+          if (symbolsSeen.has(symbol)) {
+            validationErrors.push(`Row ${index + 1}: Duplicate symbol ${symbol} found in CSV`);
+            return;
+          }
+          symbolsSeen.add(symbol);
 
           if (isNaN(shares) || shares <= 0) {
             validationErrors.push(`Row ${index + 1}: Shares must be a positive number`);
@@ -88,7 +101,7 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
       if (!user) throw new Error("User not authenticated");
 
       let successCount = 0;
-      let errorCount = 0;
+      const uploadErrors: UploadError[] = [];
 
       for (const stock of csvData) {
         try {
@@ -120,7 +133,8 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
                 user_id: user.id,
                 symbol: stock.symbol,
                 shares: stock.shares,
-                company_name: stock.company_name
+                company_name: stock.company_name,
+                source: 'manual'
               });
 
             if (error) throw error;
@@ -128,15 +142,26 @@ export function BulkUploadStocksDialog({ onSuccess }: BulkUploadStocksDialogProp
           successCount++;
         } catch (error) {
           console.error(`Error processing ${stock.symbol}:`, error);
-          errorCount++;
+          uploadErrors.push({
+            symbol: stock.symbol,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
         }
       }
 
-      toast({
-        title: "Import Complete",
-        description: `Successfully imported ${successCount} stocks${errorCount > 0 ? `, ${errorCount} failed` : ''}`,
-        variant: successCount > 0 ? "default" : "destructive"
-      });
+      if (uploadErrors.length > 0) {
+        toast({
+          title: "Import Completed with Errors",
+          description: `Successfully imported ${successCount} stocks. ${uploadErrors.length} failed. Check console for details.`,
+          variant: "default"
+        });
+        console.error('Failed stock uploads:', uploadErrors);
+      } else {
+        toast({
+          title: "Import Complete",
+          description: `Successfully imported ${successCount} stocks`,
+        });
+      }
 
       if (successCount > 0) {
         onSuccess();
