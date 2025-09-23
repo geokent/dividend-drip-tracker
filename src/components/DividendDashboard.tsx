@@ -782,6 +782,66 @@ export const DividendDashboard = () => {
     }
   };
 
+  const fetchDividendDataForStocks = async () => {
+    if (!user?.id) return;
+    
+    // Get stocks that don't have dividend data
+    const { data: stocksNeedingData } = await supabase
+      .from('user_stocks')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('dividend_yield', null);
+    
+    if (!stocksNeedingData || stocksNeedingData.length === 0) return;
+    
+    console.log(`Fetching dividend data for ${stocksNeedingData.length} stocks...`);
+    
+    for (const stock of stocksNeedingData) {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-dividend-data', {
+          body: { symbol: stock.symbol }
+        });
+
+        if (error) {
+          console.error(`Error fetching dividend data for ${stock.symbol}:`, error);
+          continue;
+        }
+
+        if (data.error) {
+          console.error(`API error for ${stock.symbol}:`, data.error);
+          continue;
+        }
+
+        // Update the stock with dividend data
+        await supabase
+          .from('user_stocks')
+          .update({
+            company_name: data.companyName,
+            current_price: data.currentPrice,
+            dividend_yield: data.dividendYield,
+            dividend_per_share: data.dividendPerShare,
+            annual_dividend: data.annualDividend,
+            ex_dividend_date: data.exDividendDate,
+            dividend_date: data.dividendDate,
+            sector: data.sector,
+            industry: data.industry,
+            market_cap: data.marketCap ? parseFloat(data.marketCap) : null,
+            pe_ratio: data.peRatio ? parseFloat(data.peRatio) : null,
+            last_synced: new Date().toISOString()
+          })
+          .eq('id', stock.id);
+
+        console.log(`Updated dividend data for ${stock.symbol}`);
+        
+        // Small delay to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+      } catch (error) {
+        console.error(`Error processing ${stock.symbol}:`, error);
+      }
+    }
+  };
+
   const handleBulkUploadSuccess = async () => {
     toast({
       title: "Upload Complete!",
@@ -789,7 +849,13 @@ export const DividendDashboard = () => {
     });
     
     await loadUserStocks();
-    await refreshStockPrices();
+    await fetchDividendDataForStocks();
+    await loadUserStocks(); // Reload to show updated data
+    
+    toast({
+      title: "Complete!",
+      description: "All stock data has been updated with current prices and dividends.",
+    });
   };
 
   const handleUpdatePortfolio = async () => {
