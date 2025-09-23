@@ -740,7 +740,7 @@ export const DividendDashboard = () => {
   };
 
   const refreshStockPrices = async () => {
-    if (!user?.id || trackedStocks.length === 0) return;
+    if (!user?.id) return;
     
     setIsRefreshingPrices(true);
     try {
@@ -762,39 +762,7 @@ export const DividendDashboard = () => {
       console.log('Price refresh response:', data);
       
       // Reload stocks to get updated prices
-      const { data: stocks } = await supabase
-        .from('user_stocks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (stocks) {
-        const formattedStocks = stocks.map(stock => ({
-          symbol: stock.symbol,
-          companyName: stock.company_name || '',
-          currentPrice: stock.current_price,
-          dividendYield: stock.dividend_yield,
-          dividendPerShare: stock.dividend_per_share,
-          annualDividend: stock.annual_dividend,
-          exDividendDate: stock.ex_dividend_date,
-          dividendDate: stock.dividend_date,
-          sector: stock.sector,
-          industry: stock.industry,
-          marketCap: stock.market_cap?.toString() || null,
-          peRatio: stock.pe_ratio?.toString() || null,
-          shares: Number(stock.shares) || 0
-        }));
-        setTrackedStocks(formattedStocks);
-        
-        // Update last synced timestamp from the latest stock sync
-        const latestSync = stocks.reduce((latest, stock) => {
-          const stockSync = new Date(stock.last_synced);
-          return stockSync > latest ? stockSync : latest;
-        }, new Date(0));
-        if (latestSync.getTime() > 0) {
-          setLastSyncedAt(latestSync);
-        }
-      }
+      await loadUserStocks();
 
       if (data?.updated > 0) {
         toast({
@@ -812,6 +780,16 @@ export const DividendDashboard = () => {
     } finally {
       setIsRefreshingPrices(false);
     }
+  };
+
+  const handleBulkUploadSuccess = async () => {
+    toast({
+      title: "Upload Complete!",
+      description: "Fetching stock prices and dividend data...",
+    });
+    
+    await loadUserStocks();
+    await refreshStockPrices();
   };
 
   const handleUpdatePortfolio = async () => {
@@ -865,7 +843,7 @@ export const DividendDashboard = () => {
 
   const headerActions = (
     <div className="flex items-center gap-2">
-      <BulkUploadStocksDialog onSuccess={() => window.location.reload()} />
+      <BulkUploadStocksDialog onSuccess={handleBulkUploadSuccess} />
       {user?.id && (
         <PlaidLinkButton
           userId={user.id}
