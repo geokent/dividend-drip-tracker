@@ -254,15 +254,27 @@ export const FutureIncomeProjects = () => {
 
         {/* Main Chart - Full Width */}
         <Card className="card-elevated gradient-card mb-8">
-          <CardHeader className={`pb-4 ${chartMode === "dividend" ? "hidden" : ""}`}>
+          <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <CardTitle className="card-title flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  Portfolio Growth Projection
+                  {chartMode === "dividend" ? (
+                    <>
+                      <DollarSign className="h-5 w-5 text-primary" />
+                      Monthly Income Projection
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Portfolio Growth Projection
+                    </>
+                  )}
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
-                  Portfolio value and annual dividend income over 15 years
+                  {chartMode === "dividend" 
+                    ? "Monthly dividend income and growth over time"
+                    : "Portfolio value and annual dividend income over 15 years"
+                  }
                 </CardDescription>
               </div>
               <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
@@ -273,17 +285,6 @@ export const FutureIncomeProjects = () => {
               </Tabs>
             </div>
           </CardHeader>
-          {chartMode === "dividend" && (
-            <div className="flex justify-between items-center p-4 pb-2">
-              <div></div>
-              <Tabs value={chartMode} onValueChange={(value) => setChartMode(value as "dividend" | "growth")}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="dividend" className="text-xs">Monthly Income</TabsTrigger>
-                  <TabsTrigger value="growth" className="text-xs">Portfolio Growth</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          )}
           <CardContent className="pb-4 relative">
             <div className="h-[280px] md:h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
