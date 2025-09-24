@@ -156,7 +156,8 @@ export const PortfolioTable = ({
                   disabled={isLoading}
                 />
                 <Button type="submit" size="sm" disabled={isLoading || !symbol.trim()}>
-                  <Search className="h-4 w-4" />
+                  <Search className="h-4 w-4 mr-2" />
+                  Add Stock
                 </Button>
               </form>
               
