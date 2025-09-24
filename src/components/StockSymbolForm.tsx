@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Card, CardContent } from './ui/card';
+
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search, Upload, Link } from 'lucide-react';
@@ -103,83 +103,73 @@ export const StockSymbolForm = ({
   };
 
   return (
-    <Card className="max-w-4xl">
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Manual Stock Entry */}
-          <div className="space-y-2 p-3 rounded-lg border bg-card/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Search className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Add Individual Stock</span>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-2">
-              <Input
-                type="text"
-                placeholder="Enter symbol (e.g., AAPL)"
-                value={symbol}
-                onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                disabled={loading}
-                className="w-full"
-                maxLength={5}
-              />
-              <Button type="submit" disabled={loading || !symbol.trim()} size="sm" className="w-full">
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="h-4 w-4" />
-                )}
-                <span className="ml-2">{loading ? 'Searching...' : 'Add Stock'}</span>
-              </Button>
-            </form>
+    <div className="max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Manual Stock Entry */}
+        <div className="metric-card">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <Search className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">Add Individual Stock</span>
           </div>
-
-          {/* Bulk Upload */}
-          <div className="space-y-2 p-3 rounded-lg border bg-card/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Upload className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Bulk Upload CSV</span>
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                Upload multiple stocks at once using a CSV file
-              </p>
-              {onBulkUploadSuccess && (
-                <BulkUploadStocksDialog onSuccess={onBulkUploadSuccess} />
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <Input
+              type="text"
+              placeholder="AAPL"
+              value={symbol}
+              onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+              disabled={loading}
+              className="w-full"
+              maxLength={5}
+            />
+            <Button type="submit" disabled={loading || !symbol.trim()} size="sm" className="w-full">
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4" />
               )}
-            </div>
+              <span className="ml-2">{loading ? 'Searching...' : 'Add Stock'}</span>
+            </Button>
+          </form>
+        </div>
+
+        {/* Bulk Upload */}
+        <div className="metric-card">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <Upload className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">Bulk Upload CSV</span>
           </div>
-
-          {/* Investment Account Connection */}
-          <div className="space-y-2 p-3 rounded-lg border bg-card/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Link className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Connect Account</span>
-            </div>
-            <div className="space-y-2">
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Automatically sync your dividend stocks from your brokerage
-                </p>
-                {isConnected && connectedInstitutions.length > 0 && (
-                  <p className="text-xs text-green-600">
-                    Connected to {connectedInstitutions[0].institution_name}
-                  </p>
-                )}
-              </div>
-              {userId && onPlaidSuccess && onPlaidDisconnect && (
-                <PlaidLinkButton
-                  userId={userId}
-                  onSuccess={onPlaidSuccess}
-                  size="sm"
-                  isConnected={isConnected}
-                  connectedItemId={connectedItemId}
-                  onDisconnect={onPlaidDisconnect}
-                />
-              )}
-            </div>
+          <div className="flex justify-center">
+            {onBulkUploadSuccess && (
+              <BulkUploadStocksDialog onSuccess={onBulkUploadSuccess} />
+            )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Investment Account Connection */}
+        <div className="metric-card">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <Link className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">Connect Account</span>
+          </div>
+          <div className="space-y-2">
+            {isConnected && connectedInstitutions.length > 0 && (
+              <p className="text-xs text-green-600">
+                Connected to {connectedInstitutions[0].institution_name}
+              </p>
+            )}
+            {userId && onPlaidSuccess && onPlaidDisconnect && (
+              <PlaidLinkButton
+                userId={userId}
+                onSuccess={onPlaidSuccess}
+                size="sm"
+                isConnected={isConnected}
+                connectedItemId={connectedItemId}
+                onDisconnect={onPlaidDisconnect}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
