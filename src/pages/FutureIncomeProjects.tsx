@@ -58,6 +58,7 @@ export const FutureIncomeProjects = () => {
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
+  const [yearRange, setYearRange] = useState<5 | 10 | 15>(5);
   
 
   // Load tracked stocks and connected accounts from Supabase database
@@ -201,10 +202,10 @@ export const FutureIncomeProjects = () => {
     return generateProjectionData();
   }, [trackedStocks, monthlyInvestment, dividendGrowthRate, portfolioGrowthRate, additionalYearlyContribution, reinvestDividends]);
   
-  // Filter out Year 0 for chart display (Years 1-15)
+  // Filter out Year 0 and limit to selected year range for chart display
   const chartData = useMemo(() => {
-    return projectionData.filter(data => data.year > 0);
-  }, [projectionData]);
+    return projectionData.filter(data => data.year > 0 && data.year <= yearRange);
+  }, [projectionData, yearRange]);
   
   // Create a key for forcing chart re-renders
   const chartKey = `${monthlyInvestment}-${dividendGrowthRate}-${portfolioGrowthRate}-${additionalYearlyContribution}-${reinvestDividends}`;
@@ -397,38 +398,59 @@ export const FutureIncomeProjects = () => {
             </div>
           </CardContent>
           
-          {/* Key Milestones integrated into chart footer */}
+          {/* Year Range Selector integrated into chart footer */}
           <CardFooter className="pt-4 border-t border-border bg-secondary/20">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-              <div className="text-center p-3 rounded-lg bg-card border border-border shadow-sm">
-                <div className="text-sm font-medium text-muted-foreground mb-1">2 Years</div>
-                <div className="text-lg font-bold text-foreground">
-                  ${projectionData[2]?.portfolioValue?.toLocaleString() || '0'}
+              <button 
+                onClick={() => setYearRange(5)}
+                className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                  yearRange === 5 
+                    ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
+                    : 'bg-card border-border hover:bg-secondary/50'
+                }`}
+              >
+                <div className="text-sm font-medium text-muted-foreground mb-1">5 Years</div>
+                <div className={`text-lg font-bold ${yearRange === 5 ? 'text-primary' : 'text-foreground'}`}>
+                  ${projectionData[5]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-financial-green font-medium">
-                  ${projectionData[2]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                  ${projectionData[5]?.monthlyIncome?.toLocaleString() || '0'}/mo
                 </div>
-              </div>
+              </button>
               
-              <div className="text-center p-3 rounded-lg bg-primary/5 border border-primary/20 shadow-sm">
+              <button 
+                onClick={() => setYearRange(10)}
+                className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                  yearRange === 10 
+                    ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
+                    : 'bg-card border-border hover:bg-secondary/50'
+                }`}
+              >
                 <div className="text-sm font-medium text-muted-foreground mb-1">10 Years</div>
-                <div className="text-lg font-bold text-primary">
+                <div className={`text-lg font-bold ${yearRange === 10 ? 'text-primary' : 'text-foreground'}`}>
                   ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-financial-green font-medium">
                   ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
                 </div>
-              </div>
+              </button>
               
-              <div className="text-center p-3 rounded-lg bg-accent/5 border border-accent/20 shadow-sm">
+              <button 
+                onClick={() => setYearRange(15)}
+                className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                  yearRange === 15 
+                    ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
+                    : 'bg-card border-border hover:bg-secondary/50'
+                }`}
+              >
                 <div className="text-sm font-medium text-muted-foreground mb-1">15 Years</div>
-                <div className="text-lg font-bold text-accent">
+                <div className={`text-lg font-bold ${yearRange === 15 ? 'text-primary' : 'text-foreground'}`}>
                   ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
                 </div>
                 <div className="text-xs text-financial-green font-medium">
                   ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
                 </div>
-              </div>
+              </button>
             </div>
           </CardFooter>
         </Card>
