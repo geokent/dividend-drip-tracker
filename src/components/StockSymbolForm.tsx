@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Separator } from './ui/separator';
+import { Card, CardContent } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search, Upload, Link } from 'lucide-react';
@@ -104,15 +103,12 @@ export const StockSymbolForm = ({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Manage Your Stocks</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <Card className="max-w-4xl">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Manual Stock Entry */}
-          <div className="space-y-3 p-4 rounded-lg border bg-card/50">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="space-y-2 p-3 rounded-lg border bg-card/50">
+            <div className="flex items-center gap-2 mb-2">
               <Search className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Add Individual Stock</span>
             </div>
@@ -138,12 +134,12 @@ export const StockSymbolForm = ({
           </div>
 
           {/* Bulk Upload */}
-          <div className="space-y-3 p-4 rounded-lg border bg-card/50">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="space-y-2 p-3 rounded-lg border bg-card/50">
+            <div className="flex items-center gap-2 mb-2">
               <Upload className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Bulk Upload CSV</span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
                 Upload multiple stocks at once using a CSV file
               </p>
@@ -154,12 +150,12 @@ export const StockSymbolForm = ({
           </div>
 
           {/* Investment Account Connection */}
-          <div className="space-y-3 p-4 rounded-lg border bg-card/50">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="space-y-2 p-3 rounded-lg border bg-card/50">
+            <div className="flex items-center gap-2 mb-2">
               <Link className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Connect Account</span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">
                   Automatically sync your dividend stocks from your brokerage
