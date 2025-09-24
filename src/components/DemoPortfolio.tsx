@@ -11,6 +11,8 @@ interface DemoStock {
   annualDividend: number;
   exDividendDate: string | null;
   dividendDate: string | null;
+  nextExDividendDate: string | null;
+  dividendFrequency: string | null;
   shares: number;
   sector: string | null;
 }
@@ -25,6 +27,8 @@ const demoStocks: DemoStock[] = [
     annualDividend: 0.96,
     exDividendDate: "2025-07-30",
     dividendDate: "2025-08-15",
+    nextExDividendDate: "2025-10-30",
+    dividendFrequency: "quarterly",
     shares: 30,
     sector: "Technology",
   },
@@ -37,6 +41,8 @@ const demoStocks: DemoStock[] = [
     annualDividend: 3.00,
     exDividendDate: "2025-09-05",
     dividendDate: "2025-09-12",
+    nextExDividendDate: "2025-12-05",
+    dividendFrequency: "quarterly",
     shares: 20,
     sector: "Technology",
   },
@@ -49,6 +55,8 @@ const demoStocks: DemoStock[] = [
     annualDividend: 1.94,
     exDividendDate: "2025-06-10",
     dividendDate: "2025-07-01",
+    nextExDividendDate: "2025-09-10",
+    dividendFrequency: "quarterly",
     shares: 100,
     sector: "Consumer Defensive",
   },
@@ -61,6 +69,8 @@ const demoStocks: DemoStock[] = [
     annualDividend: 4.96,
     exDividendDate: "2025-07-01",
     dividendDate: "2025-07-08",
+    nextExDividendDate: "2025-10-01",
+    dividendFrequency: "quarterly",
     shares: 40,
     sector: "Healthcare",
   },
@@ -73,6 +83,8 @@ const demoStocks: DemoStock[] = [
     annualDividend: 3.08,
     exDividendDate: "2025-06-28",
     dividendDate: "2025-07-15",
+    nextExDividendDate: "2025-07-28",
+    dividendFrequency: "monthly",
     shares: 120,
     sector: "Real Estate",
   },

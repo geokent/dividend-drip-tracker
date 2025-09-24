@@ -307,6 +307,7 @@ export type Database = {
           created_at: string
           current_price: number | null
           dividend_date: string | null
+          dividend_frequency: string | null
           dividend_per_share: number | null
           dividend_yield: number | null
           ex_dividend_date: string | null
@@ -314,6 +315,7 @@ export type Database = {
           industry: string | null
           last_synced: string
           market_cap: number | null
+          next_ex_dividend_date: string | null
           pe_ratio: number | null
           plaid_account_id: string | null
           plaid_item_id: string | null
@@ -330,6 +332,7 @@ export type Database = {
           created_at?: string
           current_price?: number | null
           dividend_date?: string | null
+          dividend_frequency?: string | null
           dividend_per_share?: number | null
           dividend_yield?: number | null
           ex_dividend_date?: string | null
@@ -337,6 +340,7 @@ export type Database = {
           industry?: string | null
           last_synced?: string
           market_cap?: number | null
+          next_ex_dividend_date?: string | null
           pe_ratio?: number | null
           plaid_account_id?: string | null
           plaid_item_id?: string | null
@@ -353,6 +357,7 @@ export type Database = {
           created_at?: string
           current_price?: number | null
           dividend_date?: string | null
+          dividend_frequency?: string | null
           dividend_per_share?: number | null
           dividend_yield?: number | null
           ex_dividend_date?: string | null
@@ -360,6 +365,7 @@ export type Database = {
           industry?: string | null
           last_synced?: string
           market_cap?: number | null
+          next_ex_dividend_date?: string | null
           pe_ratio?: number | null
           plaid_account_id?: string | null
           plaid_item_id?: string | null

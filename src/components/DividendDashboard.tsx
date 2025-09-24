@@ -24,6 +24,8 @@ interface StockData {
   annualDividend: number | null;
   exDividendDate: string | null;
   dividendDate: string | null;
+  nextExDividendDate: string | null;
+  dividendFrequency: string | null;
   sector: string | null;
   industry: string | null;
   marketCap: string | null;
@@ -88,6 +90,8 @@ export const DividendDashboard = () => {
         annualDividend: stock.annual_dividend,
         exDividendDate: stock.ex_dividend_date,
         dividendDate: stock.dividend_date,
+        nextExDividendDate: stock.next_ex_dividend_date,
+        dividendFrequency: stock.dividend_frequency,
         sector: stock.sector,
         industry: stock.industry,
         marketCap: stock.market_cap?.toString() || null,
@@ -173,6 +177,8 @@ export const DividendDashboard = () => {
           annualDividend: stock.annual_dividend,
           exDividendDate: stock.ex_dividend_date,
           dividendDate: stock.dividend_date,
+          nextExDividendDate: stock.next_ex_dividend_date,
+          dividendFrequency: stock.dividend_frequency,
           sector: stock.sector,
           industry: stock.industry,
           marketCap: stock.market_cap?.toString() || null,
@@ -456,6 +462,8 @@ export const DividendDashboard = () => {
           annualDividend: stock.annual_dividend,
           exDividendDate: stock.ex_dividend_date,
           dividendDate: stock.dividend_date,
+          nextExDividendDate: stock.next_ex_dividend_date,
+          dividendFrequency: stock.dividend_frequency,
           sector: stock.sector,
           industry: stock.industry,
           marketCap: stock.market_cap?.toString() || null,
@@ -823,6 +831,8 @@ export const DividendDashboard = () => {
             annual_dividend: data.annualDividend,
             ex_dividend_date: data.exDividendDate,
             dividend_date: data.dividendDate,
+            next_ex_dividend_date: data.nextExDividendDate,
+            dividend_frequency: data.dividendFrequency,
             sector: data.sector,
             industry: data.industry,
             market_cap: data.marketCap ? parseFloat(data.marketCap) : null,

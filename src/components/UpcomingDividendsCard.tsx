@@ -12,6 +12,8 @@ interface TrackedStock {
   annualDividend: number | null;
   exDividendDate: string | null;
   dividendDate: string | null;
+  nextExDividendDate: string | null;
+  dividendFrequency: string | null;
   shares: number;
 }
 

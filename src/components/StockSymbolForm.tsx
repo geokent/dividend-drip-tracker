@@ -15,6 +15,8 @@ interface StockData {
   annualDividend: number | null;
   exDividendDate: string | null;
   dividendDate: string | null;
+  nextExDividendDate: string | null;
+  dividendFrequency: string | null;
   sector: string | null;
   industry: string | null;
   marketCap: string | null;
