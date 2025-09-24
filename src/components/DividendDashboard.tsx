@@ -793,7 +793,7 @@ export const DividendDashboard = () => {
   const fetchDividendDataForStocks = async () => {
     if (!user?.id) return;
     
-    // Get stocks that need dividend data (null dividend_yield or last_synced > 7 days ago)
+    // Get stocks that need dividend data (null dividend_yield, missing dates, or last_synced > 7 days ago)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
@@ -801,7 +801,7 @@ export const DividendDashboard = () => {
       .from('user_stocks')
       .select('*')
       .eq('user_id', user.id)
-      .or(`dividend_yield.is.null,last_synced.lt.${sevenDaysAgo.toISOString()}`);
+      .or(`dividend_yield.is.null,dividend_date.is.null,last_synced.lt.${sevenDaysAgo.toISOString()}`);
     
     if (!stocksNeedingData || stocksNeedingData.length === 0) return;
     

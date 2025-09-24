@@ -173,9 +173,13 @@ Deno.serve(async (req) => {
       if (sortedDividends.length > 0) {
         const mostRecent = sortedDividends[0];
         
-        // Extract dates (handle different field name formats)
-        exDividendDate = mostRecent.exDividendDate || mostRecent.ex_dividend_date || null;
-        dividendDate = mostRecent.paymentDate || mostRecent.payment_date || mostRecent.dividendDate || exDividendDate;
+        // Extract dates (handle different field name formats and sanitize "None" values)
+        const rawExDividendDate = mostRecent.exDividendDate || mostRecent.ex_dividend_date || null;
+        const rawDividendDate = mostRecent.paymentDate || mostRecent.payment_date || mostRecent.dividendDate || null;
+        
+        // Sanitize date values - set to null if "None", empty, or invalid
+        exDividendDate = (rawExDividendDate && rawExDividendDate !== 'None' && rawExDividendDate !== '') ? rawExDividendDate : null;
+        dividendDate = (rawDividendDate && rawDividendDate !== 'None' && rawDividendDate !== '') ? rawDividendDate : exDividendDate;
         
         // Extract dividend amount
         dividendPerShare = parseFloat(mostRecent.amount || mostRecent.dividend_amount || mostRecent.dividendAmount || 0);
@@ -237,7 +241,7 @@ Deno.serve(async (req) => {
       }
     }
     
-    if (!exDividendDate && overviewData.ExDividendDate && overviewData.ExDividendDate !== 'None') {
+    if (!exDividendDate && overviewData.ExDividendDate && overviewData.ExDividendDate !== 'None' && overviewData.ExDividendDate !== '') {
       exDividendDate = overviewData.ExDividendDate;
     }
     

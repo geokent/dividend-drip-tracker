@@ -46,6 +46,15 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
     .filter(stock => stock.isRecent || stock.isUpcoming)
     .sort((a, b) => a.dividendDate.getTime() - b.dividendDate.getTime());
 
+  // Also find stocks with dividend data but missing payment dates
+  const stocksWithMissingDates = stocks
+    .filter(stock => 
+      stock.dividendPerShare && 
+      stock.shares > 0 && 
+      !stock.dividendDate && 
+      !stock.nextExDividendDate
+    );
+
   const recentDividends = processedDividends.filter(stock => stock.isRecent).slice(-3); // Last 3 recent
   const upcomingDividends = processedDividends.filter(stock => stock.isUpcoming).slice(0, 5); // Next 5 upcoming
 
@@ -68,7 +77,7 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
     return `${Math.abs(diffDays)} days ago`;
   };
 
-  if (recentDividends.length === 0 && upcomingDividends.length === 0) {
+  if (recentDividends.length === 0 && upcomingDividends.length === 0 && stocksWithMissingDates.length === 0) {
     return (
       <Card className="shadow-card">
         <CardHeader>
@@ -160,6 +169,46 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                 <div className="text-right">
                   <div className="financial-value">
                     {formatCurrency(stock.totalDividend)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Est. quarterly
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Separator */}
+        {(recentDividends.length > 0 || upcomingDividends.length > 0) && stocksWithMissingDates.length > 0 && (
+          <div className="border-t border-border"></div>
+        )}
+
+        {/* Stocks with dividend data but missing payment dates */}
+        {stocksWithMissingDates.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-muted-foreground">Dividend Data Available, Payment Dates Pending</h4>
+            {stocksWithMissingDates.map((stock) => (
+              <div key={`missing-date-${stock.symbol}`} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border-l-2 border-muted-foreground">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <div className="font-medium text-sm">{stock.symbol}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {stock.shares} shares
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      NO DATE
+                    </Badge>
+                    <div className="text-xs text-muted-foreground">
+                      Payment date unavailable
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="financial-value text-muted-foreground">
+                    {formatCurrency((stock.dividendPerShare! * stock.shares) / 4)}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     Est. quarterly
