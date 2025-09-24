@@ -4,8 +4,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Badge } from "./ui/badge";
-import { Trash2, Edit3, Check, X, Building2, User } from "lucide-react";
+import { Trash2, Edit3, Check, X, Building2, User, Search, Upload, Link } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { BulkUploadStocksDialog } from "./BulkUploadStocksDialog";
+import { PlaidLinkButton } from "./PlaidLinkButton";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TrackedStock {
   symbol: string;
@@ -25,11 +29,35 @@ interface PortfolioTableProps {
   stocks: TrackedStock[];
   onRemoveStock: (symbol: string) => void;
   onUpdateShares: (symbol: string, shares: number) => void;
+  // Stock management props
+  onStockFound?: (stockData: any) => void;
+  userId?: string;
+  onBulkUploadSuccess?: () => void;
+  onPlaidSuccess?: (data?: any) => void;
+  onPlaidDisconnect?: () => void;
+  isConnected?: boolean;
+  connectedItemId?: string;
+  connectedInstitutions?: Array<{item_id: string, institution_name: string, account_count: number}>;
 }
 
-export const PortfolioTable = ({ stocks, onRemoveStock, onUpdateShares }: PortfolioTableProps) => {
+export const PortfolioTable = ({ 
+  stocks, 
+  onRemoveStock, 
+  onUpdateShares,
+  onStockFound,
+  userId,
+  onBulkUploadSuccess,
+  onPlaidSuccess,
+  onPlaidDisconnect,
+  isConnected,
+  connectedItemId,
+  connectedInstitutions
+}: PortfolioTableProps) => {
   const [editingStock, setEditingStock] = useState<string | null>(null);
   const [editShares, setEditShares] = useState<string>("");
+  const [symbol, setSymbol] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleEditShares = (symbol: string, currentShares: number) => {
     setEditingStock(symbol);
@@ -45,6 +73,52 @@ export const PortfolioTable = ({ stocks, onRemoveStock, onUpdateShares }: Portfo
   const handleCancelEdit = () => {
     setEditingStock(null);
     setEditShares("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!symbol.trim() || !onStockFound) return;
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-dividend-data', {
+        body: { symbol: symbol.toUpperCase() }
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch stock data. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data.error) {
+        toast({
+          title: "Stock Not Found",
+          description: `Could not find dividend data for ${symbol.toUpperCase()}. Please check the symbol and try again.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      await onStockFound(data);
+      setSymbol("");
+      toast({
+        title: "Success!",
+        description: `Added ${data.symbol} to your portfolio`,
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (stocks.length === 0) {
@@ -65,7 +139,41 @@ export const PortfolioTable = ({ stocks, onRemoveStock, onUpdateShares }: Portfo
   return (
     <Card className="shadow-card">
       <CardHeader>
-        <CardTitle className="card-title">Portfolio Holdings</CardTitle>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <CardTitle className="card-title">Portfolio Holdings</CardTitle>
+          
+          {/* Stock Management Controls */}
+          {onStockFound && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Add Stock Form */}
+              <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="Enter symbol"
+                  value={symbol}
+                  onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                  className="w-32"
+                  disabled={isLoading}
+                />
+                <Button type="submit" size="sm" disabled={isLoading || !symbol.trim()}>
+                  <Search className="h-4 w-4" />
+                </Button>
+              </form>
+              
+              {/* Bulk Upload & Connect Account */}
+              <div className="flex items-center gap-2">
+                <BulkUploadStocksDialog onSuccess={onBulkUploadSuccess} />
+                
+                <PlaidLinkButton
+                  userId={userId}
+                  onSuccess={onPlaidSuccess}
+                  onDisconnect={onPlaidDisconnect}
+                  isConnected={isConnected}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <Table>

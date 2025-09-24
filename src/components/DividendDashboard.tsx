@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { PortfolioTable } from "./PortfolioTable";
 import { UpcomingDividendsCard } from "./UpcomingDividendsCard";
 import { PortfolioTopStrip } from "./PortfolioTopStrip";
-import { StockSymbolForm } from "./StockSymbolForm";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -934,9 +933,13 @@ export const DividendDashboard = () => {
         totalAnnualDividends={stats.totalAnnualDividends}
       />
 
-      {/* Stock Management Card */}
-      <div className="mb-6">
-        <StockSymbolForm 
+      {/* Dashboard Content */}
+      <div className="space-y-6">
+        {/* Main Content */}
+        <PortfolioTable
+          stocks={trackedStocks}
+          onRemoveStock={handleRemoveStock}
+          onUpdateShares={handleUpdateShares}
           onStockFound={handleStockFound}
           userId={user?.id}
           onBulkUploadSuccess={handleBulkUploadSuccess}
@@ -945,16 +948,6 @@ export const DividendDashboard = () => {
           isConnected={connectedInstitutions.length > 0}
           connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
           connectedInstitutions={connectedInstitutions}
-        />
-      </div>
-
-      {/* Dashboard Content */}
-      <div className="space-y-6">
-        {/* Main Content */}
-        <PortfolioTable
-          stocks={trackedStocks}
-          onRemoveStock={handleRemoveStock}
-          onUpdateShares={handleUpdateShares}
         />
         
         {/* Upcoming Dividends - Below the chart */}
