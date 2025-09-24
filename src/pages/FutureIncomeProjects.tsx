@@ -285,13 +285,6 @@ export const FutureIncomeProjects = () => {
             </div>
           )}
           <CardContent className="pb-4 relative">
-            {chartMode === "dividend" && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <h3 className="text-2xl font-bold text-primary bg-background/80 px-4 py-2 rounded-lg backdrop-blur-sm">
-                  Monthly Dividend Income
-                </h3>
-              </div>
-            )}
             <div className="h-[280px] md:h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
                  {chartMode === "dividend" ? (
