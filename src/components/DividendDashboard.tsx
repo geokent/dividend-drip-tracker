@@ -1,11 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { PortfolioTable } from "./PortfolioTable";
 import { UpcomingDividendsCard } from "./UpcomingDividendsCard";
-import { GettingStartedCard } from "./GettingStartedCard";
 import { PortfolioTopStrip } from "./PortfolioTopStrip";
-import { PlaidLinkButton } from "./PlaidLinkButton";
 import { StockSymbolForm } from "./StockSymbolForm";
-import { BulkUploadStocksDialog } from "./BulkUploadStocksDialog";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -44,7 +41,7 @@ export const DividendDashboard = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<number>(0);
   const [connectedInstitutions, setConnectedInstitutions] = useState<Array<{item_id: string, institution_name: string, account_count: number}>>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [isGettingStartedExpanded, setIsGettingStartedExpanded] = useState(false);
+  
   const [disconnectDialog, setDisconnectDialog] = useState<{
     open: boolean;
     itemId: string;
@@ -921,29 +918,12 @@ export const DividendDashboard = () => {
   // Calculate total yield percentage
   const totalYield = totalPortfolioValue > 0 ? (stats.totalAnnualDividends / totalPortfolioValue) * 100 : 0;
 
-  const headerActions = (
-    <div className="flex items-center gap-2">
-      <BulkUploadStocksDialog onSuccess={handleBulkUploadSuccess} />
-      {user?.id && (
-        <PlaidLinkButton
-          userId={user.id}
-          onSuccess={handlePlaidSuccess}
-          size="sm"
-          isConnected={connectedInstitutions.length > 0}
-          connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
-          onDisconnect={handlePlaidDisconnect}
-          data-plaid-link-button
-        />
-      )}
-    </div>
-  );
 
   return (
     <AppLayout>
       <PageHeader 
         title="Your Dividend Portfolio"
         icon={TrendingUp}
-        actions={headerActions}
       />
       
       {/* Portfolio Top Strip */}
@@ -954,30 +934,19 @@ export const DividendDashboard = () => {
         totalAnnualDividends={stats.totalAnnualDividends}
       />
 
-      {/* Always visible Stock Form */}
+      {/* Stock Management Card */}
       <div className="mb-6">
-        <StockSymbolForm onStockFound={handleStockFound} />
+        <StockSymbolForm 
+          onStockFound={handleStockFound}
+          userId={user?.id}
+          onBulkUploadSuccess={handleBulkUploadSuccess}
+          onPlaidSuccess={handlePlaidSuccess}
+          onPlaidDisconnect={handlePlaidDisconnect}
+          isConnected={connectedInstitutions.length > 0}
+          connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
+          connectedInstitutions={connectedInstitutions}
+        />
       </div>
-
-      {/* Getting Started Card - Compact and collapsible */}
-      {(trackedStocks.length === 0 || connectedAccounts === 0) && (
-        <div className="mb-6">
-          <GettingStartedCard
-            hasStocks={trackedStocks.length > 0}
-            hasConnectedAccounts={connectedAccounts > 0}
-            onConnectAccount={() => {
-              // The PlaidLinkButton in header actions will handle this
-              const plaidButton = document.querySelector('[data-plaid-link-button]');
-              if (plaidButton) {
-                (plaidButton as HTMLElement).click();
-              }
-            }}
-            onAddStock={() => {}}
-            isExpanded={isGettingStartedExpanded}
-            onToggleExpanded={() => setIsGettingStartedExpanded(!isGettingStartedExpanded)}
-          />
-        </div>
-      )}
 
       {/* Dashboard Content */}
       <div className="space-y-6">
