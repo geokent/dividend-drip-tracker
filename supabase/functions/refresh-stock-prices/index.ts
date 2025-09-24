@@ -63,47 +63,42 @@ serve(async (req) => {
     // Process stocks in batches to avoid rate limits
     for (const stock of userStocks) {
       try {
-        console.log(`Refreshing price for ${stock.symbol}...`);
+        console.log(`Refreshing data for ${stock.symbol}...`);
 
-        // Fetch current stock quote
-        const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock.symbol}&apikey=${alphaVantageKey}`;
-        const quoteResponse = await fetch(quoteUrl);
-        
-        if (!quoteResponse.ok) {
-          console.error(`Failed to fetch quote for ${stock.symbol}: ${quoteResponse.status}`);
-          errors.push(`Failed to fetch quote for ${stock.symbol}`);
+        // Get comprehensive dividend data
+        const { data: dividendData, error: dividendError } = await supabase.functions.invoke('get-dividend-data', {
+          body: { symbol: stock.symbol }
+        });
+
+        if (dividendError) {
+          console.error(`Error fetching dividend data for ${stock.symbol}:`, dividendError);
+          errors.push(`Error fetching dividend data for ${stock.symbol}: ${dividendError.message}`);
           continue;
         }
 
-        const quoteData = await quoteResponse.json();
-        
-        // Check for API errors or rate limits
-        if (quoteData.Note || quoteData['Error Message']) {
-          console.error(`API error for ${stock.symbol}:`, quoteData.Note || quoteData['Error Message']);
-          errors.push(`API error for ${stock.symbol}: ${quoteData.Note || quoteData['Error Message']}`);
+        if (dividendData.error) {
+          console.error(`API error for ${stock.symbol}:`, dividendData.error);
+          errors.push(`API error for ${stock.symbol}: ${dividendData.error}`);
           continue;
         }
 
-        const globalQuote = quoteData['Global Quote'];
-        if (!globalQuote) {
-          console.error(`No quote data found for ${stock.symbol}`);
-          errors.push(`No quote data found for ${stock.symbol}`);
-          continue;
-        }
-
-        const currentPrice = parseFloat(globalQuote['05. price']);
-        
-        if (isNaN(currentPrice)) {
-          console.error(`Invalid price data for ${stock.symbol}:`, globalQuote['05. price']);
-          errors.push(`Invalid price data for ${stock.symbol}`);
-          continue;
-        }
-
-        // Update the stock price in the database
+        // Update the stock with comprehensive data
         const { error: updateError } = await supabase
           .from('user_stocks')
           .update({ 
-            current_price: currentPrice,
+            current_price: dividendData.currentPrice,
+            company_name: dividendData.companyName,
+            dividend_yield: dividendData.dividendYield,
+            dividend_per_share: dividendData.dividendPerShare,
+            annual_dividend: dividendData.annualDividend,
+            ex_dividend_date: dividendData.exDividendDate,
+            dividend_date: dividendData.dividendDate,
+            next_ex_dividend_date: dividendData.nextExDividendDate,
+            dividend_frequency: dividendData.dividendFrequency,
+            sector: dividendData.sector,
+            industry: dividendData.industry,
+            market_cap: dividendData.marketCap ? parseFloat(dividendData.marketCap) : null,
+            pe_ratio: dividendData.peRatio ? parseFloat(dividendData.peRatio) : null,
             last_synced: new Date().toISOString()
           })
           .eq('id', stock.id);
@@ -113,11 +108,11 @@ serve(async (req) => {
           errors.push(`Error updating ${stock.symbol}: ${updateError.message}`);
         } else {
           updatedCount++;
-          console.log(`Successfully updated ${stock.symbol}: $${currentPrice}`);
+          console.log(`Successfully updated ${stock.symbol}: $${dividendData.currentPrice}`);
         }
 
         // Add a small delay to avoid hitting rate limits
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 500));
 
       } catch (error) {
         console.error(`Error processing ${stock.symbol}:`, error);
@@ -126,13 +121,13 @@ serve(async (req) => {
     }
 
     const response = {
-      message: `Refreshed prices for ${updatedCount} out of ${userStocks.length} stocks`,
+      message: `Refreshed data for ${updatedCount} out of ${userStocks.length} stocks`,
       updated: updatedCount,
       total: userStocks.length,
       errors: errors.length > 0 ? errors : undefined
     };
 
-    console.log('Price refresh completed:', response);
+    console.log('Data refresh completed:', response);
 
     return new Response(
       JSON.stringify(response),

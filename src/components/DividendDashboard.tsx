@@ -793,12 +793,15 @@ export const DividendDashboard = () => {
   const fetchDividendDataForStocks = async () => {
     if (!user?.id) return;
     
-    // Get stocks that don't have dividend data
+    // Get stocks that need dividend data (null dividend_yield or last_synced > 7 days ago)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
     const { data: stocksNeedingData } = await supabase
       .from('user_stocks')
       .select('*')
       .eq('user_id', user.id)
-      .is('dividend_yield', null);
+      .or(`dividend_yield.is.null,last_synced.lt.${sevenDaysAgo.toISOString()}`);
     
     if (!stocksNeedingData || stocksNeedingData.length === 0) return;
     
