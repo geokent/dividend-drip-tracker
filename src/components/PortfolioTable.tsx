@@ -170,6 +170,7 @@ export const PortfolioTable = ({
                   onSuccess={onPlaidSuccess}
                   onDisconnect={onPlaidDisconnect}
                   isConnected={isConnected}
+                  size="sm"
                 />
               </div>
             </div>
