@@ -44,6 +44,7 @@ export const DividendDashboard = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<number>(0);
   const [connectedInstitutions, setConnectedInstitutions] = useState<Array<{item_id: string, institution_name: string, account_count: number}>>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [isGettingStartedExpanded, setIsGettingStartedExpanded] = useState(false);
   const [disconnectDialog, setDisconnectDialog] = useState<{
     open: boolean;
     itemId: string;
@@ -958,9 +959,9 @@ export const DividendDashboard = () => {
         <StockSymbolForm onStockFound={handleStockFound} />
       </div>
 
-      {/* Getting Started Card - Prominent at top */}
+      {/* Getting Started Card - Compact and collapsible */}
       {(trackedStocks.length === 0 || connectedAccounts === 0) && (
-        <div className="mb-8">
+        <div className="mb-6">
           <GettingStartedCard
             hasStocks={trackedStocks.length > 0}
             hasConnectedAccounts={connectedAccounts > 0}
@@ -972,6 +973,8 @@ export const DividendDashboard = () => {
               }
             }}
             onAddStock={() => {}}
+            isExpanded={isGettingStartedExpanded}
+            onToggleExpanded={() => setIsGettingStartedExpanded(!isGettingStartedExpanded)}
           />
         </div>
       )}

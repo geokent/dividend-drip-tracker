@@ -1,20 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { CheckCircle2, Circle, Building2, Plus, TrendingUp } from "lucide-react";
+import { CheckCircle2, Circle, Building2, Plus, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 
 interface GettingStartedCardProps {
   hasStocks: boolean;
   hasConnectedAccounts: boolean;
   onConnectAccount: () => void;
   onAddStock: () => void;
+  isExpanded?: boolean;
+  onToggleExpanded?: () => void;
 }
 
 export const GettingStartedCard = ({ 
   hasStocks, 
   hasConnectedAccounts, 
   onConnectAccount, 
-  onAddStock 
+  onAddStock,
+  isExpanded = false,
+  onToggleExpanded = () => {}
 }: GettingStartedCardProps) => {
   const steps = [
     {
@@ -51,14 +55,51 @@ export const GettingStartedCard = ({
 
   if (allComplete) return null;
 
+  // Compact collapsed view
+  if (!isExpanded) {
+    return (
+      <Card className="shadow-card border-primary/20 transition-all duration-200">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-xs">
+                {completedSteps}/{steps.length}
+              </Badge>
+              <span className="text-sm font-medium">Complete setup to get started</span>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onToggleExpanded}
+              className="flex items-center gap-2"
+            >
+              <span className="text-xs">Details</span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="shadow-card border-primary/20">
+    <Card className="shadow-card border-primary/20 transition-all duration-200">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="card-title">Getting Started</CardTitle>
-          <Badge variant="secondary">
-            {completedSteps}/{steps.length} complete
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">
+              {completedSteps}/{steps.length} complete
+            </Badge>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onToggleExpanded}
+              className="flex items-center gap-1"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
