@@ -32,7 +32,8 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
     .map(stock => {
       const dividendDate = new Date(stock.dividendDate!);
       const exDividendDate = stock.exDividendDate ? new Date(stock.exDividendDate) : null;
-      const totalDividend = (stock.dividendPerShare! * stock.shares) / 4; // Quarterly estimate
+      // Use dividendPerShare * shares directly - this represents the actual payment amount
+      const totalDividend = stock.dividendPerShare! * stock.shares;
       
       return {
         ...stock,
@@ -75,6 +76,21 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
     if (diffDays === -1) return 'Yesterday';
     if (diffDays > 0) return `in ${diffDays} days`;
     return `${Math.abs(diffDays)} days ago`;
+  };
+
+  const getFrequencyLabel = (frequency: string | null, isUpcoming: boolean = false) => {
+    if (!frequency || frequency === 'unknown' || frequency === 'irregular') {
+      return isUpcoming ? 'Payment amount' : 'Payment';
+    }
+    
+    const frequencyMap: { [key: string]: string } = {
+      'monthly': isUpcoming ? 'Est. monthly' : 'Monthly',
+      'quarterly': isUpcoming ? 'Est. quarterly' : 'Quarterly',  
+      'semi-annual': isUpcoming ? 'Est. semi-annual' : 'Semi-annual',
+      'annual': isUpcoming ? 'Est. annual' : 'Annual'
+    };
+    
+    return frequencyMap[frequency.toLowerCase()] || (isUpcoming ? 'Est. payment' : 'Payment');
   };
 
   if (recentDividends.length === 0 && upcomingDividends.length === 0 && stocksWithMissingDates.length === 0) {
@@ -131,7 +147,7 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                     {formatCurrency(stock.totalDividend)}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Est. quarterly
+                    {getFrequencyLabel(stock.dividendFrequency, false)}
                   </div>
                 </div>
               </div>
@@ -171,7 +187,7 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                     {formatCurrency(stock.totalDividend)}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Est. quarterly
+                    {getFrequencyLabel(stock.dividendFrequency, true)}
                   </div>
                 </div>
               </div>
@@ -208,10 +224,10 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                 </div>
                 <div className="text-right">
                   <div className="financial-value text-muted-foreground">
-                    {formatCurrency((stock.dividendPerShare! * stock.shares) / 4)}
+                    {formatCurrency(stock.dividendPerShare! * stock.shares)}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Est. quarterly
+                    {getFrequencyLabel(stock.dividendFrequency, true)}
                   </div>
                 </div>
               </div>
