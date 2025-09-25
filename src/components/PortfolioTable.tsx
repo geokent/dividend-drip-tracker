@@ -171,6 +171,7 @@ export const PortfolioTable = ({
                   onSuccess={onPlaidSuccess}
                   onDisconnect={onPlaidDisconnect}
                   isConnected={isConnected}
+                  connectedItemId={connectedItemId}
                   size="sm"
                 />
               </div>

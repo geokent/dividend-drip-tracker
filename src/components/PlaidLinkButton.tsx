@@ -141,7 +141,11 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
   };
 
   const handleDisconnect = async () => {
-    if (!connectedItemId) return;
+    if (!connectedItemId) {
+      console.error('Missing connectedItemId - cannot disconnect account');
+      toast.error('Unable to disconnect: Missing account information. Please refresh the page and try again.');
+      return;
+    }
     
     setIsLoading(true);
     toast.loading('Disconnecting your account...', { id: 'plaid-disconnect' });
