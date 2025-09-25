@@ -23,6 +23,7 @@ interface TrackedStock {
   source?: string;
   plaid_item_id?: string | null;
   last_synced?: string;
+  reconciliation_metadata?: any;
 }
 
 interface PortfolioTableProps {
@@ -201,7 +202,7 @@ export const PortfolioTable = ({
                       {stock.source === 'plaid_sync' ? (
                         <Badge variant="outline" className="text-xs">
                           <Building2 className="h-3 w-3 mr-1" />
-                          Synced
+                          {(stock as any).reconciliation_metadata?.reconciliation_type === 'manual_to_plaid' ? 'Reconciled' : 'Synced'}
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="text-xs">

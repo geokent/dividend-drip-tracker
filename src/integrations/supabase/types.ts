@@ -319,6 +319,7 @@ export type Database = {
           pe_ratio: number | null
           plaid_account_id: string | null
           plaid_item_id: string | null
+          reconciliation_metadata: Json | null
           sector: string | null
           shares: number
           source: string | null
@@ -344,6 +345,7 @@ export type Database = {
           pe_ratio?: number | null
           plaid_account_id?: string | null
           plaid_item_id?: string | null
+          reconciliation_metadata?: Json | null
           sector?: string | null
           shares?: number
           source?: string | null
@@ -369,6 +371,7 @@ export type Database = {
           pe_ratio?: number | null
           plaid_account_id?: string | null
           plaid_item_id?: string | null
+          reconciliation_metadata?: Json | null
           sector?: string | null
           shares?: number
           source?: string | null
@@ -449,6 +452,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      update_reconciliation_metadata: {
+        Args: {
+          p_previous_source?: string
+          p_reconciliation_type: string
+          p_symbol: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       validate_user_stock_access: {
         Args: { stock_user_id: string }

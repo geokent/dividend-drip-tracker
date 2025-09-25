@@ -206,6 +206,9 @@ Deno.serve(async (req) => {
 
         console.log(`Aggregated ${holdingsMap.size} unique symbols from ${holdingsData.holdings?.length || 0} holdings`)
 
+        let reconciledStocks = 0
+        let newStocks = 0
+        
         // Process aggregated holdings
         for (const [symbol, aggregatedHolding] of holdingsMap) {
           console.log(`Processing aggregated holding: ${symbol} - ${aggregatedHolding.quantity} total shares at $${aggregatedHolding.currentPrice}`)
@@ -237,7 +240,9 @@ Deno.serve(async (req) => {
             }
 
             if (existingStock) {
-              // Update existing stock with aggregated quantity
+              const previousSource = existingStock.source
+              
+              // Smart reconciliation: Update existing stock with Plaid data
               const { error: updateError } = await supabase
                 .from('user_stocks')
                 .update(stockData)
@@ -246,7 +251,24 @@ Deno.serve(async (req) => {
               if (updateError) {
                 console.error(`Error updating stock ${symbol}:`, updateError)
               } else {
-                console.log(`Updated stock ${symbol} with ${aggregatedHolding.quantity} total shares (was ${existingStock.shares})`)
+                // Update reconciliation metadata if it was a manual entry
+                if (previousSource === 'manual') {
+                  const { error: metadataError } = await supabase.rpc('update_reconciliation_metadata', {
+                    p_user_id: user_id,
+                    p_symbol: symbol,
+                    p_reconciliation_type: 'manual_to_plaid',
+                    p_previous_source: previousSource
+                  })
+                  
+                  if (metadataError) {
+                    console.error(`Error updating reconciliation metadata for ${symbol}:`, metadataError)
+                  } else {
+                    console.log(`Reconciled manual entry ${symbol}: ${existingStock.shares} -> ${aggregatedHolding.quantity} shares`)
+                    reconciledStocks++
+                  }
+                } else {
+                  console.log(`Updated Plaid stock ${symbol} with ${aggregatedHolding.quantity} total shares (was ${existingStock.shares})`)
+                }
                 totalNewDividends++
               }
             } else {
@@ -259,6 +281,7 @@ Deno.serve(async (req) => {
                 console.error(`Error inserting stock ${symbol}:`, insertError)
               } else {
                 console.log(`Inserted new stock ${symbol} with ${aggregatedHolding.quantity} shares`)
+                newStocks++
                 totalNewDividends++
               }
             }
@@ -286,11 +309,18 @@ Deno.serve(async (req) => {
       console.error('Failed to log sync completion:', logError)
     }
 
+    let message = `Synced ${totalNewDividends} stocks from your portfolio`
+    if (reconciledStocks > 0) {
+      message += ` (${reconciledStocks} manual entries reconciled with brokerage data)`
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
         syncedStocks: totalNewDividends,
-        message: `Synced ${totalNewDividends} stocks from your portfolio`
+        reconciledStocks: reconciledStocks,
+        newStocks: newStocks,
+        message: message
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

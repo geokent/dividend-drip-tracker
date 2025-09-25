@@ -30,6 +30,10 @@ interface StockData {
 
 interface TrackedStock extends StockData {
   shares: number;
+  source?: string;
+  plaid_item_id?: string | null;
+  last_synced?: string;
+  reconciliation_metadata?: any;
 }
 
 export const DividendDashboard = () => {
@@ -93,10 +97,11 @@ export const DividendDashboard = () => {
         industry: stock.industry,
         marketCap: stock.market_cap?.toString() || null,
         peRatio: stock.pe_ratio?.toString() || null,
-        shares: Number(stock.shares) || 0,
-        source: stock.source,
-        plaid_item_id: stock.plaid_item_id,
-        last_synced: stock.last_synced
+          shares: Number(stock.shares) || 0,
+          source: stock.source,
+          plaid_item_id: stock.plaid_item_id,
+          last_synced: stock.last_synced,
+          reconciliation_metadata: stock.reconciliation_metadata
       }));
       setTrackedStocks(formattedStocks);
       
@@ -180,7 +185,11 @@ export const DividendDashboard = () => {
           industry: stock.industry,
           marketCap: stock.market_cap?.toString() || null,
           peRatio: stock.pe_ratio?.toString() || null,
-          shares: Number(stock.shares) || 0
+          shares: Number(stock.shares) || 0,
+          source: stock.source,
+          plaid_item_id: stock.plaid_item_id,
+          last_synced: stock.last_synced,
+          reconciliation_metadata: stock.reconciliation_metadata
         }));
         setTrackedStocks(formattedStocks);
         
@@ -437,9 +446,20 @@ export const DividendDashboard = () => {
 
       console.log('Sync successful:', data);
       const stockCount = data.syncedStocks ?? data.stocksProcessed ?? 0;
+      const reconciledCount = data.reconciledStocks ?? 0;
+      const newStocksCount = data.newStocks ?? 0;
+      
+      let toastMessage = `Synced ${stockCount} stocks from your connected accounts`;
+      if (reconciledCount > 0) {
+        toastMessage += `. Reconciled ${reconciledCount} manual entries with brokerage data`;
+      }
+      if (newStocksCount > 0) {
+        toastMessage += `. Added ${newStocksCount} new stocks`;
+      }
+      
       toast({
         title: "Sync Complete!",
-        description: `Synced ${stockCount} stocks from your connected accounts`,
+        description: toastMessage,
       });
 
       // Reload stocks after sync
@@ -465,7 +485,11 @@ export const DividendDashboard = () => {
           industry: stock.industry,
           marketCap: stock.market_cap?.toString() || null,
           peRatio: stock.pe_ratio?.toString() || null,
-          shares: Number(stock.shares) || 0
+          shares: Number(stock.shares) || 0,
+          source: stock.source,
+          plaid_item_id: stock.plaid_item_id,
+          last_synced: stock.last_synced,
+          reconciliation_metadata: stock.reconciliation_metadata
         }));
         setTrackedStocks(formattedStocks);
         
