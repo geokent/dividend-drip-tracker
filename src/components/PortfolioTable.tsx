@@ -35,7 +35,7 @@ interface PortfolioTableProps {
   userId?: string;
   onBulkUploadSuccess?: () => void;
   onPlaidSuccess?: (data?: any) => void;
-  onPlaidDisconnect?: () => void;
+  onPlaidDisconnect?: (itemId: string, institutionName: string) => void;
   isConnected?: boolean;
   connectedItemId?: string;
   connectedInstitutions?: Array<{item_id: string, institution_name: string, account_count: number}>;
@@ -169,7 +169,12 @@ export const PortfolioTable = ({
                 <PlaidLinkButton
                   userId={userId}
                   onSuccess={onPlaidSuccess}
-                  onDisconnect={onPlaidDisconnect}
+                  onDisconnect={() => {
+                    if (connectedItemId && connectedInstitutions && connectedInstitutions.length > 0) {
+                      const institution = connectedInstitutions.find(inst => inst.item_id === connectedItemId);
+                      onPlaidDisconnect?.(connectedItemId, institution?.institution_name || 'Unknown Institution');
+                    }
+                  }}
                   isConnected={isConnected}
                   connectedItemId={connectedItemId}
                   size="sm"

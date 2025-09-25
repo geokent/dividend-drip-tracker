@@ -968,7 +968,7 @@ export const DividendDashboard = () => {
           userId={user?.id}
           onBulkUploadSuccess={handleBulkUploadSuccess}
           onPlaidSuccess={handlePlaidSuccess}
-          onPlaidDisconnect={handlePlaidDisconnect}
+          onPlaidDisconnect={(itemId, institutionName) => handleDisconnectInstitution(itemId, institutionName)}
           isConnected={connectedInstitutions.length > 0}
           connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
           connectedInstitutions={connectedInstitutions}

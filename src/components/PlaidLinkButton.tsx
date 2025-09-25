@@ -140,43 +140,15 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
     }
   };
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = () => {
     if (!connectedItemId) {
       console.error('Missing connectedItemId - cannot disconnect account');
       toast.error('Unable to disconnect: Missing account information. Please refresh the page and try again.');
       return;
     }
     
-    setIsLoading(true);
-    toast.loading('Disconnecting your account...', { id: 'plaid-disconnect' });
-    
-    try {
-      console.log('Disconnecting item:', connectedItemId);
-      
-      const { data, error } = await supabase.functions.invoke('plaid-disconnect-item', {
-        body: {
-          user_id: userId,
-          item_id: connectedItemId
-        }
-      });
-
-      if (error) {
-        console.error('Disconnect error:', error);
-        toast.error('Failed to disconnect account. Please try again.', { id: 'plaid-disconnect' });
-        return;
-      }
-
-      console.log('Disconnect successful:', data);
-      toast.success('Investment account disconnected successfully!', { id: 'plaid-disconnect' });
-      
-      // Notify parent component
-      onDisconnect?.();
-    } catch (error) {
-      console.error('Error disconnecting account:', error);
-      toast.error('Disconnect failed. Please check your connection and try again.', { id: 'plaid-disconnect' });
-    } finally {
-      setIsLoading(false);
-    }
+    // Call the onDisconnect callback - let parent handle the actual disconnection
+    onDisconnect?.();
   };
 
   const handleClick = () => {
