@@ -444,25 +444,80 @@ export const DividendDashboard = () => {
         return;
       }
 
-      console.log('Sync successful:', data);
-      const stockCount = data.syncedStocks ?? data.stocksProcessed ?? 0;
-      const reconciledCount = data.reconciledStocks ?? 0;
-      const newStocksCount = data.newStocks ?? 0;
+      console.log('Sync response:', data);
       
-      let toastMessage = `Synced ${stockCount} stocks from your connected accounts`;
-      if (reconciledCount > 0) {
-        toastMessage += `. Reconciled ${reconciledCount} manual entries with brokerage data`;
+      // Handle different response types from improved edge function
+      if (data.success === false) {
+        // Complete failure
+        const errorMessage = data.message || "Failed to sync investment accounts.";
+        const hasDetailedErrors = data.errors && data.errors.length > 0;
+        
+        toast({
+          title: "Sync Failed",
+          description: errorMessage + (hasDetailedErrors ? " Check connection and try again." : ""),
+          variant: "destructive"
+        });
+        
+        // Log detailed errors for debugging
+        if (hasDetailedErrors) {
+          console.error('Sync failure details:', data.errors);
+        }
+        return;
+      } else if (data.partial_failure) {
+        // Partial success with some failures
+        const stockCount = data.syncedStocks ?? 0;
+        const reconciledCount = data.reconciledStocks ?? 0;
+        const newStocksCount = data.newStocks ?? 0;
+        const successfulSyncs = data.successfulSyncs ?? 0;
+        const failedSyncs = data.failedSyncs ?? 0;
+        
+        let toastMessage = `Partially synced: ${stockCount} stocks from ${successfulSyncs} account(s)`;
+        if (reconciledCount > 0) {
+          toastMessage += `. Reconciled ${reconciledCount} manual entries`;
+        }
+        if (newStocksCount > 0) {
+          toastMessage += `. Added ${newStocksCount} new stocks`;
+        }
+        
+        toast({
+          title: "Sync Partially Complete",
+          description: toastMessage,
+        });
+        
+        // Show warning about failed accounts after a brief delay
+        setTimeout(() => {
+          toast({
+            title: "Sync Warning",
+            description: `${failedSyncs} account(s) failed to sync. Some data may be incomplete.`,
+            variant: "destructive"
+          });
+        }, 2000);
+        
+        // Log failure details for debugging
+        if (data.errors && data.errors.length > 0) {
+          console.warn('Partial sync failures:', data.errors);
+        }
+      } else {
+        // Complete success
+        const stockCount = data.syncedStocks ?? data.stocksProcessed ?? 0;
+        const reconciledCount = data.reconciledStocks ?? 0;
+        const newStocksCount = data.newStocks ?? 0;
+        
+        let toastMessage = `Synced ${stockCount} stocks from your connected accounts`;
+        if (reconciledCount > 0) {
+          toastMessage += `. Reconciled ${reconciledCount} manual entries with brokerage data`;
+        }
+        if (newStocksCount > 0) {
+          toastMessage += `. Added ${newStocksCount} new stocks`;
+        }
+        
+        toast({
+          title: "Sync Complete!",
+          description: toastMessage,
+        });
       }
-      if (newStocksCount > 0) {
-        toastMessage += `. Added ${newStocksCount} new stocks`;
-      }
-      
-      toast({
-        title: "Sync Complete!",
-        description: toastMessage,
-      });
 
-      // Reload stocks after sync
+      // Reload stocks after sync (even for partial success)
       const { data: stocks } = await supabase
         .from('user_stocks')
         .select('*')
@@ -503,7 +558,7 @@ export const DividendDashboard = () => {
         }
       }
 
-      // Refresh connected accounts count after successful sync
+      // Refresh connected accounts count after sync
       const { data: updatedAccounts } = await supabase
         .from('plaid_accounts')
         .select('id')
@@ -518,7 +573,7 @@ export const DividendDashboard = () => {
       console.error('Error syncing investments:', error);
       toast({
         title: "Sync Failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: "An unexpected error occurred. Please check your connection and try again.",
         variant: "destructive"
       });
     } finally {

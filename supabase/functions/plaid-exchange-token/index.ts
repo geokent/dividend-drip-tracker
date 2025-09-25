@@ -159,12 +159,19 @@ Deno.serve(async (req) => {
     console.log(`Processing ${accountsData.accounts.length} accounts for institution: ${institutionName}`)
 
     // Store account information in database using encrypted token storage
+    const accountResults = []
+    let successfulAccounts = 0
+    let failedAccounts = 0
+    const failureDetails = []
+    
     for (const account of accountsData.accounts) {
       try {
         // Only store investment accounts
         if (account.type === 'investment') {
-          // Use the secure encrypted token storage function
-          const { data: success, error: rpcError } = await supabase.rpc('store_encrypted_access_token', {
+          console.log(`Processing investment account: ${account.name} (${account.account_id})`)
+          
+          // Use the secure encrypted token storage function (now returns JSONB)
+          const { data: result, error: rpcError } = await supabase.rpc('store_encrypted_access_token', {
             p_user_id: user_id,
             p_account_id: account.account_id,
             p_access_token: access_token,
@@ -175,9 +182,29 @@ Deno.serve(async (req) => {
             p_institution_id: accountsData.item.institution_id
           })
 
-          if (rpcError || !success) {
-            console.error(`Error storing encrypted account ${account.account_id}:`, rpcError?.message || 'RPC returned false')
+          if (rpcError) {
+            console.error(`RPC error for account ${account.account_id}:`, rpcError)
+            failedAccounts++
+            failureDetails.push(`${account.name}: RPC error - ${rpcError.message}`)
+            
             // Log failed account storage
+            try {
+              await supabase.rpc('log_plaid_access', {
+                p_user_id: user_id,
+                p_action: 'account_storage_failed',
+                p_account_id: account.account_id,
+                p_ip_address: clientIP,
+                p_user_agent: userAgent
+              })
+            } catch (logError) {
+              console.error('Failed to log account storage failure:', logError)
+            }
+          } else if (result && !result.success) {
+            console.error(`Storage failed for account ${account.account_id}:`, result.error)
+            failedAccounts++
+            failureDetails.push(`${account.name}: ${result.error}`)
+            
+            // Log failed account storage with detailed reason
             try {
               await supabase.rpc('log_plaid_access', {
                 p_user_id: user_id,
@@ -191,6 +218,13 @@ Deno.serve(async (req) => {
             }
           } else {
             console.log(`Successfully stored encrypted investment account: ${account.name}`)
+            successfulAccounts++
+            accountResults.push({
+              account_id: account.account_id,
+              name: account.name,
+              success: true
+            })
+            
             // Log successful account storage
             try {
               await supabase.rpc('log_plaid_access', {
@@ -204,23 +238,91 @@ Deno.serve(async (req) => {
               console.error('Failed to log account storage success:', logError)
             }
           }
+        } else {
+          console.log(`Skipping non-investment account: ${account.name} (${account.type})`)
         }
       } catch (error) {
         console.error(`Error processing account ${account.account_id}:`, error)
+        failedAccounts++
+        failureDetails.push(`${account.name}: Unexpected error - ${error.message}`)
       }
     }
 
     const investmentAccounts = accountsData.accounts.filter(acc => acc.type === 'investment')
+    const totalInvestmentAccounts = investmentAccounts.length
 
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        accounts_connected: investmentAccounts.length,
-        institution_name: institutionName,
-        message: `Successfully connected ${investmentAccounts.length} investment account(s) from ${institutionName}`
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    // Validate account connectivity if any accounts were processed
+    let connectivityStatus = null
+    if (totalInvestmentAccounts > 0) {
+      try {
+        const { data: connectivity } = await supabase.rpc('validate_plaid_account_connectivity', {
+          p_user_id: user_id,
+          p_item_id: item_id
+        })
+        connectivityStatus = connectivity
+      } catch (error) {
+        console.error('Failed to validate connectivity:', error)
+      }
+    }
+
+    // Determine response based on success/failure rates
+    if (failedAccounts === 0 && successfulAccounts > 0) {
+      // Complete success
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          accounts_connected: successfulAccounts,
+          accounts_failed: 0,
+          institution_name: institutionName,
+          connectivity: connectivityStatus,
+          message: `Successfully connected ${successfulAccounts} investment account(s) from ${institutionName}`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } else if (successfulAccounts > 0 && failedAccounts > 0) {
+      // Partial success
+      console.warn(`Partial connection success: ${successfulAccounts} succeeded, ${failedAccounts} failed`)
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          partial_failure: true,
+          accounts_connected: successfulAccounts,
+          accounts_failed: failedAccounts,
+          institution_name: institutionName,
+          connectivity: connectivityStatus,
+          failure_details: failureDetails,
+          message: `Partially connected to ${institutionName}: ${successfulAccounts} accounts connected, ${failedAccounts} failed. Some syncing features may not work properly.`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } else if (failedAccounts > 0) {
+      // Complete failure
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Failed to connect any accounts',
+          accounts_connected: 0,
+          accounts_failed: failedAccounts,
+          institution_name: institutionName,
+          failure_details: failureDetails,
+          message: `Failed to connect to ${institutionName}. Please try again or contact support if the issue persists.`
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } else {
+      // No investment accounts found
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'No investment accounts found',
+          accounts_connected: 0,
+          accounts_failed: 0,
+          institution_name: institutionName,
+          message: `No investment accounts found at ${institutionName}. Please ensure you have investment accounts or try a different institution.`
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
   } catch (error) {
     console.error('Error:', error)
     return new Response(

@@ -451,7 +451,7 @@ export type Database = {
           p_item_id: string
           p_user_id: string
         }
-        Returns: boolean
+        Returns: Json
       }
       update_reconciliation_metadata: {
         Args: {
@@ -461,6 +461,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      validate_plaid_account_connectivity: {
+        Args: { p_item_id: string; p_user_id: string }
+        Returns: Json
       }
       validate_user_stock_access: {
         Args: { stock_user_id: string }

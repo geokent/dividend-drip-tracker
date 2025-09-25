@@ -80,12 +80,54 @@ Deno.serve(async (req) => {
     if (accountsError) {
       console.error('Accounts fetch error:', accountsError)
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch accounts' }),
+        JSON.stringify({ 
+          error: 'Failed to fetch accounts',
+          details: accountsError.message 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    if (!accounts || accounts.length === 0) {
+      console.log(`No active accounts found for user ${user_id}`)
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'No active accounts found',
+          message: 'Please connect your investment account first before syncing.'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate account connectivity before proceeding
+    const accountValidations = []
+    for (const account of accounts) {
+      try {
+        const { data: connectivity } = await supabase.rpc('validate_plaid_account_connectivity', {
+          p_user_id: user_id,
+          p_item_id: account.item_id
+        })
+        accountValidations.push({
+          item_id: account.item_id,
+          institution_name: account.institution_name,
+          connectivity: connectivity
+        })
+        
+        if (!connectivity?.fully_connected) {
+          console.warn(`Account connectivity issue for ${account.institution_name}: ${JSON.stringify(connectivity)}`)
+        }
+      } catch (error) {
+        console.error(`Failed to validate connectivity for ${account.institution_name}:`, error)
+      }
+    }
+
     let totalNewDividends = 0
+    let reconciledStocks = 0
+    let newStocks = 0
+    let successfulSyncs = 0
+    let failedSyncs = 0
+    const syncErrors = []
 
     // Use production environment
     const plaidApiHost = 'https://production.plaid.com'
@@ -115,6 +157,9 @@ Deno.serve(async (req) => {
         
         if (tokenError || !decryptedToken) {
           console.error(`Failed to get access token for account ${account.account_id}:`, tokenError)
+          failedSyncs++
+          syncErrors.push(`${account.account_name || account.account_id}: Failed to decrypt access token`)
+          
           try {
             await supabase.rpc('log_plaid_access', {
               p_user_id: user_id,
@@ -146,6 +191,9 @@ Deno.serve(async (req) => {
 
         if (!holdingsResponse.ok) {
           console.error('Plaid holdings error:', holdingsData)
+          failedSyncs++
+          syncErrors.push(`${account.account_name || account.account_id}: Failed to fetch holdings from Plaid`)
+          
           try {
             await supabase.rpc('log_plaid_access', {
               p_user_id: user_id,
@@ -290,8 +338,13 @@ Deno.serve(async (req) => {
             continue
           }
         }
+        
+        // Mark this account as successfully synced
+        successfulSyncs++
       } catch (error) {
         console.error(`Error processing account ${account.account_id}:`, error)
+        failedSyncs++
+        syncErrors.push(`${account.account_name || account.account_id}: ${error.message}`)
         continue
       }
     }
@@ -309,21 +362,64 @@ Deno.serve(async (req) => {
       console.error('Failed to log sync completion:', logError)
     }
 
-    let message = `Synced ${totalNewDividends} stocks from your portfolio`
-    if (reconciledStocks > 0) {
-      message += ` (${reconciledStocks} manual entries reconciled with brokerage data)`
+    // Build response message based on success/failure rates
+    const totalAccounts = accounts.length
+    let message = ''
+    let responseData = {
+      syncedStocks: totalNewDividends,
+      reconciledStocks: reconciledStocks,
+      newStocks: newStocks,
+      accountsProcessed: totalAccounts,
+      successfulSyncs: successfulSyncs,
+      failedSyncs: failedSyncs,
+      accountValidations: accountValidations
     }
-    
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        syncedStocks: totalNewDividends,
-        reconciledStocks: reconciledStocks,
-        newStocks: newStocks,
-        message: message
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+
+    if (failedSyncs === 0 && successfulSyncs > 0) {
+      // Complete success
+      message = `Successfully synced ${totalNewDividends} stocks from your portfolio`
+      if (reconciledStocks > 0) {
+        message += ` (${reconciledStocks} manual entries reconciled with brokerage data)`
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          ...responseData,
+          message: message
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } else if (successfulSyncs > 0 && failedSyncs > 0) {
+      // Partial success
+      message = `Partially synced portfolio: ${successfulSyncs} accounts succeeded, ${failedSyncs} failed. Synced ${totalNewDividends} stocks total.`
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          partial_failure: true,
+          ...responseData,
+          errors: syncErrors,
+          message: message,
+          warning: 'Some accounts failed to sync. Your portfolio may not be fully up to date.'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } else {
+      // Complete failure
+      message = 'Failed to sync any accounts. Please check your connection and try again.'
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Sync failed',
+          ...responseData,
+          errors: syncErrors,
+          message: message
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
   } catch (error) {
     console.error('Error:', error)
     return new Response(
