@@ -120,18 +120,28 @@ export const DividendDashboard = () => {
   const loadConnectedAccounts = async () => {
     if (!user?.id) return;
     
+    // Get accounts that have synced data (regardless of is_active flag)
     const { data: accounts, error: accountsError } = await supabase
       .from('plaid_accounts')
       .select('id, account_name, institution_name, is_active, item_id')
-      .eq('user_id', user.id)
-      .eq('is_active', true);
+      .eq('user_id', user.id);
 
     if (!accountsError && accounts) {
-      setConnectedAccounts(accounts.length);
+      // Filter to accounts that have stocks with sync data
+      const { data: syncedStocks } = await supabase
+        .from('user_stocks')
+        .select('plaid_item_id')
+        .eq('user_id', user.id)
+        .not('plaid_item_id', 'is', null);
+
+      const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
+      const activeAccounts = accounts.filter(account => activeItemIds.has(account.item_id));
+      
+      setConnectedAccounts(activeAccounts.length);
       
       // Group by institution
       const institutionMap = new Map();
-      accounts.forEach(account => {
+      activeAccounts.forEach(account => {
         const key = account.item_id;
         if (institutionMap.has(key)) {
           institutionMap.get(key).account_count++;
@@ -207,15 +217,24 @@ export const DividendDashboard = () => {
       const { data: accounts, error: accountsError } = await supabase
         .from('plaid_accounts')
         .select('id, account_name, institution_name, is_active, item_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true);
+        .eq('user_id', user.id);
 
       if (!accountsError && accounts) {
-        setConnectedAccounts(accounts.length);
+        // Filter to accounts that have stocks with sync data
+        const { data: syncedStocks } = await supabase
+          .from('user_stocks')
+          .select('plaid_item_id')
+          .eq('user_id', user.id)
+          .not('plaid_item_id', 'is', null);
+
+        const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
+        const activeAccounts = accounts.filter(account => activeItemIds.has(account.item_id));
+        
+        setConnectedAccounts(activeAccounts.length);
         
         // Group by institution
         const institutionMap = new Map();
-        accounts.forEach(account => {
+        activeAccounts.forEach(account => {
           const key = account.item_id;
           if (institutionMap.has(key)) {
             institutionMap.get(key).account_count++;
