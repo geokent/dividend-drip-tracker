@@ -221,11 +221,6 @@ export const PortfolioTable = ({
                       {stock.companyName}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      {stock.sector && (
-                        <Badge variant="secondary" className="text-xs">
-                          {stock.sector}
-                        </Badge>
-                      )}
                       {stock.last_synced && stock.source === 'plaid_sync' && (
                         <span className="text-xs text-muted-foreground">
                           Synced: {new Date(stock.last_synced).toLocaleDateString()}
