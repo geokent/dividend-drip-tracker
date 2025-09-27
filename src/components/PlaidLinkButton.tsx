@@ -14,9 +14,10 @@ interface PlaidLinkButtonProps {
   isConnected?: boolean;
   connectedItemId?: string;
   onDisconnect?: () => void;
+  hasInactiveAccounts?: boolean;
 }
 
-export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMessage, size = "default", isConnected = false, connectedItemId, onDisconnect }: PlaidLinkButtonProps) => {
+export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMessage, size = "default", isConnected = false, connectedItemId, onDisconnect, hasInactiveAccounts = false }: PlaidLinkButtonProps) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
@@ -178,10 +179,11 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
 
   const getButtonText = () => {
     if (isLoading) {
-      return isConnected ? 'Disconnecting...' : 'Connecting...';
+      return isConnected ? 'Disconnecting...' : hasInactiveAccounts ? 'Reconnecting...' : 'Connecting...';
     }
     if (disabled) return 'Account Limit Reached';
     if (isConnected) return 'Unlink Investment Account';
+    if (hasInactiveAccounts) return 'Reconnect Account';
     return 'Connect Investment Account';
   };
 

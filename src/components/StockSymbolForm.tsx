@@ -34,6 +34,7 @@ interface StockSymbolFormProps {
   isConnected?: boolean;
   connectedItemId?: string;
   connectedInstitutions?: Array<{item_id: string, institution_name: string, account_count: number}>;
+  hasInactiveAccounts?: boolean;
 }
 
 export const StockSymbolForm = ({ 
@@ -44,7 +45,8 @@ export const StockSymbolForm = ({
   onPlaidDisconnect, 
   isConnected = false, 
   connectedItemId, 
-  connectedInstitutions = [] 
+  connectedInstitutions = [],
+  hasInactiveAccounts = false
 }: StockSymbolFormProps) => {
   const [symbol, setSymbol] = useState('');
   const [loading, setLoading] = useState(false);
@@ -165,6 +167,7 @@ export const StockSymbolForm = ({
                 isConnected={isConnected}
                 connectedItemId={connectedItemId}
                 onDisconnect={onPlaidDisconnect}
+                hasInactiveAccounts={hasInactiveAccounts}
               />
             )}
           </div>

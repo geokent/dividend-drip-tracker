@@ -170,6 +170,60 @@ Deno.serve(async (req) => {
         if (account.type === 'investment') {
           console.log(`Processing investment account: ${account.name} (${account.account_id})`)
           
+          // Check if account already exists and is inactive - reactivate instead of creating duplicate
+          const { data: existingAccount } = await supabase
+            .from('plaid_accounts')
+            .select('*')
+            .eq('user_id', user_id)
+            .eq('account_id', account.account_id)
+            .single()
+
+          if (existingAccount) {
+            console.log(`Reactivating existing account: ${account.account_id}`)
+            
+            // Encrypt new access token
+            const { data: encryptedToken, error: encryptError } = await supabase.rpc('encrypt_sensitive_data', {
+              data: access_token
+            })
+            
+            if (encryptError || !encryptedToken) {
+              console.error(`Failed to encrypt token for ${account.account_id}:`, encryptError)
+              failedAccounts++
+              failureDetails.push(`${account.name}: Token encryption failed`)
+              continue
+            }
+            
+            // Update existing account to reactivate it
+            const { error: updateError } = await supabase
+              .from('plaid_accounts')
+              .update({
+                access_token_encrypted: encryptedToken,
+                is_active: true,
+                is_encrypted: true,
+                encryption_version: 1,
+                token_last_rotated: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', user_id)
+              .eq('account_id', account.account_id)
+
+            if (updateError) {
+              console.error(`Failed to reactivate account ${account.account_id}:`, updateError)
+              failedAccounts++
+              failureDetails.push(`${account.name}: Failed to reactivate account - ${updateError.message}`)
+              continue
+            }
+            
+            console.log(`Successfully reactivated existing investment account: ${account.name}`)
+            successfulAccounts++
+            accountResults.push({
+              account_id: account.account_id,
+              name: account.name,
+              success: true
+            })
+            continue
+          }
+          
           // Use the secure encrypted token storage function (now returns JSONB)
           const { data: result, error: rpcError } = await supabase.rpc('store_encrypted_access_token', {
             p_user_id: user_id,

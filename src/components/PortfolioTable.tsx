@@ -39,6 +39,7 @@ interface PortfolioTableProps {
   isConnected?: boolean;
   connectedItemId?: string;
   connectedInstitutions?: Array<{item_id: string, institution_name: string, account_count: number}>;
+  hasInactiveAccounts?: boolean;
 }
 
 export const PortfolioTable = ({ 
@@ -52,7 +53,8 @@ export const PortfolioTable = ({
   onPlaidDisconnect,
   isConnected,
   connectedItemId,
-  connectedInstitutions
+  connectedInstitutions,
+  hasInactiveAccounts = false
 }: PortfolioTableProps) => {
   const [editingStock, setEditingStock] = useState<string | null>(null);
   const [editShares, setEditShares] = useState<string>("");

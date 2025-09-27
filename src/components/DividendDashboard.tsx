@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PlaidDisconnectDialog } from "./PlaidDisconnectDialog";
+import { StaleDataCleanupDialog } from "./StaleDataCleanupDialog";
 
 interface StockData {
   symbol: string;
@@ -57,6 +58,14 @@ export const DividendDashboard = () => {
     affectedStocks: []
   });
   const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [staleDataDialog, setStaleDataDialog] = useState(false);
+  const [staleAccounts, setStaleAccounts] = useState<Array<{
+    item_id: string;
+    institution_name: string;
+    account_count: number;
+    last_sync: string;
+    affected_stocks: string[];
+  }>>([]);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -122,14 +131,14 @@ export const DividendDashboard = () => {
     
     const { data: accounts, error: accountsError } = await supabase
       .from('plaid_accounts')
-      .select('id, account_name, institution_name, is_active, item_id')
+      .select('id, account_name, institution_name, is_active, item_id, updated_at')
       .eq('user_id', user.id);
 
     if (!accountsError && accounts) {
       // Filter to accounts that are active AND have stocks with sync data
       const { data: syncedStocks } = await supabase
         .from('user_stocks')
-        .select('plaid_item_id')
+        .select('plaid_item_id, symbol, last_synced')
         .eq('user_id', user.id)
         .not('plaid_item_id', 'is', null);
 
@@ -153,6 +162,35 @@ export const DividendDashboard = () => {
         }
       });
       setConnectedInstitutions(Array.from(institutionMap.values()));
+
+      // Check for stale data (accounts disconnected for >30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const staleData = accounts
+        .filter(account => !account.is_active && new Date(account.updated_at) < thirtyDaysAgo)
+        .map(account => {
+          const affectedStocks = syncedStocks
+            ?.filter(stock => stock.plaid_item_id === account.item_id)
+            ?.map(stock => stock.symbol) || [];
+          
+          return {
+            item_id: account.item_id,
+            institution_name: account.institution_name || 'Unknown Institution',
+            account_count: 1,
+            last_sync: account.updated_at,
+            affected_stocks: affectedStocks
+          };
+        })
+        .filter(item => item.affected_stocks.length > 0);
+
+      if (staleData.length > 0) {
+        setStaleAccounts(staleData);
+        // Auto-show cleanup dialog if there's significant stale data
+        if (staleData.reduce((sum, item) => sum + item.affected_stocks.length, 0) > 5) {
+          setStaleDataDialog(true);
+        }
+      }
     }
   };
 
@@ -1044,6 +1082,7 @@ export const DividendDashboard = () => {
           isConnected={connectedInstitutions.length > 0}
           connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
           connectedInstitutions={connectedInstitutions}
+          hasInactiveAccounts={staleAccounts.length > 0}
         />
         
         {/* Upcoming Dividends - Below the chart */}
@@ -1058,6 +1097,16 @@ export const DividendDashboard = () => {
         affectedStocks={disconnectDialog.affectedStocks}
         onConfirmDisconnect={handleConfirmDisconnect}
         isDisconnecting={isDisconnecting}
+      />
+      
+      <StaleDataCleanupDialog
+        open={staleDataDialog}
+        onOpenChange={setStaleDataDialog}
+        staleAccounts={staleAccounts}
+        onCleanupComplete={() => {
+          loadUserStocks();
+          loadConnectedAccounts();
+        }}
       />
     </AppLayout>
   );
