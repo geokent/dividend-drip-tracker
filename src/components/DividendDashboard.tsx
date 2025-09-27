@@ -120,14 +120,13 @@ export const DividendDashboard = () => {
   const loadConnectedAccounts = async () => {
     if (!user?.id) return;
     
-    // Get accounts that have synced data (regardless of is_active flag)
     const { data: accounts, error: accountsError } = await supabase
       .from('plaid_accounts')
       .select('id, account_name, institution_name, is_active, item_id')
       .eq('user_id', user.id);
 
     if (!accountsError && accounts) {
-      // Filter to accounts that have stocks with sync data
+      // Filter to accounts that are active AND have stocks with sync data
       const { data: syncedStocks } = await supabase
         .from('user_stocks')
         .select('plaid_item_id')
@@ -135,7 +134,7 @@ export const DividendDashboard = () => {
         .not('plaid_item_id', 'is', null);
 
       const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
-      const activeAccounts = accounts.filter(account => activeItemIds.has(account.item_id));
+      const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
       
       setConnectedAccounts(activeAccounts.length);
       
@@ -220,7 +219,7 @@ export const DividendDashboard = () => {
         .eq('user_id', user.id);
 
       if (!accountsError && accounts) {
-        // Filter to accounts that have stocks with sync data
+        // Filter to accounts that are active AND have stocks with sync data
         const { data: syncedStocks } = await supabase
           .from('user_stocks')
           .select('plaid_item_id')
@@ -228,7 +227,7 @@ export const DividendDashboard = () => {
           .not('plaid_item_id', 'is', null);
 
         const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
-        const activeAccounts = accounts.filter(account => activeItemIds.has(account.item_id));
+        const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
         
         setConnectedAccounts(activeAccounts.length);
         
@@ -429,18 +428,17 @@ export const DividendDashboard = () => {
     
     // Perform a fresh check for connected accounts before blocking
     console.log('Checking for connected accounts before sync...');
-    const { data: freshAccounts, error: accountsError } = await supabase
+    const { data: anyAccounts } = await supabase
       .from('plaid_accounts')
       .select('id')
-      .eq('user_id', user.id)
-      .eq('is_active', true);
+      .eq('user_id', user.id);
     
-    const actualConnectedAccounts = freshAccounts?.length || 0;
-    console.log('Fresh account count:', actualConnectedAccounts);
+    const anyAccountCount = anyAccounts?.length || 0;
+    console.log('Total accounts (any status):', anyAccountCount);
     
-    if (actualConnectedAccounts === 0) {
+    if (anyAccountCount === 0) {
       toast({
-        title: "No Connected Accounts",
+        title: "No Accounts",
         description: "Please connect an investment account first before syncing.",
         variant: "destructive"
       });

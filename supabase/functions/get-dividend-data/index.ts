@@ -82,13 +82,13 @@ Deno.serve(async (req) => {
                        (overviewData.Symbol ? `${overviewData.Symbol} ETF` : `${symbol.toUpperCase()}`);
     
     // Helper functions for enhanced dividend analysis
-    const analyzeDividendFrequency = (dividendHistory) => {
+    const analyzeDividendFrequency = (dividendHistory: any[]) => {
       if (!dividendHistory || dividendHistory.length < 2) return 'unknown';
       
-      const dates = dividendHistory.map(d => new Date(d.exDividendDate));
-      dates.sort((a, b) => b - a); // Most recent first
+      const dates = dividendHistory.map((d: any) => new Date(d.exDividendDate).getTime());
+      dates.sort((a: number, b: number) => b - a); // Most recent first
       
-      const daysBetween = [];
+      const daysBetween: number[] = [];
       for (let i = 0; i < Math.min(dates.length - 1, 4); i++) {
         const diff = Math.abs(dates[i] - dates[i + 1]) / (1000 * 60 * 60 * 24);
         daysBetween.push(diff);

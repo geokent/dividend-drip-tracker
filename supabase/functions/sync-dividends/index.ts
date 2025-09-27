@@ -68,14 +68,13 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get all active Plaid accounts for the user (without sensitive token data)
+    // Get all Plaid accounts for the user (regardless of is_active)
     const { data: accounts, error: accountsError } = await supabase
       .from('plaid_accounts')
-      .select('account_id, item_id, account_name, account_type, institution_name, institution_id, user_id')
+      .select('account_id, item_id, account_name, account_type, institution_name, institution_id, user_id, is_active')
       .eq('user_id', user_id)
-      .eq('is_active', true)
 
-    console.log(`Found ${accounts?.length || 0} active accounts for user ${user_id}`)
+    console.log(`Found ${accounts?.length || 0} accounts for user ${user_id}`)
 
     if (accountsError) {
       console.error('Accounts fetch error:', accountsError)
