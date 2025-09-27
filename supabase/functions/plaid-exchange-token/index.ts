@@ -244,11 +244,11 @@ Deno.serve(async (req) => {
       } catch (error) {
         console.error(`Error processing account ${account.account_id}:`, error)
         failedAccounts++
-        failureDetails.push(`${account.name}: Unexpected error - ${error.message}`)
+        failureDetails.push(`${account.name}: Unexpected error - ${(error as Error).message}`)
       }
     }
 
-    const investmentAccounts = accountsData.accounts.filter(acc => acc.type === 'investment')
+    const investmentAccounts = accountsData.accounts.filter((acc: any) => acc.type === 'investment')
     const totalInvestmentAccounts = investmentAccounts.length
 
     // Validate account connectivity if any accounts were processed

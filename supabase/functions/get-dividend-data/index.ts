@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
       return 'irregular';
     };
     
-    const estimateNextDividendDate = (lastExDate, frequency) => {
+    const estimateNextDividendDate = (lastExDate: string, frequency: string) => {
       if (!lastExDate) return null;
       
       const lastDate = new Date(lastExDate);
@@ -162,8 +162,8 @@ Deno.serve(async (req) => {
     if (dividendsData && dividendsData.data && Array.isArray(dividendsData.data)) {
       console.log(`Found ${dividendsData.data.length} dividend records from DIVIDENDS API`);
       
-      const sortedDividends = dividendsData.data.sort((a, b) => 
-        new Date(b.exDividendDate || b.ex_dividend_date) - new Date(a.exDividendDate || a.ex_dividend_date)
+      const sortedDividends = dividendsData.data.sort((a: any, b: any) =>
+        new Date(b.exDividendDate || b.ex_dividend_date).getTime() - new Date(a.exDividendDate || a.ex_dividend_date).getTime()
       );
       
       // Analyze frequency
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
         
         // Calculate annual dividend based on frequency and recent payments
         if (dividendPerShare > 0) {
-          const recentYear = sortedDividends.filter(d => {
+          const recentYear = sortedDividends.filter((d: any) => {
             const divDate = new Date(d.exDividendDate || d.ex_dividend_date);
             const oneYearAgo = new Date();
             oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
           });
           
           if (recentYear.length > 0) {
-            annualDividend = recentYear.reduce((sum, d) => 
+            annualDividend = recentYear.reduce((sum: number, d: any) => 
               sum + parseFloat(d.amount || d.dividend_amount || d.dividendAmount || 0), 0
             );
           } else {

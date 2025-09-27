@@ -343,7 +343,7 @@ Deno.serve(async (req) => {
       } catch (error) {
         console.error(`Error processing account ${account.account_id}:`, error)
         failedSyncs++
-        syncErrors.push(`${account.account_name || account.account_id}: ${error.message}`)
+        syncErrors.push(`${account.account_name || account.account_id}: ${(error as Error).message}`)
         continue
       }
     }

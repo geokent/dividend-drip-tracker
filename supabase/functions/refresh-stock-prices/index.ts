@@ -116,7 +116,7 @@ serve(async (req) => {
 
       } catch (error) {
         console.error(`Error processing ${stock.symbol}:`, error);
-        errors.push(`Error processing ${stock.symbol}: ${error.message}`);
+        errors.push(`Error processing ${stock.symbol}: ${(error as Error).message}`);
       }
     }
 
@@ -139,7 +139,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
-        details: error.message 
+        details: (error as Error).message 
       }),
       { 
         status: 500, 
