@@ -68,11 +68,12 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get all Plaid accounts for the user (regardless of is_active)
+    // Get only ACTIVE Plaid accounts for the user
     const { data: accounts, error: accountsError } = await supabase
       .from('plaid_accounts')
       .select('account_id, item_id, account_name, account_type, institution_name, institution_id, user_id, is_active')
       .eq('user_id', user_id)
+      .eq('is_active', true)
 
     console.log(`Found ${accounts?.length || 0} accounts for user ${user_id}`)
 
@@ -391,7 +392,7 @@ Deno.serve(async (req) => {
       )
     } else if (successfulSyncs > 0 && failedSyncs > 0) {
       // Partial success
-      message = `Partially synced portfolio: ${successfulSyncs} accounts succeeded, ${failedSyncs} failed. Synced ${totalNewDividends} stocks total.`
+      message = `Synced ${totalNewDividends} stocks successfully from ${successfulSyncs} account${successfulSyncs > 1 ? 's' : ''}, but ${failedSyncs} inactive account${failedSyncs > 1 ? 's' : ''} couldn't sync.`
       
       return new Response(
         JSON.stringify({ 

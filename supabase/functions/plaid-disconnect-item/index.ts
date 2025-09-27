@@ -118,13 +118,13 @@ Deno.serve(async (req) => {
       console.error('Error fetching affected stocks:', stocksError)
     }
 
-    // Parse cleanup action from request body (default to 'keep')
-    let cleanupAction = 'keep'
+    // Parse cleanup action from request body (default to 'remove')
+    let cleanupAction = 'remove'
     try {
       const body = await req.text()
       if (body) {
         const parsed = JSON.parse(body)
-        cleanupAction = parsed.cleanup_action || 'keep'
+        cleanupAction = parsed.cleanup_action || 'remove'
       }
     } catch (e) {
       // Use default cleanup action
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
     const affectedCount = affectedStocks?.length || 0
 
     // Handle cleanup based on user choice
-    if (affectedCount > 0 && cleanupAction !== 'keep') {
+    if (affectedCount > 0) {
       if (cleanupAction === 'remove') {
         // Remove all Plaid-synced stocks from this item
         const { error: deleteError } = await supabase
@@ -166,6 +166,25 @@ Deno.serve(async (req) => {
         if (convertError) {
           console.error('Error converting stocks:', convertError)
           cleanupMessage = ` Warning: Could not convert ${affectedCount} associated holdings.`
+        } else {
+          cleanupMessage = ` Converted ${affectedCount} holdings to manual tracking.`
+        }
+      } else if (cleanupAction === 'keep') {
+        // Convert source to manual to prevent sync errors
+        const { error: convertError } = await supabase
+          .from('user_stocks')
+          .update({ 
+            source: 'manual',
+            plaid_item_id: null,
+            plaid_account_id: null 
+          })
+          .eq('user_id', user_id)
+          .eq('plaid_item_id', item_id)
+          .eq('source', 'plaid_sync')
+
+        if (convertError) {
+          console.error('Error converting stocks to manual:', convertError)
+          cleanupMessage = ` Warning: Could not update ${affectedCount} associated holdings.`
         } else {
           cleanupMessage = ` Converted ${affectedCount} holdings to manual tracking.`
         }

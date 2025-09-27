@@ -34,7 +34,7 @@ export const PlaidDisconnectDialog = ({
   onConfirmDisconnect,
   isDisconnecting = false
 }: PlaidDisconnectDialogProps) => {
-  const [selectedAction, setSelectedAction] = useState<'keep' | 'remove' | 'convert'>('convert');
+  const [selectedAction, setSelectedAction] = useState<'keep' | 'remove' | 'convert'>('remove');
 
   const totalValue = affectedStocks.reduce((sum, stock) => 
     sum + (stock.current_price ? stock.current_price * stock.shares : 0), 0
@@ -129,13 +129,30 @@ export const PlaidDisconnectDialog = ({
                 <input
                   type="radio"
                   name="cleanup-action"
+                  value="remove"
+                  checked={selectedAction === 'remove'}
+                  onChange={() => setSelectedAction('remove')}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="font-medium">Remove All Holdings (Recommended)</div>
+                  <div className="text-sm text-muted-foreground">
+                    {getActionDescription('remove')}
+                  </div>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="radio"
+                  name="cleanup-action"
                   value="convert"
                   checked={selectedAction === 'convert'}
                   onChange={() => setSelectedAction('convert')}
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-medium">Convert to Manual (Recommended)</div>
+                  <div className="font-medium">Convert to Manual</div>
                   <div className="text-sm text-muted-foreground">
                     {getActionDescription('convert')}
                   </div>
@@ -152,26 +169,9 @@ export const PlaidDisconnectDialog = ({
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-medium">Keep Unchanged</div>
+                  <div className="font-medium text-warning">Keep Unchanged</div>
                   <div className="text-sm text-muted-foreground">
-                    {getActionDescription('keep')}
-                  </div>
-                </div>
-              </label>
-              
-              <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <input
-                  type="radio"
-                  name="cleanup-action"
-                  value="remove"
-                  checked={selectedAction === 'remove'}
-                  onChange={() => setSelectedAction('remove')}
-                  className="mt-1"
-                />
-                <div>
-                  <div className="font-medium text-destructive">Remove All Holdings</div>
-                  <div className="text-sm text-muted-foreground">
-                    {getActionDescription('remove')}
+                    {getActionDescription('keep')} <span className="text-warning font-medium">⚠️ May cause sync errors</span>
                   </div>
                 </div>
               </label>
