@@ -182,9 +182,9 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
       return isConnected ? 'Disconnecting...' : hasInactiveAccounts ? 'Reconnecting...' : 'Connecting...';
     }
     if (disabled) return 'Account Limit Reached';
-    if (isConnected) return 'Unlink Investment Account';
+    if (isConnected) return 'Unlink Account';
     if (hasInactiveAccounts) return 'Reconnect Account';
-    return 'Connect Investment Account';
+    return 'Connect Account';
   };
 
   return (
