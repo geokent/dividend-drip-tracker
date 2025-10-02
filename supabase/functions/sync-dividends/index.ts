@@ -339,6 +339,39 @@ Deno.serve(async (req) => {
           }
         }
         
+        // Cleanup: Remove Plaid-sourced stocks that are no longer held
+        console.log(`Checking for sold positions to remove...`)
+        const syncedSymbols = Array.from(holdingsMap.keys())
+        const { data: existingPlaidStocks, error: fetchError } = await supabase
+          .from('user_stocks')
+          .select('id, symbol')
+          .eq('user_id', user_id)
+          .eq('source', 'plaid_sync')
+          .eq('plaid_item_id', account.item_id)
+
+        if (fetchError) {
+          console.error('Error fetching existing Plaid stocks for cleanup:', fetchError)
+        } else if (existingPlaidStocks && existingPlaidStocks.length > 0) {
+          for (const stock of existingPlaidStocks) {
+            if (!syncedSymbols.includes(stock.symbol)) {
+              // Stock no longer held in brokerage - delete it
+              const { error: deleteError } = await supabase
+                .from('user_stocks')
+                .delete()
+                .eq('id', stock.id)
+              
+              if (deleteError) {
+                console.error(`Error deleting sold position ${stock.symbol}:`, deleteError)
+              } else {
+                console.log(`Removed sold position: ${stock.symbol}`)
+                totalSynced++
+              }
+            }
+          }
+        } else {
+          console.log('No Plaid-sourced stocks found for cleanup check')
+        }
+        
         // Mark this account as successfully synced
         successfulSyncs++
       } catch (error) {
