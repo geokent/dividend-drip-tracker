@@ -31,7 +31,7 @@ interface TrackedStock {
 interface PortfolioTableProps {
   stocks: TrackedStock[];
   onRemoveStock: (stockId: string, symbol: string) => void;
-  onUpdateShares: (symbol: string, shares: number) => void;
+  onUpdateShares: (stockId: string, symbol: string, shares: number) => void;
   // Stock management props
   onStockFound?: (stockData: any) => void;
   userId?: string;
@@ -64,14 +64,14 @@ export const PortfolioTable = ({
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleEditShares = (symbol: string, currentShares: number) => {
-    setEditingStock(symbol);
+  const handleEditShares = (stockId: string, currentShares: number) => {
+    setEditingStock(stockId);
     setEditShares(currentShares.toString());
   };
 
-  const handleSaveShares = (symbol: string) => {
+  const handleSaveShares = (stockId: string, symbol: string) => {
     const shares = parseFloat(editShares) || 0;
-    onUpdateShares(symbol, shares);
+    onUpdateShares(stockId, symbol, shares);
     setEditingStock(null);
   };
 
@@ -231,7 +231,7 @@ export const PortfolioTable = ({
                   </div>
                 </TableCell>
               <TableCell className="text-left">
-                {editingStock === stock.symbol ? (
+                {editingStock === stock.id ? (
                   <div className="flex items-center gap-2 justify-start">
                     <Input
                       type="number"
@@ -244,7 +244,7 @@ export const PortfolioTable = ({
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={() => handleSaveShares(stock.symbol)}
+                      onClick={() => handleSaveShares(stock.id || '', stock.symbol)}
                       className="h-8 w-8"
                     >
                       <Check className="h-4 w-4" />
@@ -265,7 +265,7 @@ export const PortfolioTable = ({
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => handleEditShares(stock.symbol, stock.shares)}
+                        onClick={() => handleEditShares(stock.id || '', stock.shares)}
                         className="h-8 w-8"
                       >
                         <Edit3 className="h-4 w-4" />

@@ -419,7 +419,7 @@ export const DividendDashboard = () => {
     }
   };
 
-  const handleUpdateShares = async (symbol: string, shares: number) => {
+  const handleUpdateShares = async (stockId: string, symbol: string, shares: number) => {
     if (!user?.id) return;
     
     try {
@@ -427,14 +427,14 @@ export const DividendDashboard = () => {
         .from('user_stocks')
         .update({ shares })
         .eq('user_id', user.id)
-        .eq('symbol', symbol);
+        .eq('id', stockId);
 
       if (error) throw error;
 
       // Update local state
       setTrackedStocks(prev => 
         prev.map(stock => 
-          stock.symbol === symbol 
+          stock.id === stockId 
             ? { ...stock, shares }
             : stock
         )
