@@ -35,6 +35,7 @@ interface TrackedStock extends StockData {
   plaid_item_id?: string | null;
   last_synced?: string;
   reconciliation_metadata?: any;
+  created_at?: string;
 }
 
 export const DividendDashboard = () => {
