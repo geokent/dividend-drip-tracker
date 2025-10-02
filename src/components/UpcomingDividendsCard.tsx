@@ -125,9 +125,9 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground">Recent Payments</h4>
             {recentDividends.map((stock) => (
-              <div key={`recent-${stock.symbol}`} className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg border-l-2 border-secondary">
+              <div key={`recent-${stock.symbol}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-secondary/20 rounded-lg border-l-2 border-secondary gap-2">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                     <div>
                       <div className="font-medium text-sm">{stock.symbol}</div>
                       <div className="text-xs text-muted-foreground">
@@ -137,12 +137,12 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                     <Badge variant="secondary" className="text-xs">
                       PAID
                     </Badge>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       {formatRelativeDate(stock.dividendDate)}
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right sm:text-right">
                   <div className="financial-value text-muted-foreground">
                     {formatCurrency(stock.totalDividend)}
                   </div>
@@ -165,9 +165,9 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-foreground">Upcoming Payments</h4>
             {upcomingDividends.map((stock) => (
-              <div key={`upcoming-${stock.symbol}`} className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border-l-2 border-primary">
+              <div key={`upcoming-${stock.symbol}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-primary/5 rounded-lg border-l-2 border-primary gap-2">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                     <div>
                       <div className="font-medium text-sm">{stock.symbol}</div>
                       <div className="text-xs text-muted-foreground">
@@ -177,12 +177,12 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                     <Badge variant="default" className="text-xs">
                       UPCOMING
                     </Badge>
-                    <div className="text-xs text-foreground font-medium">
+                    <div className="text-xs sm:text-sm text-foreground font-medium">
                       {formatRelativeDate(stock.dividendDate)}
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right sm:text-right">
                   <div className="financial-value">
                     {formatCurrency(stock.totalDividend)}
                   </div>
@@ -203,11 +203,14 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
         {/* Stocks with dividend data but missing payment dates */}
         {stocksWithMissingDates.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground">Dividend Data Available, Payment Dates Pending</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">
+              <span className="hidden sm:inline">Dividend Data Available, Payment Dates Pending</span>
+              <span className="sm:hidden">Payment Dates Pending</span>
+            </h4>
             {stocksWithMissingDates.map((stock) => (
-              <div key={`missing-date-${stock.symbol}`} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border-l-2 border-muted-foreground">
+              <div key={`missing-date-${stock.symbol}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-muted/30 rounded-lg border-l-2 border-muted-foreground gap-2">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                     <div>
                       <div className="font-medium text-sm">{stock.symbol}</div>
                       <div className="text-xs text-muted-foreground">
@@ -217,12 +220,12 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                     <Badge variant="outline" className="text-xs">
                       NO DATE
                     </Badge>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       Payment date unavailable
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right sm:text-right">
                   <div className="financial-value text-muted-foreground">
                     {formatCurrency(stock.dividendPerShare! * stock.shares)}
                   </div>
