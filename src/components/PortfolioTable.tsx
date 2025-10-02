@@ -167,7 +167,7 @@ export const PortfolioTable = ({
               </form>
               
               {/* Bulk Upload, Connect Account, Update Portfolio */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                 <BulkUploadStocksDialog onSuccess={onBulkUploadSuccess} />
                 
                 <PlaidLinkButton
