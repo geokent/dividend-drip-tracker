@@ -202,7 +202,11 @@ export const PortfolioTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {stocks.map((stock) => (
+            {[...stocks].sort((a, b) => {
+              const incomeA = (a.annualDividend || 0) * a.shares;
+              const incomeB = (b.annualDividend || 0) * b.shares;
+              return incomeB - incomeA;
+            }).map((stock) => (
               <TableRow key={stock.symbol}>
                 <TableCell className="text-left">
                   <div className="flex flex-col items-start">
