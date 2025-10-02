@@ -129,6 +129,7 @@ Deno.serve(async (req) => {
     let failedSyncs = 0
     let removedStocks = 0
     const syncErrors = []
+    const globalSymbols = new Set<string>()
 
     // Use production environment
     const plaidApiHost = 'https://production.plaid.com'
@@ -229,7 +230,21 @@ Deno.serve(async (req) => {
             continue
           }
 
+          // Filter out non-equity holdings (currency, cash, money market)
+          const securityType = (sec?.type || sec?.security_type || '').toLowerCase()
+          if (securityType.includes('currency') || securityType.includes('cash') || securityType.includes('money market')) {
+            console.log(`Skipping non-equity holding: ${ticker} (type: ${securityType})`)
+            continue
+          }
+
           const symbol = String(ticker).toUpperCase()
+          
+          // Skip synthetic tickers like CUR:USD
+          if (symbol.includes(':')) {
+            console.log(`Skipping synthetic ticker: ${symbol}`)
+            continue
+          }
+
           const companyName = sec?.name || symbol
           const currentPrice = holding.institution_price || 0
           const quantity = holding.quantity || 0
@@ -254,6 +269,12 @@ Deno.serve(async (req) => {
         }
 
         console.log(`Aggregated ${holdingsMap.size} unique symbols from ${holdingsData.holdings?.length || 0} holdings`)
+        
+        // Add all symbols from this account to the global set
+        for (const symbol of holdingsMap.keys()) {
+          globalSymbols.add(symbol)
+        }
+        console.log(`Global symbols now has ${globalSymbols.size} total symbols after account ${account.account_id}`)
 
         let reconciledStocks = 0
         let newStocks = 0
@@ -275,6 +296,11 @@ Deno.serve(async (req) => {
             } catch (e) {
               console.error(`Name enrichment failed for ${symbol}:`, e);
             }
+          }
+          
+          // Normalize company name to single line, trimmed to 80 chars
+          if (aggregatedHolding.companyName) {
+            aggregatedHolding.companyName = aggregatedHolding.companyName.split('\n')[0].trim().slice(0, 80)
           }
           
           try {
@@ -380,7 +406,7 @@ Deno.serve(async (req) => {
                 console.error(`Error deleting sold position ${stock.symbol}:`, deleteError)
               } else {
                 console.log(`Removed sold position: ${stock.symbol}`)
-                totalSynced++
+                removedStocks++
               }
             }
           }
@@ -397,6 +423,39 @@ Deno.serve(async (req) => {
         continue
       }
     }
+
+    // Global cleanup: Remove any Plaid-sourced stocks no longer held in ANY active account
+    console.log(`Running global cleanup. Global symbols set contains ${globalSymbols.size} symbols`)
+    const { data: allPlaidStocks, error: globalFetchError } = await supabase
+      .from('user_stocks')
+      .select('id, symbol')
+      .eq('user_id', user_id)
+      .eq('source', 'plaid_sync')
+
+    if (globalFetchError) {
+      console.error('Error fetching all Plaid stocks for global cleanup:', globalFetchError)
+    } else if (allPlaidStocks && allPlaidStocks.length > 0) {
+      console.log(`Found ${allPlaidStocks.length} total Plaid-synced stocks in database`)
+      for (const stock of allPlaidStocks) {
+        if (!globalSymbols.has(stock.symbol)) {
+          // Stock no longer held in ANY active account - delete it
+          const { error: deleteError } = await supabase
+            .from('user_stocks')
+            .delete()
+            .eq('id', stock.id)
+          
+          if (deleteError) {
+            console.error(`Error deleting stock ${stock.symbol} (id: ${stock.id}):`, deleteError)
+          } else {
+            console.log(`Global cleanup removed: ${stock.symbol} (id: ${stock.id})`)
+            removedStocks++
+          }
+        }
+      }
+    } else {
+      console.log('No Plaid-sourced stocks found for global cleanup')
+    }
+    console.log(`Global cleanup complete. Removed ${removedStocks} total stocks`)
 
     // Log successful sync completion
     try {
@@ -418,6 +477,7 @@ Deno.serve(async (req) => {
       syncedStocks: totalNewDividends,
       reconciledStocks: reconciledStocks,
       newStocks: newStocks,
+      removedStocks: removedStocks,
       accountsProcessed: totalAccounts,
       successfulSyncs: successfulSyncs,
       failedSyncs: failedSyncs,
