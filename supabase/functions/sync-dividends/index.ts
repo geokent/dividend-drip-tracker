@@ -249,6 +249,12 @@ Deno.serve(async (req) => {
           const currentPrice = holding.institution_price || 0
           const quantity = holding.quantity || 0
           
+          // Skip holdings with zero or negative quantity
+          if (quantity <= 0) {
+            console.log(`Skipping ${symbol} - zero quantity (${quantity} shares)`)
+            continue
+          }
+          
           console.log(`Processing holding: ${symbol} - ${quantity} shares at $${currentPrice} from security ${holding.security_id}`)
           
           // Aggregate quantities by symbol
