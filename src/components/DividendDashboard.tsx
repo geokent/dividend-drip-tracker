@@ -39,7 +39,6 @@ interface TrackedStock extends StockData {
 
 export const DividendDashboard = () => {
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<number>(0);
@@ -504,7 +503,6 @@ export const DividendDashboard = () => {
       return;
     }
     
-    setIsSyncing(true);
     try {
       const { data, error } = await supabase.functions.invoke('sync-dividends', {
         body: { user_id: user.id }
@@ -652,8 +650,6 @@ export const DividendDashboard = () => {
         description: "An unexpected error occurred. Please check your connection and try again.",
         variant: "destructive"
       });
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -1023,11 +1019,6 @@ export const DividendDashboard = () => {
     });
   };
 
-  const handleUpdatePortfolio = async () => {
-    // First sync connected accounts, then refresh prices
-    await handleSyncInvestments();
-    await refreshStockPrices();
-  };
 
   // Check if we're in maintenance window (02:00-04:00 UTC)
   const isMaintenanceWindow = () => {
@@ -1104,8 +1095,6 @@ export const DividendDashboard = () => {
           connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
           connectedInstitutions={connectedInstitutions}
           hasInactiveAccounts={staleAccounts.length > 0}
-          onUpdatePortfolio={handleUpdatePortfolio}
-          isUpdating={isSyncing || isRefreshingPrices}
         />
         
         {/* Upcoming Dividends - Below the chart */}

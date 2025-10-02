@@ -40,8 +40,6 @@ interface PortfolioTableProps {
   connectedItemId?: string;
   connectedInstitutions?: Array<{item_id: string, institution_name: string, account_count: number}>;
   hasInactiveAccounts?: boolean;
-  onUpdatePortfolio?: () => void;
-  isUpdating?: boolean;
 }
 
 export const PortfolioTable = ({ 
@@ -56,9 +54,7 @@ export const PortfolioTable = ({
   isConnected,
   connectedItemId,
   connectedInstitutions,
-  hasInactiveAccounts = false,
-  onUpdatePortfolio,
-  isUpdating = false
+  hasInactiveAccounts = false
 }: PortfolioTableProps) => {
   const [editingStock, setEditingStock] = useState<string | null>(null);
   const [editShares, setEditShares] = useState<string>("");
@@ -185,18 +181,6 @@ export const PortfolioTable = ({
                   connectedItemId={connectedItemId}
                   size="sm"
                 />
-                
-                {connectedInstitutions && connectedInstitutions.length > 0 && onUpdatePortfolio && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={onUpdatePortfolio}
-                    disabled={isUpdating}
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isUpdating ? 'animate-spin' : ''}`} />
-                    {isUpdating ? 'Updating...' : 'Update Portfolio'}
-                  </Button>
-                )}
               </div>
             </div>
           )}
