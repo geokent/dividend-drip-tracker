@@ -27,6 +27,7 @@ interface StockData {
   industry: string | null;
   marketCap: string | null;
   peRatio: string | null;
+  shares?: number;
 }
 
 interface TrackedStock extends StockData {
@@ -396,7 +397,7 @@ export const DividendDashboard = () => {
             industry: stockData.industry,
             market_cap: stockData.marketCap ? parseFloat(stockData.marketCap) : null,
             pe_ratio: stockData.peRatio ? parseFloat(stockData.peRatio) : null,
-            shares: 0,
+            shares: stockData.shares || 0,
             last_synced: new Date().toISOString()
           });
 

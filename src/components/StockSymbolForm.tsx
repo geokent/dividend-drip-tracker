@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search, Upload, Link } from 'lucide-react';
 import { BulkUploadStocksDialog } from './BulkUploadStocksDialog';
 import { PlaidLinkButton } from './PlaidLinkButton';
+import { AddStockDialog } from './AddStockDialog';
 
 interface StockData {
   symbol: string;
@@ -23,6 +24,7 @@ interface StockData {
   industry: string | null;
   marketCap: string | null;
   peRatio: string | null;
+  shares?: number;
 }
 
 interface StockSymbolFormProps {
@@ -50,6 +52,9 @@ export const StockSymbolForm = ({
 }: StockSymbolFormProps) => {
   const [symbol, setSymbol] = useState('');
   const [loading, setLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [fetchedStockData, setFetchedStockData] = useState<StockData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,13 +89,10 @@ export const StockSymbolForm = ({
       }
 
       console.log('Stock data received:', data);
-      onStockFound(data);
       
-      toast({
-        title: "Stock Found!",
-        description: `Found dividend data for ${data.symbol}`,
-      });
-      
+      // Open dialog with stock data instead of immediately adding
+      setFetchedStockData(data);
+      setDialogOpen(true);
       setSymbol('');
     } catch (error: any) {
       console.error('Error fetching stock data:', error);
@@ -101,6 +103,31 @@ export const StockSymbolForm = ({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmAddStock = async (stockData: StockData, shares: number) => {
+    setIsSaving(true);
+    try {
+      const stockDataWithShares = { ...stockData, shares };
+      await onStockFound(stockDataWithShares);
+      
+      toast({
+        title: "Stock Added!",
+        description: `Added ${shares} shares of ${stockData.symbol} to your portfolio`,
+      });
+      
+      setDialogOpen(false);
+      setFetchedStockData(null);
+    } catch (error: any) {
+      console.error('Error adding stock:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add stock to portfolio",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -173,6 +200,14 @@ export const StockSymbolForm = ({
           </div>
         </div>
       </div>
+
+      <AddStockDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        stockData={fetchedStockData}
+        onConfirm={handleConfirmAddStock}
+        loading={isSaving}
+      />
     </div>
   );
 };
