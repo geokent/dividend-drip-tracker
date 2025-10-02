@@ -110,7 +110,8 @@ export const DividendDashboard = () => {
           source: stock.source,
           plaid_item_id: stock.plaid_item_id,
           last_synced: stock.last_synced,
-          reconciliation_metadata: stock.reconciliation_metadata
+          reconciliation_metadata: stock.reconciliation_metadata,
+          created_at: stock.created_at
       })).filter(stock => {
         const isCurrency = stock.symbol.includes(':') || stock.symbol.startsWith('CUR:')
         if (isCurrency) {
@@ -242,7 +243,8 @@ export const DividendDashboard = () => {
           source: stock.source,
           plaid_item_id: stock.plaid_item_id,
           last_synced: stock.last_synced,
-          reconciliation_metadata: stock.reconciliation_metadata
+          reconciliation_metadata: stock.reconciliation_metadata,
+          created_at: stock.created_at
         })).filter(stock => {
           const isCurrency = stock.symbol.includes(':') || stock.symbol.startsWith('CUR:')
           if (isCurrency) {
@@ -363,7 +365,7 @@ export const DividendDashboard = () => {
       setTrackedStocks(prev => 
         prev.map((stock, index) => 
           index === existingIndex 
-            ? { ...stockData, shares: stock.shares }
+            ? { ...stock, ...stockData, shares: stock.shares }
             : stock
         ).filter(stock => {
           const isCurrency = stock.symbol.includes(':') || stock.symbol.startsWith('CUR:')
@@ -406,7 +408,7 @@ export const DividendDashboard = () => {
         // Add to local state, filtering out currency positions
         const isCurrency = stockData.symbol.includes(':') || stockData.symbol.startsWith('CUR:')
         if (!isCurrency) {
-          setTrackedStocks(prev => [{ ...stockData, shares: 0 }, ...prev]);
+          setTrackedStocks(prev => [{ ...stockData, shares: 0, source: 'manual', created_at: new Date().toISOString() }, ...prev]);
         }
         setLastSyncedAt(new Date());
         
@@ -619,7 +621,8 @@ export const DividendDashboard = () => {
           source: stock.source,
           plaid_item_id: stock.plaid_item_id,
           last_synced: stock.last_synced,
-          reconciliation_metadata: stock.reconciliation_metadata
+          reconciliation_metadata: stock.reconciliation_metadata,
+          created_at: stock.created_at
         }));
         setTrackedStocks(formattedStocks);
         
