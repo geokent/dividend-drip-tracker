@@ -224,7 +224,7 @@ export const PortfolioTable = ({
                       )}
                       {stock.source === 'manual' && (
                         <span className="text-xs text-muted-foreground">
-                          Manually added
+                          Manually added {new Date(stock.created_at).toLocaleDateString()}
                         </span>
                       )}
                     </div>
