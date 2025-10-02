@@ -191,7 +191,7 @@ export const PortfolioTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-center">Stock</TableHead>
+              <TableHead className="text-left">Stock</TableHead>
               <TableHead className="text-left">Shares</TableHead>
               <TableHead className="text-center">Price</TableHead>
               <TableHead className="text-center">Value</TableHead>
@@ -204,8 +204,8 @@ export const PortfolioTable = ({
           <TableBody>
             {stocks.map((stock) => (
               <TableRow key={stock.symbol}>
-                <TableCell className="text-center">
-                  <div className="flex flex-col items-center">
+                <TableCell className="text-left">
+                  <div className="flex flex-col items-start">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{stock.symbol}</span>
                     </div>
