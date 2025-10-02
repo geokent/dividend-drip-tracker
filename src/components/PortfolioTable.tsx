@@ -207,12 +207,7 @@ export const PortfolioTable = ({
                   <div className="flex flex-col items-center">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{stock.symbol}</span>
-                      {stock.source === 'plaid_sync' ? (
-                        <Badge variant="outline" className="text-xs">
-                          <Building2 className="h-3 w-3 mr-1" />
-                          {(stock as any).reconciliation_metadata?.reconciliation_type === 'manual_to_plaid' ? 'Reconciled' : 'Synced'}
-                        </Badge>
-                      ) : (
+                      {stock.source === 'manual' && (
                         <Badge variant="secondary" className="text-xs">
                           <User className="h-3 w-3 mr-1" />
                           Manual
