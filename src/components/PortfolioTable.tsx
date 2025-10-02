@@ -192,7 +192,7 @@ export const PortfolioTable = ({
           <TableHeader>
             <TableRow>
               <TableHead className="text-center">Stock</TableHead>
-              <TableHead className="text-center">Shares</TableHead>
+              <TableHead className="text-left">Shares</TableHead>
               <TableHead className="text-center">Price</TableHead>
               <TableHead className="text-center">Value</TableHead>
               <TableHead className="text-center">Yield</TableHead>
@@ -223,9 +223,9 @@ export const PortfolioTable = ({
                     </div>
                   </div>
                 </TableCell>
-              <TableCell className="text-center">
+              <TableCell className="text-left">
                 {editingStock === stock.symbol ? (
-                  <div className="flex items-center gap-2 justify-center">
+                  <div className="flex items-center gap-2 justify-start">
                     <Input
                       type="number"
                       value={editShares}
@@ -252,7 +252,7 @@ export const PortfolioTable = ({
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 justify-center">
+                  <div className="flex items-center gap-2 justify-start">
                     <span>{stock.shares}</span>
                     {stock.source !== 'plaid_sync' && (
                       <Button
