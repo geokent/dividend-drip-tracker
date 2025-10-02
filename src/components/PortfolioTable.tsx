@@ -239,8 +239,8 @@ export const PortfolioTable = ({
                         </Badge>
                       )}
                     </div>
-                    <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                      {stock.companyName}
+                    <div className="text-sm text-muted-foreground truncate max-w-[240px]" title={stock.companyName || ''}>
+                      {(stock.companyName || '').split('\n')[0].slice(0, 80)}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       {stock.last_synced && stock.source === 'plaid_sync' && (

@@ -127,6 +127,7 @@ Deno.serve(async (req) => {
     let newStocks = 0
     let successfulSyncs = 0
     let failedSyncs = 0
+    let removedStocks = 0
     const syncErrors = []
 
     // Use production environment
@@ -260,6 +261,21 @@ Deno.serve(async (req) => {
         // Process aggregated holdings
         for (const [symbol, aggregatedHolding] of holdingsMap) {
           console.log(`Processing aggregated holding: ${symbol} - ${aggregatedHolding.quantity} total shares at $${aggregatedHolding.currentPrice}`)
+          
+          // Enrich company name if Plaid provided only a ticker or very short name
+          const needsEnrichment = !aggregatedHolding.companyName || aggregatedHolding.companyName === symbol || aggregatedHolding.companyName.length <= 4;
+          if (needsEnrichment) {
+            try {
+              const { data: enriched, error: enrichError } = await supabase.functions.invoke('get-dividend-data', {
+                body: { symbol }
+              });
+              if (!enrichError && enriched?.companyName) {
+                aggregatedHolding.companyName = enriched.companyName;
+              }
+            } catch (e) {
+              console.error(`Name enrichment failed for ${symbol}:`, e);
+            }
+          }
           
           try {
             // Check if this stock is already tracked by the user
