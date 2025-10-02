@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { PortfolioTable } from "./PortfolioTable";
 import { UpcomingDividendsCard } from "./UpcomingDividendsCard";
 import { PortfolioTopStrip } from "./PortfolioTopStrip";
+import { StockSymbolForm } from "./StockSymbolForm";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -1082,6 +1083,18 @@ export const DividendDashboard = () => {
 
       {/* Dashboard Content */}
       <div className="space-y-6">
+        {/* Add Stock Form */}
+        <StockSymbolForm
+          onStockFound={handleStockFound}
+          userId={user?.id}
+          onBulkUploadSuccess={handleBulkUploadSuccess}
+          onPlaidSuccess={handlePlaidSuccess}
+          isConnected={connectedInstitutions.length > 0}
+          connectedItemId={connectedInstitutions[0]?.item_id}
+          connectedInstitutions={connectedInstitutions}
+          hasInactiveAccounts={staleAccounts.length > 0}
+        />
+        
         {/* Main Content */}
         <PortfolioTable
           stocks={trackedStocks}
