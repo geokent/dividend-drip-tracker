@@ -22,11 +22,15 @@ interface StockData {
 
 interface TrackedStock extends StockData {
   shares: number;
+  id?: string;
+  source?: string;
+  plaid_item_id?: string | null;
+  created_at?: string;
 }
 
 interface DividendPortfolioChartProps {
   trackedStocks: TrackedStock[];
-  onRemoveStock: (symbol: string) => void;
+  onRemoveStock: (stockId: string, symbol: string) => void;
   onUpdateShares: (symbol: string, shares: number) => void;
 }
 
@@ -203,7 +207,7 @@ export const DividendPortfolioChart = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onRemoveStock(stock.symbol)}
+                      onClick={() => onRemoveStock(stock.id || '', stock.symbol)}
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     >
                       <Trash2 className="h-3 w-3" />
@@ -295,7 +299,7 @@ export const DividendPortfolioChart = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onRemoveStock(stock.symbol)}
+                      onClick={() => onRemoveStock(stock.id || '', stock.symbol)}
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     >
                       <Trash2 className="h-3 w-3" />

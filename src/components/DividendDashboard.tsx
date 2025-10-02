@@ -31,6 +31,7 @@ interface StockData {
 
 interface TrackedStock extends StockData {
   shares: number;
+  id?: string;
   source?: string;
   plaid_item_id?: string | null;
   last_synced?: string;
@@ -225,6 +226,7 @@ export const DividendDashboard = () => {
 
       if (stocks) {
         const formattedStocks = stocks.map(stock => ({
+          id: stock.id,
           symbol: stock.symbol,
           companyName: stock.company_name || '',
           currentPrice: stock.current_price,
@@ -335,88 +337,51 @@ export const DividendDashboard = () => {
   const handleStockFound = async (stockData: StockData) => {
     if (!user?.id) return;
     
-    const existingIndex = trackedStocks.findIndex(stock => stock.symbol === stockData.symbol);
-    
     try {
-      if (existingIndex >= 0) {
-        // Update existing stock in database
-        const { error } = await supabase
-          .from('user_stocks')
-          .update({
-            company_name: stockData.companyName,
-            current_price: stockData.currentPrice,
-            dividend_yield: stockData.dividendYield,
-            dividend_per_share: stockData.dividendPerShare,
-            annual_dividend: stockData.annualDividend,
-            ex_dividend_date: stockData.exDividendDate,
-            dividend_date: stockData.dividendDate,
-            sector: stockData.sector,
-            industry: stockData.industry,
-            market_cap: stockData.marketCap ? parseFloat(stockData.marketCap) : null,
-            pe_ratio: stockData.peRatio ? parseFloat(stockData.peRatio) : null,
-            last_synced: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-          .eq('symbol', stockData.symbol);
+      // Always add as a new stock entry - no checking for duplicates
+      // This allows users to manually add stocks that are already synced from Plaid
+      const { data: insertedStock, error } = await supabase
+        .from('user_stocks')
+        .insert({
+          user_id: user.id,
+          symbol: stockData.symbol,
+          company_name: stockData.companyName,
+          current_price: stockData.currentPrice,
+          dividend_yield: stockData.dividendYield,
+          dividend_per_share: stockData.dividendPerShare,
+          annual_dividend: stockData.annualDividend,
+          ex_dividend_date: stockData.exDividendDate,
+          dividend_date: stockData.dividendDate,
+          sector: stockData.sector,
+          industry: stockData.industry,
+          market_cap: stockData.marketCap ? parseFloat(stockData.marketCap) : null,
+          pe_ratio: stockData.peRatio ? parseFloat(stockData.peRatio) : null,
+          shares: 0,
+          source: 'manual',
+          last_synced: new Date().toISOString()
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      // Update local state, filtering out currency positions
-      setTrackedStocks(prev => 
-        prev.map((stock, index) => 
-          index === existingIndex 
-            ? { ...stock, ...stockData, shares: stock.shares }
-            : stock
-        ).filter(stock => {
-          const isCurrency = stock.symbol.includes(':') || stock.symbol.startsWith('CUR:')
-          if (isCurrency) {
-            console.log(`Filtering out currency position: ${stock.symbol}`)
-          }
-          return !isCurrency
-        })
-      );
-      setLastSyncedAt(new Date());
-        
-        toast({
-          title: "Stock Updated!",
-          description: `Updated dividend data for ${stockData.symbol}`,
-        });
-      } else {
-        // Add new stock to database
-        const { error } = await supabase
-          .from('user_stocks')
-          .insert({
-            user_id: user.id,
-            symbol: stockData.symbol,
-            company_name: stockData.companyName,
-            current_price: stockData.currentPrice,
-            dividend_yield: stockData.dividendYield,
-            dividend_per_share: stockData.dividendPerShare,
-            annual_dividend: stockData.annualDividend,
-            ex_dividend_date: stockData.exDividendDate,
-            dividend_date: stockData.dividendDate,
-            sector: stockData.sector,
-            industry: stockData.industry,
-            market_cap: stockData.marketCap ? parseFloat(stockData.marketCap) : null,
-            pe_ratio: stockData.peRatio ? parseFloat(stockData.peRatio) : null,
-            shares: 0,
-            last_synced: new Date().toISOString()
-          });
-
-        if (error) throw error;
-
-        // Add to local state, filtering out currency positions
-        const isCurrency = stockData.symbol.includes(':') || stockData.symbol.startsWith('CUR:')
-        if (!isCurrency) {
-          setTrackedStocks(prev => [{ ...stockData, shares: 0, source: 'manual', created_at: new Date().toISOString() }, ...prev]);
-        }
-        setLastSyncedAt(new Date());
-        
-        toast({
-          title: "Stock Added!",
-          description: `${stockData.symbol} is now being tracked and saved`,
-        });
+      // Add to local state, filtering out currency positions
+      const isCurrency = stockData.symbol.includes(':') || stockData.symbol.startsWith('CUR:')
+      if (!isCurrency && insertedStock) {
+        setTrackedStocks(prev => [{ 
+          ...stockData, 
+          shares: 0, 
+          source: 'manual', 
+          created_at: insertedStock.created_at,
+          id: insertedStock.id 
+        }, ...prev]);
       }
+      setLastSyncedAt(new Date());
+      
+      toast({
+        title: "Stock Added!",
+        description: `${stockData.symbol} is now being tracked and saved`,
+      });
     } catch (error) {
       console.error('Error saving stock:', error);
       toast({
@@ -427,7 +392,7 @@ export const DividendDashboard = () => {
     }
   };
 
-  const handleRemoveStock = async (symbol: string) => {
+  const handleRemoveStock = async (stockId: string, symbol: string) => {
     if (!user?.id) return;
     
     try {
@@ -435,11 +400,11 @@ export const DividendDashboard = () => {
         .from('user_stocks')
         .delete()
         .eq('user_id', user.id)
-        .eq('symbol', symbol);
+        .eq('id', stockId);
 
       if (error) throw error;
 
-      setTrackedStocks(prev => prev.filter(stock => stock.symbol !== symbol));
+      setTrackedStocks(prev => prev.filter(stock => stock.id !== stockId));
       toast({
         title: "Stock Removed",
         description: `${symbol} has been permanently removed from tracking`,

@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface TrackedStock {
+  id?: string;
   symbol: string;
   companyName: string;
   currentPrice: number | null;
@@ -29,7 +30,7 @@ interface TrackedStock {
 
 interface PortfolioTableProps {
   stocks: TrackedStock[];
-  onRemoveStock: (symbol: string) => void;
+  onRemoveStock: (stockId: string, symbol: string) => void;
   onUpdateShares: (symbol: string, shares: number) => void;
   // Stock management props
   onStockFound?: (stockData: any) => void;
@@ -207,21 +208,23 @@ export const PortfolioTable = ({
               const incomeB = (b.annualDividend || 0) * b.shares;
               return incomeB - incomeA;
             }).map((stock) => (
-              <TableRow key={stock.symbol}>
+              <TableRow key={stock.id || `${stock.symbol}-${stock.created_at}`}>
                 <TableCell className="text-left">
                   <div className="flex flex-col items-start">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{stock.symbol}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      {stock.source === 'plaid_sync' && stock.last_synced && (
+                      {stock.source === 'plaid_sync' && (
                         <span className="text-xs text-muted-foreground">
-                          Synced: {new Date(stock.last_synced).toLocaleDateString()}
+                          {connectedInstitutions?.find(inst => inst.item_id === stock.plaid_item_id)?.institution_name 
+                            ? `Synced from ${connectedInstitutions.find(inst => inst.item_id === stock.plaid_item_id)?.institution_name}`
+                            : 'Synced from brokerage'}
                         </span>
                       )}
-                      {stock.source === 'manual' && stock.created_at && (
+                      {stock.source === 'manual' && (
                         <span className="text-xs text-muted-foreground">
-                          Manually added: {new Date(stock.created_at).toLocaleDateString()}
+                          Manually added
                         </span>
                       )}
                     </div>
@@ -309,7 +312,7 @@ export const PortfolioTable = ({
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => onRemoveStock(stock.symbol)}
+                    onClick={() => onRemoveStock(stock.id || '', stock.symbol)}
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
