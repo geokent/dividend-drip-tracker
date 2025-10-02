@@ -24,6 +24,7 @@ interface TrackedStock {
   plaid_item_id?: string | null;
   last_synced?: string;
   reconciliation_metadata?: any;
+  created_at?: string;
 }
 
 interface PortfolioTableProps {
@@ -207,17 +208,16 @@ export const PortfolioTable = ({
                   <div className="flex flex-col items-center">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{stock.symbol}</span>
-                      {stock.source === 'manual' && (
-                        <Badge variant="secondary" className="text-xs">
-                          <User className="h-3 w-3 mr-1" />
-                          Manual
-                        </Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      {stock.last_synced && stock.source === 'plaid_sync' && (
+                      {stock.source === 'plaid_sync' && stock.last_synced && (
                         <span className="text-xs text-muted-foreground">
                           Synced: {new Date(stock.last_synced).toLocaleDateString()}
+                        </span>
+                      )}
+                      {stock.source === 'manual' && stock.created_at && (
+                        <span className="text-xs text-muted-foreground">
+                          Manually added: {new Date(stock.created_at).toLocaleDateString()}
                         </span>
                       )}
                     </div>
