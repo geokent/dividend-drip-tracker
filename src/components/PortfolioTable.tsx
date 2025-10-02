@@ -190,21 +190,21 @@ export const PortfolioTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Stock</TableHead>
-              <TableHead className="text-right">Shares</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">Value</TableHead>
-              <TableHead className="text-right">Yield</TableHead>
-              <TableHead className="text-right">Monthly Div.</TableHead>
-              <TableHead className="text-right">Annual Div.</TableHead>
+              <TableHead className="text-center">Stock</TableHead>
+              <TableHead className="text-center">Shares</TableHead>
+              <TableHead className="text-center">Price</TableHead>
+              <TableHead className="text-center">Value</TableHead>
+              <TableHead className="text-center">Yield</TableHead>
+              <TableHead className="text-center">Monthly Div.</TableHead>
+              <TableHead className="text-center">Annual Div.</TableHead>
               <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stocks.map((stock) => (
               <TableRow key={stock.symbol}>
-                <TableCell>
-                  <div>
+                <TableCell className="text-center">
+                  <div className="flex flex-col items-center">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{stock.symbol}</span>
                       {stock.source === 'plaid_sync' ? (
@@ -228,54 +228,56 @@ export const PortfolioTable = ({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-right">
-                  {editingStock === stock.symbol ? (
-                    <div className="flex items-center gap-2 justify-end">
-                      <Input
-                        type="number"
-                        value={editShares}
-                        onChange={(e) => setEditShares(e.target.value)}
-                        className="w-20 h-8 text-sm"
-                        step="0.01"
-                        min="0"
-                      />
+              <TableCell className="text-center">
+                {editingStock === stock.symbol ? (
+                  <div className="flex items-center gap-2 justify-center">
+                    <Input
+                      type="number"
+                      value={editShares}
+                      onChange={(e) => setEditShares(e.target.value)}
+                      className="w-24"
+                      min="0"
+                      step="0.01"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleSaveShares(stock.symbol)}
+                      className="h-8 w-8"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={handleCancelEdit}
+                      className="h-8 w-8"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 justify-center">
+                    <span>{stock.shares}</span>
+                    {stock.source !== 'plaid_sync' && (
                       <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleSaveShares(stock.symbol)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleCancelEdit}
-                        className="h-8 w-8 p-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 justify-end">
-                      <span className="financial-value">{stock.shares}</span>
-                      <Button
-                        size="sm"
+                        size="icon"
                         variant="ghost"
                         onClick={() => handleEditShares(stock.symbol, stock.shares)}
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-8 w-8"
                       >
-                        <Edit3 className="h-3 w-3" />
+                        <Edit3 className="h-4 w-4" />
                       </Button>
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
+                    )}
+                  </div>
+                )}
+              </TableCell>
+                <TableCell className="text-center">
                   <span className="financial-value">
                     {stock.currentPrice ? formatCurrency(stock.currentPrice) : "—"}
                   </span>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   <span className="financial-value">
                     {stock.currentPrice 
                       ? formatCurrency(stock.currentPrice * stock.shares)
@@ -283,12 +285,12 @@ export const PortfolioTable = ({
                     }
                   </span>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   <span className="financial-value">
                     {stock.dividendYield ? `${stock.dividendYield.toFixed(2)}%` : "—"}
                   </span>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   <span className="financial-value">
                     {stock.annualDividend && stock.shares
                       ? formatCurrency((stock.annualDividend * stock.shares) / 12)
@@ -296,7 +298,7 @@ export const PortfolioTable = ({
                     }
                   </span>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   <span className="financial-value">
                     {stock.annualDividend && stock.shares
                       ? formatCurrency(stock.annualDividend * stock.shares)
