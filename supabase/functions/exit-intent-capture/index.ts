@@ -23,10 +23,24 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Extract IP address for rate limiting
+    const requestIp = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                      req.headers.get('x-real-ip') || 
+                      'unknown';
+    
     const { email, userAgent, ipAddress }: ExitIntentRequest = await req.json();
 
-    if (!email) {
-      throw new Error("Email is required");
+    if (!email || !email.includes('@')) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email address' }),
+        {
+          status: 400,
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders 
+          },
+        }
+      );
     }
 
     // Initialize Supabase client
@@ -34,6 +48,34 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+    
+    // Check rate limit (3 requests per hour for exit intent)
+    const { data: rateLimitResult, error: rateLimitError } = await supabase
+      .rpc('check_rate_limit', {
+        p_ip_address: requestIp,
+        p_endpoint: 'exit-intent-capture',
+        p_max_requests: 3,
+        p_window_minutes: 60
+      });
+    
+    if (rateLimitError) {
+      console.error('Rate limit check failed:', rateLimitError);
+    } else if (rateLimitResult && !rateLimitResult.allowed) {
+      console.log(`Rate limit exceeded for IP ${requestIp}`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Too many requests. Please try again later.',
+          retry_after_minutes: rateLimitResult.retry_after_minutes 
+        }),
+        {
+          status: 429,
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders 
+          },
+        }
+      );
+    }
 
     // Check if email already exists
     const { data: existingLead, error: checkError } = await supabase

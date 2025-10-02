@@ -19,7 +19,43 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Extract IP address for rate limiting
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+               req.headers.get('x-real-ip') || 
+               'unknown';
+    
     const { email, source = 'website' }: NewsletterSignupRequest = await req.json();
+    
+    // Initialize Supabase client for rate limiting check
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    
+    // Check rate limit (5 requests per hour)
+    const { data: rateLimitResult, error: rateLimitError } = await supabaseClient
+      .rpc('check_rate_limit', {
+        p_ip_address: ip,
+        p_endpoint: 'newsletter-signup',
+        p_max_requests: 5,
+        p_window_minutes: 60
+      });
+    
+    if (rateLimitError) {
+      console.error('Rate limit check failed:', rateLimitError);
+    } else if (rateLimitResult && !rateLimitResult.allowed) {
+      console.log(`Rate limit exceeded for IP ${ip}`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Too many requests. Please try again later.',
+          retry_after_minutes: rateLimitResult.retry_after_minutes 
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     if (!email || !email.includes('@')) {
       return new Response(

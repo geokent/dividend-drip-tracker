@@ -44,6 +44,17 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
 
       const data = await response.json();
 
+      // Handle rate limiting
+      if (response.status === 429) {
+        const retryMinutes = data.retry_after_minutes || 60;
+        toast({
+          title: "Rate limit exceeded",
+          description: `Too many requests. Please try again in ${retryMinutes} minutes.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send guide');
       }

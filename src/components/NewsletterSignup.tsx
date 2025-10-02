@@ -35,6 +35,15 @@ export const NewsletterSignup = () => {
       });
 
       if (error) {
+        // Check if it's a rate limit error
+        if (error.message && error.message.includes('Too many requests')) {
+          toast({
+            title: "Rate limit exceeded",
+            description: "Too many signup attempts. Please try again in an hour.",
+            variant: "destructive"
+          });
+          return;
+        }
         console.error('Newsletter signup error:', error);
         throw error;
       }
