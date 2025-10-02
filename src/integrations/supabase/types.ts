@@ -404,71 +404,7 @@ export type Database = {
       }
     }
     Views: {
-      plaid_accounts_safe: {
-        Row: {
-          access_count: number | null
-          account_id: string | null
-          account_name: string | null
-          account_type: string | null
-          created_at: string | null
-          encryption_version: number | null
-          id: string | null
-          institution_id: string | null
-          institution_name: string | null
-          is_active: boolean | null
-          is_encrypted: boolean | null
-          item_id: string | null
-          token_expires_at: string | null
-          token_last_rotated: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          access_count?: number | null
-          account_id?: string | null
-          account_name?: string | null
-          account_type?: string | null
-          created_at?: string | null
-          encryption_version?: number | null
-          id?: string | null
-          institution_id?: string | null
-          institution_name?: string | null
-          is_active?: boolean | null
-          is_encrypted?: boolean | null
-          item_id?: string | null
-          token_expires_at?: string | null
-          token_last_rotated?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          access_count?: number | null
-          account_id?: string | null
-          account_name?: string | null
-          account_type?: string | null
-          created_at?: string | null
-          encryption_version?: number | null
-          id?: string | null
-          institution_id?: string | null
-          institution_name?: string | null
-          is_active?: boolean | null
-          is_encrypted?: boolean | null
-          item_id?: string | null
-          token_expires_at?: string | null
-          token_last_rotated?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "plaid_accounts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       check_rate_limit: {
