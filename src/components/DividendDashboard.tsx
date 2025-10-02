@@ -1083,6 +1083,8 @@ export const DividendDashboard = () => {
           connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
           connectedInstitutions={connectedInstitutions}
           hasInactiveAccounts={staleAccounts.length > 0}
+          onUpdatePortfolio={handleUpdatePortfolio}
+          isUpdating={isSyncing || isRefreshingPrices}
         />
         
         {/* Upcoming Dividends - Below the chart */}

@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Badge } from "./ui/badge";
-import { Trash2, Edit3, Check, X, Building2, User, Search, Upload, Link } from "lucide-react";
+import { Trash2, Edit3, Check, X, Building2, User, Search, Upload, Link, RefreshCw } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { BulkUploadStocksDialog } from "./BulkUploadStocksDialog";
 import { PlaidLinkButton } from "./PlaidLinkButton";
@@ -40,6 +40,8 @@ interface PortfolioTableProps {
   connectedItemId?: string;
   connectedInstitutions?: Array<{item_id: string, institution_name: string, account_count: number}>;
   hasInactiveAccounts?: boolean;
+  onUpdatePortfolio?: () => void;
+  isUpdating?: boolean;
 }
 
 export const PortfolioTable = ({ 
@@ -54,7 +56,9 @@ export const PortfolioTable = ({
   isConnected,
   connectedItemId,
   connectedInstitutions,
-  hasInactiveAccounts = false
+  hasInactiveAccounts = false,
+  onUpdatePortfolio,
+  isUpdating = false
 }: PortfolioTableProps) => {
   const [editingStock, setEditingStock] = useState<string | null>(null);
   const [editShares, setEditShares] = useState<string>("");
@@ -185,6 +189,22 @@ export const PortfolioTable = ({
             </div>
           )}
         </div>
+        
+        {/* Update Portfolio Button */}
+        {connectedInstitutions && connectedInstitutions.length > 0 && onUpdatePortfolio && (
+          <div className="mt-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onUpdatePortfolio}
+              disabled={isUpdating}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isUpdating ? 'animate-spin' : ''}`} />
+              {isUpdating ? 'Updating...' : 'Update Portfolio'}
+            </Button>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="p-0">
         <Table>
