@@ -111,7 +111,13 @@ export const DividendDashboard = () => {
           plaid_item_id: stock.plaid_item_id,
           last_synced: stock.last_synced,
           reconciliation_metadata: stock.reconciliation_metadata
-      }));
+      })).filter(stock => {
+        const isCurrency = stock.symbol.includes(':') || stock.symbol.startsWith('CUR:')
+        if (isCurrency) {
+          console.log(`Filtering out currency position: ${stock.symbol}`)
+        }
+        return !isCurrency
+      });
       setTrackedStocks(formattedStocks);
       
       // Update last synced timestamp from the latest stock sync
@@ -237,7 +243,13 @@ export const DividendDashboard = () => {
           plaid_item_id: stock.plaid_item_id,
           last_synced: stock.last_synced,
           reconciliation_metadata: stock.reconciliation_metadata
-        }));
+        })).filter(stock => {
+          const isCurrency = stock.symbol.includes(':') || stock.symbol.startsWith('CUR:')
+          if (isCurrency) {
+            console.log(`Filtering out currency position: ${stock.symbol}`)
+          }
+          return !isCurrency
+        });
         setTrackedStocks(formattedStocks);
         
         // Update last synced timestamp from the latest stock sync
@@ -345,17 +357,23 @@ export const DividendDashboard = () => {
           .eq('user_id', user.id)
           .eq('symbol', stockData.symbol);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Update local state
-        setTrackedStocks(prev => 
-          prev.map((stock, index) => 
-            index === existingIndex 
-              ? { ...stockData, shares: stock.shares }
-              : stock
-          )
-        );
-        setLastSyncedAt(new Date());
+      // Update local state, filtering out currency positions
+      setTrackedStocks(prev => 
+        prev.map((stock, index) => 
+          index === existingIndex 
+            ? { ...stockData, shares: stock.shares }
+            : stock
+        ).filter(stock => {
+          const isCurrency = stock.symbol.includes(':') || stock.symbol.startsWith('CUR:')
+          if (isCurrency) {
+            console.log(`Filtering out currency position: ${stock.symbol}`)
+          }
+          return !isCurrency
+        })
+      );
+      setLastSyncedAt(new Date());
         
         toast({
           title: "Stock Updated!",
@@ -385,8 +403,11 @@ export const DividendDashboard = () => {
 
         if (error) throw error;
 
-        // Add to local state
-        setTrackedStocks(prev => [{ ...stockData, shares: 0 }, ...prev]);
+        // Add to local state, filtering out currency positions
+        const isCurrency = stockData.symbol.includes(':') || stockData.symbol.startsWith('CUR:')
+        if (!isCurrency) {
+          setTrackedStocks(prev => [{ ...stockData, shares: 0 }, ...prev]);
+        }
         setLastSyncedAt(new Date());
         
         toast({

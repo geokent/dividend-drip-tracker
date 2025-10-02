@@ -168,7 +168,7 @@ export const PortfolioTable = ({
                 </Button>
               </form>
               
-              {/* Bulk Upload & Connect Account */}
+              {/* Bulk Upload, Connect Account, Update Portfolio */}
               <div className="flex items-center gap-2">
                 <BulkUploadStocksDialog onSuccess={onBulkUploadSuccess} />
                 
@@ -185,26 +185,22 @@ export const PortfolioTable = ({
                   connectedItemId={connectedItemId}
                   size="sm"
                 />
+                
+                {connectedInstitutions && connectedInstitutions.length > 0 && onUpdatePortfolio && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onUpdatePortfolio}
+                    disabled={isUpdating}
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isUpdating ? 'animate-spin' : ''}`} />
+                    {isUpdating ? 'Updating...' : 'Update Portfolio'}
+                  </Button>
+                )}
               </div>
             </div>
           )}
         </div>
-        
-        {/* Update Portfolio Button */}
-        {connectedInstitutions && connectedInstitutions.length > 0 && onUpdatePortfolio && (
-          <div className="mt-4">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={onUpdatePortfolio}
-              disabled={isUpdating}
-              className="w-full sm:w-auto"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isUpdating ? 'animate-spin' : ''}`} />
-              {isUpdating ? 'Updating...' : 'Update Portfolio'}
-            </Button>
-          </div>
-        )}
       </CardHeader>
       <CardContent className="p-0">
         <Table>
@@ -238,9 +234,6 @@ export const PortfolioTable = ({
                           Manual
                         </Badge>
                       )}
-                    </div>
-                    <div className="text-sm text-muted-foreground truncate max-w-[240px]" title={stock.companyName || ''}>
-                      {(stock.companyName || '').split('\n')[0].slice(0, 80)}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       {stock.last_synced && stock.source === 'plaid_sync' && (

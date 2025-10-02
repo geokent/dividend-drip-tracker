@@ -122,16 +122,6 @@ export const DividendPortfolioChart = ({
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       <span className="font-semibold text-lg text-foreground">{stock.symbol}</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-sm text-muted-foreground cursor-help">
-                            {abbreviateCompanyName(stock.companyName, 30)}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{stock.companyName}</p>
-                        </TooltipContent>
-                      </Tooltip>
                     </div>
                   </div>
 
@@ -227,16 +217,6 @@ export const DividendPortfolioChart = ({
                   <div className="col-span-2 flex items-center">
                     <div className="flex flex-col">
                       <span className="font-semibold text-lg text-foreground">{stock.symbol}</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-sm text-muted-foreground cursor-help">
-                            {abbreviateCompanyName(stock.companyName, 20)}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{stock.companyName}</p>
-                        </TooltipContent>
-                      </Tooltip>
                     </div>
                   </div>
 
