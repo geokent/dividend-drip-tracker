@@ -323,49 +323,53 @@ Deno.serve(async (req) => {
               continue
             }
 
+            // Prepare stock data - don't use Plaid's stale price
             const stockData = {
               user_id: user_id,
               symbol: symbol,
               shares: aggregatedHolding.quantity,
               company_name: aggregatedHolding.companyName,
-              current_price: aggregatedHolding.currentPrice,
+              current_price: null, // Will be updated with Alpha Vantage data below
               source: 'plaid_sync',
               plaid_item_id: account.item_id,
               plaid_account_id: account.account_id,
               last_synced: new Date().toISOString(),
             }
 
+            let stockUpdated = false
+            
             if (existingStock) {
               const previousSource = existingStock.source
               
-              // Smart reconciliation: Update existing stock with Plaid data
-              const { error: updateError } = await supabase
-                .from('user_stocks')
-                .update(stockData)
-                .eq('id', existingStock.id)
+              // Only update stocks that are Plaid-synced from this same item_id
+              // This prevents overwriting manual entries
+              if (existingStock.source === 'plaid_sync' && existingStock.plaid_item_id === account.item_id) {
+                const { error: updateError } = await supabase
+                  .from('user_stocks')
+                  .update(stockData)
+                  .eq('id', existingStock.id)
 
-              if (updateError) {
-                console.error(`Error updating stock ${symbol}:`, updateError)
-              } else {
-                // Update reconciliation metadata if it was a manual entry
-                if (previousSource === 'manual') {
-                  const { error: metadataError } = await supabase.rpc('update_reconciliation_metadata', {
-                    p_user_id: user_id,
-                    p_symbol: symbol,
-                    p_reconciliation_type: 'manual_to_plaid',
-                    p_previous_source: previousSource
-                  })
-                  
-                  if (metadataError) {
-                    console.error(`Error updating reconciliation metadata for ${symbol}:`, metadataError)
-                  } else {
-                    console.log(`Reconciled manual entry ${symbol}: ${existingStock.shares} -> ${aggregatedHolding.quantity} shares`)
-                    reconciledStocks++
-                  }
+                if (updateError) {
+                  console.error(`Error updating stock ${symbol}:`, updateError)
                 } else {
                   console.log(`Updated Plaid stock ${symbol} with ${aggregatedHolding.quantity} total shares (was ${existingStock.shares})`)
+                  stockUpdated = true
+                  totalNewDividends++
                 }
-                totalNewDividends++
+              } else if (previousSource === 'manual') {
+                // Update reconciliation metadata for manual entries
+                const { error: metadataError } = await supabase.rpc('update_reconciliation_metadata', {
+                  p_user_id: user_id,
+                  p_symbol: symbol,
+                  p_reconciliation_type: 'manual_to_plaid',
+                  p_previous_source: previousSource
+                })
+                
+                if (metadataError) {
+                  console.error(`Error updating reconciliation metadata for ${symbol}:`, metadataError)
+                } else {
+                  console.log(`Found manual entry for ${symbol} - not overwriting (${existingStock.shares} shares)`)
+                }
               }
             } else {
               // Insert new stock
@@ -377,9 +381,59 @@ Deno.serve(async (req) => {
                 console.error(`Error inserting stock ${symbol}:`, insertError)
               } else {
                 console.log(`Inserted new stock ${symbol} with ${aggregatedHolding.quantity} shares`)
+                stockUpdated = true
                 newStocks++
                 totalNewDividends++
               }
+            }
+            
+            // Fetch fresh market data from Alpha Vantage after insert/update
+            if (stockUpdated) {
+              try {
+                console.log(`Fetching Alpha Vantage data for ${symbol}...`)
+                const { data: alphaData, error: alphaError } = await supabase.functions.invoke('get-dividend-data', {
+                  body: { symbol }
+                })
+                
+                if (!alphaError && alphaData) {
+                  // Update with fresh Alpha Vantage data
+                  const { error: alphaUpdateError } = await supabase
+                    .from('user_stocks')
+                    .update({
+                      current_price: alphaData.currentPrice,
+                      dividend_yield: alphaData.dividendYield,
+                      dividend_per_share: alphaData.dividendPerShare,
+                      annual_dividend: alphaData.annualDividend,
+                      ex_dividend_date: alphaData.exDividendDate,
+                      dividend_date: alphaData.dividendDate,
+                      next_ex_dividend_date: alphaData.nextExDividendDate,
+                      dividend_frequency: alphaData.dividendFrequency,
+                      sector: alphaData.sector,
+                      industry: alphaData.industry,
+                      market_cap: alphaData.marketCap,
+                      pe_ratio: alphaData.peRatio,
+                      last_synced: new Date().toISOString()
+                    })
+                    .eq('user_id', user_id)
+                    .eq('symbol', symbol)
+                    .eq('source', 'plaid_sync')
+                    .eq('plaid_item_id', account.item_id)
+                  
+                  if (alphaUpdateError) {
+                    console.error(`Error updating ${symbol} with Alpha Vantage data:`, alphaUpdateError)
+                  } else {
+                    console.log(`✓ Updated ${symbol} with fresh Alpha Vantage data: $${alphaData.currentPrice}`)
+                  }
+                } else {
+                  console.error(`Failed to fetch Alpha Vantage data for ${symbol}:`, alphaError)
+                }
+              } catch (error) {
+                console.error(`Exception fetching Alpha Vantage data for ${symbol}:`, error)
+                // Don't fail the whole sync, just log the error
+              }
+              
+              // Add a small delay to avoid Alpha Vantage rate limits (5 calls/min for free tier)
+              await new Promise(resolve => setTimeout(resolve, 12000)) // 12 seconds between calls
             }
           } catch (error) {
             console.error(`Error processing aggregated stock ${symbol}:`, error)
