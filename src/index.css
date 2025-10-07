@@ -263,6 +263,7 @@ All colors MUST be HSL.
   }
 }
 
+/* Keyframes */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -283,4 +284,25 @@ All colors MUST be HSL.
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Typography Enhancements for Blog Posts */
+.prose {
+  @apply text-foreground;
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  @apply font-mono text-sm;
+}
+
+.prose :where(pre):not(:where([class~="not-prose"] *)) {
+  @apply overflow-x-auto;
+}
+
+.prose :where(img):not(:where([class~="not-prose"] *)) {
+  @apply mx-auto;
+}
+
+.prose :where(hr):not(:where([class~="not-prose"] *)) {
+  @apply border-border my-8;
 }
