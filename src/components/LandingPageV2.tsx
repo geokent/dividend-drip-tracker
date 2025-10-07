@@ -211,7 +211,7 @@ const LandingPageV2 = () => {
           "@type": "WebApplication",
           "name": "Divtrkr",
           "description": "Track your dividend income, monitor portfolio performance, and build passive wealth",
-          "url": "https://divtrkr.lovable.app",
+          "url": "https://www.divtrkr.com",
           "applicationCategory": "FinanceApplication",
           "operatingSystem": "Web Browser",
           "offers": {

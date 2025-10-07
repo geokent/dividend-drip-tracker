@@ -132,7 +132,7 @@ export default function BlogPost() {
     );
   }
 
-  const canonicalUrl = `https://divtrkr.lovable.app/blog/${post.slug}`;
+  const canonicalUrl = `https://www.divtrkr.com/blog/${post.slug}`;
 
   return (
     <AppLayout>

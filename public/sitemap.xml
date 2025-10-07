@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Homepage -->
   <url>
-    <loc>https://divtrkr.lovable.app/</loc>
+    <loc>https://www.divtrkr.com/</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -10,7 +10,7 @@
 
   <!-- Dashboard -->
   <url>
-    <loc>https://divtrkr.lovable.app/dashboard</loc>
+    <loc>https://www.divtrkr.com/dashboard</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -18,7 +18,7 @@
 
   <!-- Blog Index -->
   <url>
-    <loc>https://divtrkr.lovable.app/blog</loc>
+    <loc>https://www.divtrkr.com/blog</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -26,42 +26,42 @@
 
   <!-- Blog Posts -->
   <url>
-    <loc>https://divtrkr.lovable.app/blog/best-dividend-stocks-beginners-2025</loc>
+    <loc>https://www.divtrkr.com/blog/best-dividend-stocks-beginners-2025</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/blog/build-100k-dividend-portfolio</loc>
+    <loc>https://www.divtrkr.com/blog/build-100k-dividend-portfolio</loc>
     <lastmod>2025-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/blog/dividend-yield-vs-dividend-growth</loc>
+    <loc>https://www.divtrkr.com/blog/dividend-yield-vs-dividend-growth</loc>
     <lastmod>2025-10-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/blog/monthly-dividend-stocks-2025</loc>
+    <loc>https://www.divtrkr.com/blog/monthly-dividend-stocks-2025</loc>
     <lastmod>2025-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/blog/fire-movement-dividend-investing</loc>
+    <loc>https://www.divtrkr.com/blog/fire-movement-dividend-investing</loc>
     <lastmod>2025-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/blog/tax-implications-dividend-income-2025</loc>
+    <loc>https://www.divtrkr.com/blog/tax-implications-dividend-income-2025</loc>
     <lastmod>2025-09-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -69,28 +69,28 @@
 
   <!-- Learning Resources -->
   <url>
-    <loc>https://divtrkr.lovable.app/learning-academy</loc>
+    <loc>https://www.divtrkr.com/learning-academy</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/learn-dividends</loc>
+    <loc>https://www.divtrkr.com/learn-dividends</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/learn-dividend-snowball</loc>
+    <loc>https://www.divtrkr.com/learn-dividend-snowball</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/learn-fire</loc>
+    <loc>https://www.divtrkr.com/learn-fire</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -98,7 +98,7 @@
 
   <!-- FAQ -->
   <url>
-    <loc>https://divtrkr.lovable.app/faq</loc>
+    <loc>https://www.divtrkr.com/faq</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -106,7 +106,7 @@
 
   <!-- Auth -->
   <url>
-    <loc>https://divtrkr.lovable.app/auth</loc>
+    <loc>https://www.divtrkr.com/auth</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -114,14 +114,14 @@
 
   <!-- Legal Pages -->
   <url>
-    <loc>https://divtrkr.lovable.app/terms</loc>
+    <loc>https://www.divtrkr.com/terms</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
-    <loc>https://divtrkr.lovable.app/privacy</loc>
+    <loc>https://www.divtrkr.com/privacy</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

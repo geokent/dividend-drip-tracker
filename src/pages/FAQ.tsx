@@ -12,7 +12,7 @@ export default function FAQPage() {
         title="Dividend Tracking FAQ | Common Questions Answered"
         description="Get answers to frequently asked questions about dividend investing, portfolio tracking, and using DivTrkr. Learn about dividend yields, DRIP, tax implications, and more."
         keywords="dividend FAQ, dividend investing questions, portfolio tracking help, dividend yield explained, DRIP guide"
-        canonicalUrl="https://divtrkr.lovable.app/faq"
+        canonicalUrl="https://www.divtrkr.com/faq"
       />
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs items={[{ label: 'FAQ' }]} />

@@ -13,8 +13,8 @@ export const SEOHead = ({
   title = "Divtrkr - Track Your Dividend Income & Build Wealth",
   description = "Track your dividend income, monitor portfolio performance, and build passive wealth with our comprehensive dividend tracking platform. Start your journey to financial independence today.",
   keywords = "dividend tracker, dividend investing, passive income, FIRE, financial independence, investment portfolio, dividend stocks, portfolio tracking",
-  canonicalUrl = "https://divtrkr.lovable.app/",
-  ogImage = "https://divtrkr.lovable.app/og-image.png",
+  canonicalUrl = "https://www.divtrkr.com/",
+  ogImage = "https://www.divtrkr.com/og-image.png",
   structuredData
 }: SEOHeadProps) => {
   

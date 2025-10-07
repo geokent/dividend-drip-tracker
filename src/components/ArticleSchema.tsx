@@ -40,7 +40,7 @@ export function ArticleSchema({
         "name": "DivTrkr",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://divtrkr.lovable.app/favicon.ico"
+          "url": "https://www.divtrkr.com/favicon.ico"
         }
       }
     };

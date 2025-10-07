@@ -45,11 +45,11 @@ export const LearningAcademy = () => {
     // Update canonical URL
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {
-      canonical.setAttribute('href', 'https://divtrkr.lovable.app/learning-academy');
+      canonical.setAttribute('href', 'https://www.divtrkr.com/learning-academy');
     } else {
       const link = document.createElement('link');
       link.rel = 'canonical';
-      link.href = 'https://divtrkr.lovable.app/learning-academy';
+      link.href = 'https://www.divtrkr.com/learning-academy';
       document.head.appendChild(link);
     }
 
@@ -88,7 +88,7 @@ export const LearningAcademy = () => {
         "provider": {
           "@type": "Organization",
           "name": "DivTrkr",
-          "url": "https://divtrkr.lovable.app"
+          "url": "https://www.divtrkr.com"
         },
         "educationalLevel": "Beginner to Advanced",
         "about": [
