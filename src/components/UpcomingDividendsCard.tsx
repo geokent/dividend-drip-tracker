@@ -173,6 +173,11 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                       <div className="text-xs text-muted-foreground">
                         {stock.shares} shares
                       </div>
+                      {stock.exDividendDate && (
+                        <div className="text-xs text-muted-foreground/70 mt-0.5">
+                          Ex-div: {formatDate(stock.exDividendDate)}
+                        </div>
+                      )}
                     </div>
                     <Badge variant="default" className="text-xs">
                       UPCOMING
@@ -192,6 +197,11 @@ export const UpcomingDividendsCard = ({ stocks }: UpcomingDividendsCardProps) =>
                 </div>
               </div>
             ))}
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <p className="text-xs text-muted-foreground italic">
+                *You must own the stock on or before the ex-dividend date to receive the payment.
+              </p>
+            </div>
           </div>
         )}
 
