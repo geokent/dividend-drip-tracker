@@ -31,31 +31,23 @@ Deno.serve(async (req) => {
 
     console.log(`Fetching data for symbol: ${symbol}`);
     
-    // With paid tier, we can use more comprehensive endpoints including dedicated DIVIDENDS API
-    const [overviewResponse, priceResponse, timeSeriesResponse, dividendsResponse] = await Promise.all([
-      fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${apiKey}`),
+    // Optimized: Only fetch time-sensitive data (price and dividends)
+    const [priceResponse, dividendsResponse] = await Promise.all([
       fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`),
-      // Try TIME_SERIES_MONTHLY_ADJUSTED for dividend data
-      fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=${symbol}&apikey=${apiKey}`),
-      // Use dedicated DIVIDENDS API for better dividend information
       fetch(`https://www.alphavantage.co/query?function=DIVIDENDS&symbol=${symbol}&apikey=${apiKey}`)
     ]);
 
-    const [overviewData, priceData, timeSeriesData, dividendsData] = await Promise.all([
-      overviewResponse.json(),
+    const [priceData, dividendsData] = await Promise.all([
       priceResponse.json(),
-      timeSeriesResponse.json(),
       dividendsResponse.json()
     ]);
 
-    console.log('Overview data:', JSON.stringify(overviewData, null, 2));
     console.log('Price data:', JSON.stringify(priceData, null, 2));
-    console.log('Time series data keys:', Object.keys(timeSeriesData));
     console.log('Dividends data:', JSON.stringify(dividendsData, null, 2));
 
-    // Check for API errors in any response
-    if (overviewData['Error Message'] || priceData['Error Message'] || timeSeriesData['Error Message'] || dividendsData['Error Message']) {
-      const errorMsg = overviewData['Error Message'] || priceData['Error Message'] || timeSeriesData['Error Message'] || dividendsData['Error Message'];
+    // Check for API errors
+    if (priceData['Error Message'] || dividendsData['Error Message']) {
+      const errorMsg = priceData['Error Message'] || dividendsData['Error Message'];
       console.log('API Error:', errorMsg);
       return new Response(
         JSON.stringify({ error: errorMsg }),
@@ -64,8 +56,8 @@ Deno.serve(async (req) => {
     }
 
     // Check for rate limiting
-    if (overviewData.Note || priceData.Note || timeSeriesData.Note || dividendsData.Note) {
-      const noteMsg = overviewData.Note || priceData.Note || timeSeriesData.Note || dividendsData.Note;
+    if (priceData.Note || dividendsData.Note) {
+      const noteMsg = priceData.Note || dividendsData.Note;
       console.log('API Note (rate limit):', noteMsg);
       return new Response(
         JSON.stringify({ error: 'API rate limit reached. Please try again later.' }),
@@ -76,10 +68,6 @@ Deno.serve(async (req) => {
     // Extract price data
     const quote = priceData['Global Quote'];
     const currentPrice = quote?.['05. price'] ? parseFloat(quote['05. price']) : null;
-
-    // Extract company information (handle case where overview data might be incomplete)
-    const companyName = overviewData.Name || 
-                       (overviewData.Symbol ? `${overviewData.Symbol} ETF` : `${symbol.toUpperCase()}`);
     
     // Helper functions for enhanced dividend analysis
     const analyzeDividendFrequency = (dividendHistory: any[]) => {
@@ -229,80 +217,24 @@ Deno.serve(async (req) => {
       }
     }
     
-    // Fallback to overview data if DIVIDENDS API didn't provide complete data
-    if (!dividendYield && overviewData.DividendYield && overviewData.DividendYield !== 'None' && overviewData.DividendYield !== '0') {
-      dividendYield = parseFloat(overviewData.DividendYield) * 100; // Convert to percentage
-    }
-    
-    if (!dividendPerShare && overviewData.DividendPerShare && overviewData.DividendPerShare !== 'None' && overviewData.DividendPerShare !== '0') {
-      dividendPerShare = parseFloat(overviewData.DividendPerShare);
-      if (!annualDividend) {
-        annualDividend = dividendPerShare; // Overview DividendPerShare is TTM
-      }
-    }
-    
-    if (!exDividendDate && overviewData.ExDividendDate && overviewData.ExDividendDate !== 'None' && overviewData.ExDividendDate !== '') {
-      exDividendDate = overviewData.ExDividendDate;
-    }
-    
-    // Additional fallback to time series data if still missing key data
-    if ((!dividendYield || !dividendPerShare) && timeSeriesData['Monthly Adjusted Time Series']) {
-      console.log('Fallback: extracting dividend data from time series...');
-      const monthlyData = timeSeriesData['Monthly Adjusted Time Series'];
-      const months = Object.keys(monthlyData).sort().reverse(); // Most recent first
-      
-      let recentDividends = [];
-      for (let i = 0; i < Math.min(12, months.length); i++) {
-        const monthData = monthlyData[months[i]];
-        const dividend = parseFloat(monthData['7. dividend amount'] || '0');
-        if (dividend > 0) {
-          recentDividends.push(dividend);
-        }
-      }
-      
-      if (recentDividends.length > 0) {
-        const totalDividends = recentDividends.reduce((sum, div) => sum + div, 0);
-        if (!annualDividend) annualDividend = totalDividends;
-        if (!dividendPerShare) dividendPerShare = recentDividends[0];
-        
-        console.log('Fallback extraction from time series:', {
-          recentDividends,
-          annualDividend,
-          dividendPerShare
-        });
-      }
-    }
-    
     // Calculate yield if we have price and annual dividend
     if (!dividendYield && currentPrice && annualDividend) {
       dividendYield = (annualDividend / currentPrice) * 100;
     }
     
-    // Special handling for ETFs and investment funds
-    const assetType = overviewData.AssetType || 'Common Stock';
-    console.log('Asset type:', assetType);
-    
     // Log final dividend analysis
-    console.log('Final enhanced dividend data:', {
+    console.log('Final dividend data:', {
       dividendYield,
       dividendPerShare,
       annualDividend,
       exDividendDate,
       dividendDate,
       nextExDividendDate,
-      frequency: dividendFrequency,
-      assetType
+      frequency: dividendFrequency
     });
-
-    // Extract other company data
-    const sector = overviewData.Sector !== 'None' ? overviewData.Sector : null;
-    const industry = overviewData.Industry !== 'None' ? overviewData.Industry : null;
-    const marketCap = overviewData.MarketCapitalization !== 'None' ? overviewData.MarketCapitalization : null;
-    const peRatio = overviewData.PERatio !== 'None' ? overviewData.PERatio : null;
 
     const result = {
       symbol: symbol.toUpperCase(),
-      companyName,
       currentPrice,
       dividendYield,
       dividendPerShare,
@@ -311,10 +243,6 @@ Deno.serve(async (req) => {
       dividendDate,
       nextExDividendDate,
       dividendFrequency,
-      sector,
-      industry,
-      marketCap,
-      peRatio,
     }
 
     console.log('Final result being returned:', JSON.stringify(result, null, 2));

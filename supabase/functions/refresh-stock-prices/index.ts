@@ -82,12 +82,11 @@ serve(async (req) => {
           continue;
         }
 
-        // Update the stock with comprehensive data
+        // Update the stock with comprehensive data (time-sensitive fields only)
         const { error: updateError } = await supabase
           .from('user_stocks')
           .update({ 
             current_price: dividendData.currentPrice,
-            company_name: dividendData.companyName,
             dividend_yield: dividendData.dividendYield,
             dividend_per_share: dividendData.dividendPerShare,
             annual_dividend: dividendData.annualDividend,
@@ -95,10 +94,6 @@ serve(async (req) => {
             dividend_date: dividendData.dividendDate,
             next_ex_dividend_date: dividendData.nextExDividendDate,
             dividend_frequency: dividendData.dividendFrequency,
-            sector: dividendData.sector,
-            industry: dividendData.industry,
-            market_cap: dividendData.marketCap ? parseFloat(dividendData.marketCap) : null,
-            pe_ratio: dividendData.peRatio ? parseFloat(dividendData.peRatio) : null,
             last_synced: new Date().toISOString()
           })
           .eq('id', stock.id);

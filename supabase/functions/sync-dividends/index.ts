@@ -396,7 +396,7 @@ Deno.serve(async (req) => {
                 })
                 
                 if (!alphaError && alphaData) {
-                  // Update with fresh Alpha Vantage data
+                  // Update with fresh Alpha Vantage data (only time-sensitive fields)
                   const { error: alphaUpdateError } = await supabase
                     .from('user_stocks')
                     .update({
@@ -408,10 +408,6 @@ Deno.serve(async (req) => {
                       dividend_date: alphaData.dividendDate,
                       next_ex_dividend_date: alphaData.nextExDividendDate,
                       dividend_frequency: alphaData.dividendFrequency,
-                      sector: alphaData.sector,
-                      industry: alphaData.industry,
-                      market_cap: alphaData.marketCap,
-                      pe_ratio: alphaData.peRatio,
                       last_synced: new Date().toISOString()
                     })
                     .eq('user_id', user_id)
@@ -432,8 +428,8 @@ Deno.serve(async (req) => {
                 // Don't fail the whole sync, just log the error
               }
               
-              // Add a small delay to avoid Alpha Vantage rate limits (5 calls/min for free tier)
-              await new Promise(resolve => setTimeout(resolve, 12000)) // 12 seconds between calls
+              // Add a small delay to avoid Alpha Vantage rate limits (2 calls per stock, 0.5s delay = ~60 calls/min)
+              await new Promise(resolve => setTimeout(resolve, 500)) // 0.5 seconds between stocks
             }
           } catch (error) {
             console.error(`Error processing aggregated stock ${symbol}:`, error)
