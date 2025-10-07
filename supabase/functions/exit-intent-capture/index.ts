@@ -14,6 +14,7 @@ interface ExitIntentRequest {
   email: string;
   userAgent?: string;
   ipAddress?: string;
+  honeypot?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -28,11 +29,32 @@ const handler = async (req: Request): Promise<Response> => {
                       req.headers.get('x-real-ip') || 
                       'unknown';
     
-    const { email, userAgent, ipAddress }: ExitIntentRequest = await req.json();
+    const { email, userAgent, ipAddress, honeypot }: ExitIntentRequest = await req.json();
 
-    if (!email || !email.includes('@')) {
+    // Honeypot check - if filled, silently reject (bot detected)
+    if (honeypot && honeypot.trim() !== '') {
+      console.log(`Bot detected via honeypot from IP ${requestIp}`);
+      // Return fake success to not tip off bots
       return new Response(
-        JSON.stringify({ error: 'Invalid email address' }),
+        JSON.stringify({ success: true, message: 'Guide sent successfully!' }),
+        {
+          status: 200,
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders 
+          },
+        }
+      );
+    }
+
+    // Enhanced email validation with regex and normalization
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const normalizedEmail = email?.trim().toLowerCase();
+    
+    if (!normalizedEmail || !emailRegex.test(normalizedEmail) || normalizedEmail.length > 255) {
+      console.log(`Invalid email format attempted: ${email} from IP ${requestIp}`);
+      return new Response(
+        JSON.stringify({ error: 'Valid email address is required' }),
         {
           status: 400,
           headers: { 
@@ -80,8 +102,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if email already exists
     const { data: existingLead, error: checkError } = await supabase
       .from("exit_intent_leads")
-      .select("id, email")
-      .eq("email", email)
+      .select("id, email, guide_sent")
+      .eq("email", normalizedEmail)
       .single();
 
     if (checkError && checkError.code !== "PGRST116") {
@@ -92,16 +114,33 @@ const handler = async (req: Request): Promise<Response> => {
     let leadId: string;
 
     if (existingLead) {
-      // Email already exists, just return success
       leadId = existingLead.id;
-      console.log(`Exit intent lead already exists for email: ${email}`);
+      console.log(`Exit intent lead already exists for email: ${normalizedEmail}`);
+      
+      // If guide was already sent, inform user
+      if (existingLead.guide_sent) {
+        console.log(`Guide already sent to: ${normalizedEmail}`);
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'You have already received the guide. Please check your email inbox or spam folder.' 
+          }),
+          {
+            status: 200,
+            headers: { 
+              "Content-Type": "application/json",
+              ...corsHeaders 
+            },
+          }
+        );
+      }
     } else {
-      // Insert new lead
+      // Insert new lead with normalized email
       const { data: newLead, error: insertError } = await supabase
         .from("exit_intent_leads")
         .insert({
-          email,
-          ip_address: ipAddress,
+          email: normalizedEmail,
+          ip_address: requestIp || ipAddress,
           user_agent: userAgent,
           guide_sent: false,
         })
@@ -110,18 +149,37 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (insertError) {
         console.error("Error inserting lead:", insertError);
+        
+        // Check if it's a duplicate email error (race condition)
+        if (insertError.code === '23505') {
+          console.log(`Duplicate email detected (race condition): ${normalizedEmail}`);
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              message: 'You have already received the guide. Please check your email inbox or spam folder.' 
+            }),
+            {
+              status: 200,
+              headers: { 
+                "Content-Type": "application/json",
+                ...corsHeaders 
+              },
+            }
+          );
+        }
+        
         throw new Error("Failed to save lead");
       }
 
       leadId = newLead.id;
-      console.log(`New exit intent lead captured: ${email}`);
+      console.log(`New exit intent lead captured: ${normalizedEmail}`);
     }
 
     // Send the dividend investing guide email
     try {
       const emailResponse = await resend.emails.send({
         from: "DividendTracker <guides@resend.dev>",
-        to: [email],
+        to: [normalizedEmail],
         subject: "Your FREE Dividend Investing Guide",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

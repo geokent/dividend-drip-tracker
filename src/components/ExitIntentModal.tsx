@@ -12,16 +12,37 @@ interface ExitIntentModalProps {
 
 export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
   const [email, setEmail] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email) {
+    // Honeypot check - if filled, silently reject (bot detected)
+    if (honeypot) {
+      console.log('Bot detected via honeypot');
+      onClose();
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const trimmedEmail = email.trim();
+    
+    if (!trimmedEmail) {
       toast({
         title: "Email required",
         description: "Please enter your email address",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!emailRegex.test(trimmedEmail)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
         variant: "destructive"
       });
       return;
@@ -36,9 +57,10 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email: trimmedEmail.toLowerCase(),
           userAgent: navigator.userAgent,
-          ipAddress: null // Can't get client IP from frontend
+          ipAddress: null,
+          honeypot: honeypot
         })
       });
 
@@ -112,6 +134,17 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Honeypot field - hidden from users, catches bots */}
+            <input
+              type="text"
+              name="website"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              style={{ position: 'absolute', left: '-9999px' }}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
             <Input
               type="email"
               placeholder="Enter your email address"
