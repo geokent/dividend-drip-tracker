@@ -43,6 +43,7 @@ export const SEOHead = ({
     // Standard meta tags
     updateMetaTag('description', description);
     updateMetaTag('keywords', keywords);
+    updateMetaTag('robots', 'index, follow');
     
     // Open Graph tags
     updateMetaTag('og:title', title, true);

@@ -1,7 +1,11 @@
 # Netlify redirects file
 # This ensures all routes are handled by React Router
 
-# Serve static assets directly
+# SEO files - serve as-is with 200 status
+/sitemap.xml    /sitemap.xml    200
+/robots.txt     /robots.txt     200
+
+# Serve static assets directly with 200 status
 /assets/*  /assets/:splat  200
 /*.js      /:splat         200
 /*.mjs     /:splat         200
@@ -11,9 +15,10 @@
 /*.jpg     /:splat         200
 /*.ico     /:splat         200
 /*.svg     /:splat         200
+/*.xml     /:splat         200
 
-# Handle SPA routing - serve index.html for all other routes
-/*    /index.html   200
+# Handle SPA routing - serve index.html for all other routes with 200 status (NOT 301/302)
+/*    /index.html   200!
 
 # Security headers
 /*    X-Frame-Options: DENY

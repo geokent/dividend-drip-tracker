@@ -3,16 +3,29 @@
   "outputDirectory": "dist",
   "routes": [
     {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml",
+      "status": 200
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt",
+      "status": 200
+    },
+    {
       "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "dest": "/assets/$1",
+      "status": 200
     },
     {
       "src": "/.*\\.(js|jsx|ts|tsx|css|mjs|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$",
-      "dest": "/$0"
+      "dest": "/$0",
+      "status": 200
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/index.html",
+      "status": 200
     }
   ],
   "headers": [

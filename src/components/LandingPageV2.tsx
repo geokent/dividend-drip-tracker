@@ -44,57 +44,7 @@ const LandingPageV2 = () => {
   const isMobile = useIsMobile();
   const { showExitIntent, hideExitIntent } = useExitIntent();
 
-  useEffect(() => {
-    document.title = "Divtrkr - Track Your Dividend Income & Build Wealth";
-    
-    // Add meta tags for SEO
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Track your dividend income, monitor portfolio performance, and build passive wealth with our comprehensive dividend tracking platform. Start your journey to financial independence today.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Track your dividend income, monitor portfolio performance, and build passive wealth with our comprehensive dividend tracking platform. Start your journey to financial independence today.';
-      document.head.appendChild(meta);
-    }
-
-    // Add keywords meta tag
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'dividend tracker, dividend investing, passive income, portfolio management, financial independence, FIRE, dividend income, wealth building');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'keywords';
-      meta.content = 'dividend tracker, dividend investing, passive income, portfolio management, financial independence, FIRE, dividend income, wealth building';
-      document.head.appendChild(meta);
-    }
-
-    // Add Open Graph tags
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:title');
-      meta.content = 'Divtrkr - Your Path to Financial Independence';
-      document.head.appendChild(meta);
-    }
-
-    const ogDescription = document.querySelector('meta[property="og:description"]');
-    if (!ogDescription) {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:description');
-      meta.content = 'Transform your investment strategy with comprehensive dividend tracking, portfolio analysis, and passive income optimization.';
-      document.head.appendChild(meta);
-    }
-
-    // Add Open Graph image tag
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (!ogImage) {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:image');
-      meta.content = 'https://your-domain.com/lovable-uploads/0d6eeb20-2dec-42f3-bf81-d48762b0a348.png';
-      document.head.appendChild(meta);
-    }
-  }, []);
+  // Meta tags are now handled by SEOHead component only
 
   const cleanupAuthState = () => {
     localStorage.removeItem('supabase.auth.token');
@@ -206,6 +156,7 @@ const LandingPageV2 = () => {
         title="Divtrkr - Track Your Dividend Income & Build Wealth"
         description="Track your dividend income, monitor portfolio performance, and build passive wealth with our comprehensive dividend tracking platform. Start your journey to financial independence today."
         keywords="dividend tracker, dividend investing, passive income, FIRE, financial independence, investment portfolio, dividend stocks, portfolio tracking, dividend snowball"
+        canonicalUrl="https://www.divtrkr.com/"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "WebApplication",
