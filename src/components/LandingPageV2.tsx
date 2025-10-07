@@ -18,6 +18,7 @@ import { ExitIntentModal } from "@/components/ExitIntentModal";
 import { useExitIntent } from "@/hooks/useExitIntent";
 import { DemoPortfolio } from "@/components/DemoPortfolio";
 import { SEOHead } from "@/components/SEOHead";
+import { BlogPreview } from "@/components/BlogPreview";
 
 // Import images
 import snowball from "@/assets/snowball.jpg";
@@ -860,6 +861,21 @@ const LandingPageV2 = () => {
               No credit card required • Cancel anytime
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Blog Preview Section */}
+      <section className="py-20 bg-gradient-subtle">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">
+              Latest Dividend Investing Insights
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Learn strategies, tips, and insights to maximize your dividend portfolio and build lasting wealth
+            </p>
+          </div>
+          <BlogPreview />
         </div>
       </section>
 
