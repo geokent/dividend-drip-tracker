@@ -42,6 +42,7 @@ interface TrackedStock extends StockData {
 export const DividendDashboard = () => {
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
   const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<number>(0);
   const [connectedInstitutions, setConnectedInstitutions] = useState<Array<{item_id: string, institution_name: string, account_count: number}>>([]);
@@ -471,6 +472,12 @@ export const DividendDashboard = () => {
       return;
     }
     
+    setIsSyncing(true);
+    toast({
+      title: "Syncing Holdings...",
+      description: "Fetching latest data from your brokerage accounts",
+    });
+    
     try {
       const { data, error } = await supabase.functions.invoke('sync-dividends', {
         body: { user_id: user.id }
@@ -478,6 +485,7 @@ export const DividendDashboard = () => {
 
       if (error) {
         console.error('Sync error:', error);
+        setIsSyncing(false);
         toast({
           title: "Sync Failed",
           description: "Failed to sync your investment accounts. Please try again.",
@@ -494,6 +502,7 @@ export const DividendDashboard = () => {
         const errorMessage = data.message || "Failed to sync investment accounts.";
         const hasDetailedErrors = data.errors && data.errors.length > 0;
         
+        setIsSyncing(false);
         toast({
           title: "Sync Failed",
           description: errorMessage + (hasDetailedErrors ? " Check connection and try again." : ""),
@@ -619,6 +628,8 @@ export const DividendDashboard = () => {
         description: "An unexpected error occurred. Please check your connection and try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -1060,6 +1071,9 @@ export const DividendDashboard = () => {
           onBulkUploadSuccess={handleBulkUploadSuccess}
           onPlaidSuccess={handlePlaidSuccess}
           onPlaidDisconnect={(itemId, institutionName) => handleDisconnectInstitution(itemId, institutionName)}
+          onSyncInvestments={handleSyncInvestments}
+          isSyncing={isSyncing}
+          lastSyncedAt={lastSyncedAt}
           isConnected={connectedInstitutions.length > 0}
           connectedItemId={connectedInstitutions.length > 0 ? connectedInstitutions[0].item_id : undefined}
           connectedInstitutions={connectedInstitutions}

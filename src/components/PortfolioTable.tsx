@@ -4,12 +4,14 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Badge } from "./ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Trash2, Edit3, Check, X, Building2, User, Search, Upload, Link, RefreshCw } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { BulkUploadStocksDialog } from "./BulkUploadStocksDialog";
 import { PlaidLinkButton } from "./PlaidLinkButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 
 interface TrackedStock {
   id?: string;
@@ -38,6 +40,9 @@ interface PortfolioTableProps {
   onBulkUploadSuccess?: () => void;
   onPlaidSuccess?: (data?: any) => void;
   onPlaidDisconnect?: (itemId: string, institutionName: string) => void;
+  onSyncInvestments?: () => void;
+  isSyncing?: boolean;
+  lastSyncedAt?: Date | null;
   isConnected?: boolean;
   connectedItemId?: string;
   connectedInstitutions?: Array<{item_id: string, institution_name: string, account_count: number}>;
@@ -47,12 +52,15 @@ interface PortfolioTableProps {
 export const PortfolioTable = ({ 
   stocks, 
   onRemoveStock, 
-  onUpdateShares,
+  onUpdateShares, 
   onStockFound,
   userId,
   onBulkUploadSuccess,
   onPlaidSuccess,
   onPlaidDisconnect,
+  onSyncInvestments,
+  isSyncing = false,
+  lastSyncedAt,
   isConnected,
   connectedItemId,
   connectedInstitutions,
@@ -183,6 +191,34 @@ export const PortfolioTable = ({
                   connectedItemId={connectedItemId}
                   size="sm"
                 />
+                
+                {/* Refresh Holdings Button */}
+                {onSyncInvestments && isConnected && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          onClick={onSyncInvestments}
+                          disabled={isSyncing}
+                          size="sm"
+                          variant="outline"
+                          className="gap-2"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                          Refresh Holdings
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Sync latest share counts from your brokerage</p>
+                        {lastSyncedAt && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Last synced: {formatDistanceToNow(lastSyncedAt, { addSuffix: true })}
+                          </p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
             </div>
           )}
