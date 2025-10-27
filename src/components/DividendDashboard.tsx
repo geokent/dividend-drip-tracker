@@ -423,14 +423,39 @@ export const DividendDashboard = () => {
   const handleUpdateShares = async (stockId: string, symbol: string, shares: number) => {
     if (!user?.id) return;
     
+    // Validate stockId
+    if (!stockId || stockId === '') {
+      console.error('Invalid stock ID:', stockId);
+      toast({
+        title: "Error",
+        description: "Unable to update stock. Please refresh the page.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('user_stocks')
         .update({ shares })
         .eq('user_id', user.id)
-        .eq('id', stockId);
+        .eq('id', stockId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error updating shares:', error);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.error('No stock found with ID:', stockId);
+        toast({
+          title: "Error",
+          description: "Stock not found. Please refresh the page.",
+          variant: "destructive"
+        });
+        return;
+      }
 
       // Update local state
       setTrackedStocks(prev => 
@@ -440,6 +465,11 @@ export const DividendDashboard = () => {
             : stock
         )
       );
+      
+      toast({
+        title: "Updated",
+        description: `${symbol} shares updated to ${shares}`,
+      });
     } catch (error) {
       console.error('Error updating shares:', error);
       toast({

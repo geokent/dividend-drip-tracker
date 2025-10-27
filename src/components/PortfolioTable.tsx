@@ -73,6 +73,14 @@ export const PortfolioTable = ({
   const { toast } = useToast();
 
   const handleEditShares = (stockId: string, currentShares: number) => {
+    if (!stockId || stockId === '') {
+      toast({
+        title: "Error",
+        description: "Unable to edit stock. Please refresh the page.",
+        variant: "destructive"
+      });
+      return;
+    }
     setEditingStock(stockId);
     setEditShares(currentShares.toString());
   };
