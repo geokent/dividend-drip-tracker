@@ -13,7 +13,7 @@ export const BlogPreview = () => {
       const { data, error } = await supabase
         .from("blog_posts")
         .select("*")
-        .eq("published", true)
+        .eq("status", "published")
         .order("published_at", { ascending: false })
         .limit(3);
 
