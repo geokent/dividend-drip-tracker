@@ -125,7 +125,61 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">4. Data Security</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">4. Advertising and Third-Party Services</h2>
+              
+              <h3 className="text-xl font-medium text-foreground mb-3">Google AdSense</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                We use Google AdSense to display advertisements on our website. Google AdSense uses cookies and similar technologies to serve ads based on your prior visits to our website or other websites on the Internet.
+              </p>
+
+              <h3 className="text-xl font-medium text-foreground mb-3">Cookies and Ad Personalization</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Google uses cookies to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-4">
+                <li>Display ads on our site based on your visits to this and other websites</li>
+                <li>Measure ad effectiveness and provide aggregate statistics</li>
+                <li>Prevent the same ads from being shown to you repeatedly</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-foreground mb-3">Your Advertising Choices</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                If you are located in the European Economic Area (EEA), United Kingdom, or Switzerland, you will see a consent banner that allows you to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-4">
+                <li><strong>Consent:</strong> Allow personalized ads based on your interests and browsing behavior</li>
+                <li><strong>Do Not Consent:</strong> Receive only non-personalized ads that are not based on your interests</li>
+                <li><strong>Manage Options:</strong> Customize your ad preferences and vendor permissions</li>
+              </ul>
+
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                You can change your ad preferences at any time:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-4">
+                <li>Visit <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Ad Settings</a> to manage your ad personalization preferences</li>
+                <li>Visit <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">opt out of personalized advertising</a> entirely</li>
+                <li>Review our consent banner settings (for EEA/UK/Switzerland users)</li>
+              </ul>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-4">
+                <p className="text-foreground font-medium mb-2">Personalized vs Non-Personalized Ads:</p>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li><strong>Personalized ads</strong> are tailored to your interests based on your browsing activity</li>
+                  <li><strong>Non-personalized ads</strong> are based only on the current page content and general location (like country or city)</li>
+                </ul>
+              </div>
+
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                For more information about how Google handles data in advertising products, please visit:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Privacy Policy</a></li>
+                <li><a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">How Google uses information from sites that use our services</a></li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">5. Data Security</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">We implement industry-standard security measures to protect your information:</p>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                 <li>End-to-end encryption for all data transmission</li>
@@ -137,7 +191,7 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">5. Third-Party Integrations</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">6. Third-Party Integrations</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 When you choose to manually add financial information, we ensure this data is securely stored and handled. Our platform:
               </p>
@@ -150,7 +204,7 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">6. Your Rights and Choices</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">7. Your Rights and Choices</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">You have the right to:</p>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                 <li><strong>Access:</strong> Request a copy of your personal data</li>
@@ -163,14 +217,14 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">7. Data Retention</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">8. Data Retention</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We retain your information only as long as necessary to provide our services or as required by law. When you delete your account, we will permanently delete your personal data within 30 days, except for information we're legally required to retain.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">8. Cookies and Tracking</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">9. Cookies and Tracking</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 We use cookies and similar technologies to:
               </p>
@@ -186,28 +240,28 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">9. Children's Privacy</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">10. Children's Privacy</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Our service is not intended for children under 18. We do not knowingly collect personal information from children under 18. If you believe we have inadvertently collected such information, please contact us immediately.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">10. International Users</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">11. International Users</h2>
               <p className="text-muted-foreground leading-relaxed">
                 If you are accessing our service from outside the United States, please note that your information may be transferred to, stored, and processed in the United States where our servers are located.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">11. Changes to This Policy</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">12. Changes to This Policy</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on our website and updating the "last updated" date. We encourage you to review this policy periodically.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">12. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">13. Contact Us</h2>
               <p className="text-muted-foreground leading-relaxed">
                 If you have any questions about this Privacy Policy or our privacy practices, please contact us through our website or at the contact information provided on our platform.
               </p>
