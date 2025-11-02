@@ -70,7 +70,6 @@ export const DividendDashboard = () => {
   }>>([]);
   const { toast } = useToast();
   const { signOut, user } = useAuth();
-  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Load user stocks from database
   const loadUserStocks = async () => {
@@ -318,21 +317,6 @@ export const DividendDashboard = () => {
     };
 
     loadData();
-
-    // Auto-refresh prices every 5 minutes
-    if (user?.id) {
-      refreshStockPrices(); // Initial refresh
-      autoRefreshInterval.current = setInterval(() => {
-        refreshStockPrices();
-      }, 5 * 60 * 1000); // 5 minutes
-    }
-
-    // Cleanup interval on unmount
-    return () => {
-      if (autoRefreshInterval.current) {
-        clearInterval(autoRefreshInterval.current);
-      }
-    };
   }, [user?.id, toast]);
 
   const handleStockFound = async (stockData: StockData) => {
@@ -907,6 +891,18 @@ export const DividendDashboard = () => {
 
   const refreshStockPrices = async () => {
     if (!user?.id) return;
+    
+    // Check when we last refreshed (prevent refresh if < 1 hour ago)
+    if (lastSyncedAt) {
+      const hoursSinceLastSync = (Date.now() - lastSyncedAt.getTime()) / (1000 * 60 * 60);
+      if (hoursSinceLastSync < 1) {
+        toast({
+          title: "Recently Updated",
+          description: `Prices were updated ${Math.round(hoursSinceLastSync * 60)} minutes ago. Please wait before refreshing again.`,
+        });
+        return;
+      }
+    }
     
     setIsRefreshingPrices(true);
     try {
