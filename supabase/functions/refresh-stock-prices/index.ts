@@ -48,9 +48,9 @@ serve(async (req) => {
       );
     }
 
-    const alphaVantageKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
-    if (!alphaVantageKey) {
-      console.error('Alpha Vantage API key not found');
+    const fmpApiKey = Deno.env.get('FMP_API_KEY');
+    if (!fmpApiKey) {
+      console.error('FMP API key not found');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

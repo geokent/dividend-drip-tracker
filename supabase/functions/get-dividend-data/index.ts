@@ -21,10 +21,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY')
+    const apiKey = Deno.env.get('FMP_API_KEY')
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'Alpha Vantage API key not configured' }),
+        JSON.stringify({ error: 'FMP API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -33,8 +33,8 @@ Deno.serve(async (req) => {
     
     // Optimized: Only fetch time-sensitive data (price and dividends)
     const [priceResponse, dividendsResponse] = await Promise.all([
-      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`),
-      fetch(`https://www.alphavantage.co/query?function=DIVIDENDS&symbol=${symbol}&apikey=${apiKey}`)
+      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${apiKey}`),
+      fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/stock_dividend/${symbol}?apikey=${apiKey}`)
     ]);
 
     const [priceData, dividendsData] = await Promise.all([
@@ -65,15 +65,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Extract price data
-    const quote = priceData['Global Quote'];
-    const currentPrice = quote?.['05. price'] ? parseFloat(quote['05. price']) : null;
+    // Extract price data (FMP returns an array)
+    const quote = Array.isArray(priceData) ? priceData[0] : priceData;
+    const currentPrice = quote?.price ? parseFloat(quote.price) : null;
     
     // Helper functions for enhanced dividend analysis
     const analyzeDividendFrequency = (dividendHistory: any[]) => {
       if (!dividendHistory || dividendHistory.length < 2) return 'unknown';
       
-      const dates = dividendHistory.map((d: any) => new Date(d.exDividendDate).getTime());
+      const dates = dividendHistory.map((d: any) => new Date(d.date || d.exDividendDate).getTime());
       dates.sort((a: number, b: number) => b - a); // Most recent first
       
       const daysBetween: number[] = [];
@@ -144,14 +144,14 @@ Deno.serve(async (req) => {
     let nextExDividendDate = null;
     let dividendFrequency = 'unknown';
     
-    console.log('Processing dividend data from DIVIDENDS API...');
+    console.log('Processing dividend data from FMP API...');
     
-    // First, try to extract data from the dedicated DIVIDENDS API
-    if (dividendsData && dividendsData.data && Array.isArray(dividendsData.data)) {
-      console.log(`Found ${dividendsData.data.length} dividend records from DIVIDENDS API`);
+    // Extract data from FMP's historical dividend data
+    if (dividendsData && dividendsData.historical && Array.isArray(dividendsData.historical)) {
+      console.log(`Found ${dividendsData.historical.length} dividend records from FMP API`);
       
-      const sortedDividends = dividendsData.data.sort((a: any, b: any) =>
-        new Date(b.exDividendDate || b.ex_dividend_date).getTime() - new Date(a.exDividendDate || a.ex_dividend_date).getTime()
+      const sortedDividends = dividendsData.historical.sort((a: any, b: any) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
       );
       
       // Analyze frequency
@@ -161,21 +161,21 @@ Deno.serve(async (req) => {
       if (sortedDividends.length > 0) {
         const mostRecent = sortedDividends[0];
         
-        // Extract dates (handle different field name formats and sanitize "None" values)
-        const rawExDividendDate = mostRecent.exDividendDate || mostRecent.ex_dividend_date || null;
-        const rawDividendDate = mostRecent.paymentDate || mostRecent.payment_date || mostRecent.dividendDate || null;
+        // FMP uses 'date' as ex-dividend date and 'paymentDate' for payment
+        const rawExDividendDate = mostRecent.date || null;
+        const rawDividendDate = mostRecent.paymentDate || null;
         
         // Sanitize date values - set to null if "None", empty, or invalid
         exDividendDate = (rawExDividendDate && rawExDividendDate !== 'None' && rawExDividendDate !== '') ? rawExDividendDate : null;
         dividendDate = (rawDividendDate && rawDividendDate !== 'None' && rawDividendDate !== '') ? rawDividendDate : exDividendDate;
         
-        // Extract dividend amount
-        dividendPerShare = parseFloat(mostRecent.amount || mostRecent.dividend_amount || mostRecent.dividendAmount || 0);
+        // FMP uses 'dividend' field
+        dividendPerShare = parseFloat(mostRecent.dividend || mostRecent.adjDividend || 0);
         
         // Calculate annual dividend based on frequency and recent payments
         if (dividendPerShare > 0) {
           const recentYear = sortedDividends.filter((d: any) => {
-            const divDate = new Date(d.exDividendDate || d.ex_dividend_date);
+            const divDate = new Date(d.date);
             const oneYearAgo = new Date();
             oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
             return divDate >= oneYearAgo;
@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
           
           if (recentYear.length > 0) {
             annualDividend = recentYear.reduce((sum: number, d: any) => 
-              sum + parseFloat(d.amount || d.dividend_amount || d.dividendAmount || 0), 0
+              sum + parseFloat(d.dividend || d.adjDividend || 0), 0
             );
           } else {
             // Estimate based on frequency
@@ -206,7 +206,7 @@ Deno.serve(async (req) => {
         // Estimate next ex-dividend date
         nextExDividendDate = estimateNextDividendDate(exDividendDate, dividendFrequency);
         
-        console.log('Extracted from DIVIDENDS API:', {
+        console.log('Extracted from FMP API:', {
           exDividendDate,
           dividendDate,
           dividendPerShare,
