@@ -19,6 +19,7 @@ import { useExitIntent } from "@/hooks/useExitIntent";
 import { DemoPortfolio } from "@/components/DemoPortfolio";
 import { SEOHead } from "@/components/SEOHead";
 import { BlogPreview } from "@/components/BlogPreview";
+import { OrganizationSchema } from "@/components/OrganizationSchema";
 
 // Import images
 import snowball from "@/assets/snowball.jpg";
@@ -172,6 +173,7 @@ const LandingPageV2 = () => {
           }
         }}
       />
+      <OrganizationSchema />
       <Header />
 
       {/* Hero Section */}

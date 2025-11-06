@@ -5,108 +5,33 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, TrendingUp, Target, Snowflake, Clock, Users, Star } from "lucide-react";
-import { useEffect } from "react";
-
-// SEO metadata
-const seoData = {
-  title: "Learning Academy - Master Dividend Investing, FIRE & Wealth Building | DivTrkr",
-  description: "Comprehensive dividend investing education covering dividend fundamentals, FIRE strategy, and the dividend snowball effect. Learn from experts and build lasting wealth through proven investment strategies.",
-  keywords: "dividend investing education, FIRE financial independence, dividend snowball strategy, wealth building course, investment learning, passive income education",
-  ogImage: "/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png"
-};
+import { SEOHead } from "@/components/SEOHead";
 
 export const LearningAcademy = () => {
-  // Set page metadata for SEO
-  useEffect(() => {
-    document.title = seoData.title;
-    
-    // Update meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', seoData.description);
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = seoData.description;
-      document.head.appendChild(meta);
-    }
-
-    // Update meta keywords
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (metaKeywords) {
-      metaKeywords.setAttribute('content', seoData.keywords);
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'keywords';
-      meta.content = seoData.keywords;
-      document.head.appendChild(meta);
-    }
-
-    // Update canonical URL
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) {
-      canonical.setAttribute('href', 'https://www.divtrkr.com/learning-academy');
-    } else {
-      const link = document.createElement('link');
-      link.rel = 'canonical';
-      link.href = 'https://www.divtrkr.com/learning-academy';
-      document.head.appendChild(link);
-    }
-
-    // Update Open Graph tags
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute('content', seoData.title);
-    } else {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:title');
-      meta.content = seoData.title;
-      document.head.appendChild(meta);
-    }
-
-    const ogDescription = document.querySelector('meta[property="og:description"]');
-    if (ogDescription) {
-      ogDescription.setAttribute('content', seoData.description);
-    } else {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:description');
-      meta.content = seoData.description;
-      document.head.appendChild(meta);
-    }
-
-    // Add structured data for Learning Academy
-    const existingStructuredData = document.querySelector('script[type="application/ld+json"][data-page="learning-academy"]');
-    if (!existingStructuredData) {
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.setAttribute('data-page', 'learning-academy');
-      script.textContent = JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Course",
-        "name": "DivTrkr Learning Academy",
-        "description": seoData.description,
-        "provider": {
-          "@type": "Organization",
-          "name": "DivTrkr",
-          "url": "https://www.divtrkr.com"
-        },
-        "educationalLevel": "Beginner to Advanced",
-        "about": [
-          "Dividend Investing",
-          "FIRE Strategy", 
-          "Financial Independence",
-          "Passive Income"
-        ],
-        "teaches": [
-          "Dividend yield calculations",
-          "FIRE methodology",
-          "Compound growth strategies",
-          "Portfolio allocation"
-        ]
-      });
-      document.head.appendChild(script);
-    }
-  }, []);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "DivTrkr Learning Academy",
+    "description": "Comprehensive dividend investing education covering dividend fundamentals, FIRE strategy, and the dividend snowball effect",
+    "provider": {
+      "@type": "Organization",
+      "name": "DivTrkr",
+      "url": "https://www.divtrkr.com"
+    },
+    "educationalLevel": "Beginner to Advanced",
+    "about": [
+      "Dividend Investing",
+      "FIRE Strategy", 
+      "Financial Independence",
+      "Passive Income"
+    ],
+    "teaches": [
+      "Dividend yield calculations",
+      "FIRE methodology",
+      "Compound growth strategies",
+      "Portfolio allocation"
+    ]
+  };
 
   const learningModules = [
     {
@@ -165,6 +90,14 @@ export const LearningAcademy = () => {
 
   return (
     <AppLayout>
+      <SEOHead
+        title="Learning Academy - Master Dividend Investing, FIRE & Wealth | DivTrkr"
+        description="Comprehensive dividend investing education covering fundamentals, FIRE strategy, and the dividend snowball effect. Learn proven investment strategies."
+        keywords="dividend investing education, FIRE financial independence, dividend snowball strategy, wealth building course, investment learning, passive income education"
+        canonicalUrl="https://www.divtrkr.com/learning-academy"
+        ogImage="https://www.divtrkr.com/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png"
+        structuredData={structuredData}
+      />
       <PageHeader
         title="Learning Academy"
         description="Master dividend investing, FIRE strategy, and wealth-building techniques with our comprehensive educational modules"

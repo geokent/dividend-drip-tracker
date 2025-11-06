@@ -14,6 +14,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProjectionParametersStrip } from "@/components/ProjectionParametersStrip";
 import { toast } from "@/hooks/use-toast";
+import { SEOHead } from "@/components/SEOHead";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -238,6 +239,12 @@ export const FutureIncomeProjects = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Future Dividend Income Projections - Plan Your Financial Freedom | DivTrkr"
+        description="Project your future dividend income with AI-powered analysis. Visualize portfolio growth, estimate passive income, and plan your path to financial independence."
+        keywords="dividend projections, future income calculator, dividend growth forecast, passive income planning, portfolio projections, FIRE calculator"
+        canonicalUrl="https://www.divtrkr.com/future-income-projections"
+      />
       <Header />
 
       <div className="container section-y space-y-8">

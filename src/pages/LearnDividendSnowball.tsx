@@ -1,60 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Snowflake, TrendingUp, RefreshCw, Target, BarChart } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 import { Header } from "@/components/Header";
+import { SEOHead } from "@/components/SEOHead";
 
 export const LearnDividendSnowball = () => {
-  useEffect(() => {
-    // Add SEO meta tags
-    document.title = "Learn About Dividend Snowball Strategy - Build Wealth with Compound Dividends | DivTrkr";
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Master the dividend snowball strategy and learn how reinvesting dividends creates exponential wealth growth. Discover compound dividend investing techniques for long-term financial success.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Master the dividend snowball strategy and learn how reinvesting dividends creates exponential wealth growth. Discover compound dividend investing techniques for long-term financial success.';
-      document.head.appendChild(meta);
-    }
-
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'dividend snowball, compound dividends, dividend reinvestment, DRIP, passive income growth, wealth building, investment strategy, dividend compounding');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'keywords';
-      meta.content = 'dividend snowball, compound dividends, dividend reinvestment, DRIP, passive income growth, wealth building, investment strategy, dividend compounding';
-      document.head.appendChild(meta);
-    }
-
-    // Add structured data for SEO
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "EducationalOrganization",
-      "name": "DivTrkr - Learn Dividend Snowball",
-      "description": "Comprehensive guide to the dividend snowball strategy and compound dividend investing",
-      "url": window.location.href,
-      "educationalCredentialAwarded": "Financial Education"
-    };
-
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(structuredData);
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup on unmount
-      const existingScript = document.querySelector('script[type="application/ld+json"]');
-      if (existingScript) {
-        document.head.removeChild(existingScript);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Dividend Snowball Strategy - Build Wealth with Compound Dividends",
+    "description": "Comprehensive guide to the dividend snowball strategy and compound dividend investing",
+    "author": {
+      "@type": "Organization",
+      "name": "DivTrkr"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "DivTrkr",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.divtrkr.com/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png"
       }
-    };
-  }, []);
+    },
+    "datePublished": "2024-01-01",
+    "dateModified": "2024-11-01"
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Dividend Snowball Strategy - Build Wealth with Compounding | DivTrkr"
+        description="Master the dividend snowball strategy. Learn how reinvesting dividends creates exponential wealth growth through compound dividend investing."
+        keywords="dividend snowball, compound dividends, dividend reinvestment, DRIP, passive income growth, wealth building, investment strategy, dividend compounding"
+        canonicalUrl="https://www.divtrkr.com/learn-dividend-snowball"
+        structuredData={structuredData}
+      />
       <Header />
 
       {/* Hero Section */}

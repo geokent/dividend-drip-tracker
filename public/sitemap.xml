@@ -3,7 +3,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://www.divtrkr.com/</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -11,7 +11,7 @@
   <!-- Dashboard -->
   <url>
     <loc>https://www.divtrkr.com/dashboard</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -19,7 +19,7 @@
   <!-- Blog Index -->
   <url>
     <loc>https://www.divtrkr.com/blog</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -27,42 +27,42 @@
   <!-- Blog Posts -->
   <url>
     <loc>https://www.divtrkr.com/blog/best-dividend-stocks-beginners-2025</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/blog/build-100k-dividend-portfolio</loc>
-    <lastmod>2025-10-05</lastmod>
+    <lastmod>2024-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/blog/dividend-yield-vs-dividend-growth</loc>
-    <lastmod>2025-10-03</lastmod>
+    <lastmod>2024-10-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/blog/monthly-dividend-stocks-2025</loc>
-    <lastmod>2025-10-01</lastmod>
+    <lastmod>2024-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/blog/fire-movement-dividend-investing</loc>
-    <lastmod>2025-09-29</lastmod>
+    <lastmod>2024-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/blog/tax-implications-dividend-income-2025</loc>
-    <lastmod>2025-09-27</lastmod>
+    <lastmod>2024-09-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -70,28 +70,28 @@
   <!-- Learning Resources -->
   <url>
     <loc>https://www.divtrkr.com/learning-academy</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/learn-dividends</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/learn-dividend-snowball</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/learn-fire</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -99,7 +99,7 @@
   <!-- FAQ -->
   <url>
     <loc>https://www.divtrkr.com/faq</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -107,7 +107,7 @@
   <!-- Auth -->
   <url>
     <loc>https://www.divtrkr.com/auth</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -115,14 +115,14 @@
   <!-- Legal Pages -->
   <url>
     <loc>https://www.divtrkr.com/terms</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-08-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
     <loc>https://www.divtrkr.com/privacy</loc>
-    <lastmod>2025-10-07</lastmod>
+    <lastmod>2024-08-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

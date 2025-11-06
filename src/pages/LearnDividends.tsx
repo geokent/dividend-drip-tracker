@@ -1,60 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, DollarSign, TrendingUp, Calculator, Target, Play } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 import { Header } from "@/components/Header";
+import { SEOHead } from "@/components/SEOHead";
 
 export const LearnDividends = () => {
-  useEffect(() => {
-    // Add SEO meta tags
-    document.title = "Learn About Dividends - Complete Guide to Dividend Investing | DivTrkr";
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Learn everything about dividend investing with our comprehensive guide. Understand dividend yields, passive income strategies, and how to build wealth through dividend-paying stocks.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Learn everything about dividend investing with our comprehensive guide. Understand dividend yields, passive income strategies, and how to build wealth through dividend-paying stocks.';
-      document.head.appendChild(meta);
-    }
-
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'dividend investing, passive income, dividend yield, stock dividends, financial independence, FIRE movement, investment education');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'keywords';
-      meta.content = 'dividend investing, passive income, dividend yield, stock dividends, financial independence, FIRE movement, investment education';
-      document.head.appendChild(meta);
-    }
-
-    // Add structured data for SEO
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "EducationalOrganization",
-      "name": "DivTrkr - Learn Dividends",
-      "description": "Comprehensive guide to dividend investing and passive income strategies",
-      "url": window.location.href,
-      "educationalCredentialAwarded": "Financial Education"
-    };
-
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(structuredData);
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup on unmount
-      const existingScript = document.querySelector('script[type="application/ld+json"]');
-      if (existingScript) {
-        document.head.removeChild(existingScript);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Learn About Dividends - Complete Guide to Dividend Investing",
+    "description": "Comprehensive guide to dividend investing and passive income strategies",
+    "author": {
+      "@type": "Organization",
+      "name": "DivTrkr"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "DivTrkr",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.divtrkr.com/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png"
       }
-    };
-  }, []);
+    },
+    "datePublished": "2024-01-01",
+    "dateModified": "2024-11-01"
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Learn About Dividends - Complete Guide to Investing | DivTrkr"
+        description="Learn everything about dividend investing. Understand dividend yields, passive income strategies, and how to build wealth through dividend stocks."
+        keywords="dividend investing, passive income, dividend yield, stock dividends, financial independence, FIRE movement, investment education"
+        canonicalUrl="https://www.divtrkr.com/learn-dividends"
+        structuredData={structuredData}
+      />
       <Header />
 
       {/* Hero Section */}

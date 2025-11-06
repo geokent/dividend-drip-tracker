@@ -11,6 +11,7 @@ import { TrendingUp, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PlaidDisconnectDialog } from "./PlaidDisconnectDialog";
 import { StaleDataCleanupDialog } from "./StaleDataCleanupDialog";
+import { SEOHead } from "@/components/SEOHead";
 
 interface StockData {
   symbol: string;
@@ -1072,6 +1073,12 @@ export const DividendDashboard = () => {
 
   return (
     <AppLayout>
+      <SEOHead
+        title="Dividend Portfolio Dashboard - Track Your Income & Investments | DivTrkr"
+        description="Monitor your dividend portfolio in real-time. Track holdings, analyze yields, sync with brokerages, and watch your passive income grow."
+        keywords="dividend portfolio tracker, portfolio dashboard, dividend monitoring, investment tracking, passive income tracker"
+        canonicalUrl="https://www.divtrkr.com/dashboard"
+      />
       <PageHeader 
         title="Your Dividend Portfolio"
         icon={TrendingUp}

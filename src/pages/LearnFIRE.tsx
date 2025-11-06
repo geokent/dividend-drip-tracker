@@ -1,60 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Flame, Calculator, PiggyBank, TrendingUp, Calendar, Award } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 import { Header } from "@/components/Header";
+import { SEOHead } from "@/components/SEOHead";
 
 export const LearnFIRE = () => {
-  useEffect(() => {
-    // Add SEO meta tags
-    document.title = "Learn About FIRE Movement - Financial Independence Retire Early Guide | DivTrkr";
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Master the FIRE movement strategy and learn how to achieve financial independence and retire early. Discover proven methods for building wealth and creating passive income streams.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Master the FIRE movement strategy and learn how to achieve financial independence and retire early. Discover proven methods for building wealth and creating passive income streams.';
-      document.head.appendChild(meta);
-    }
-
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'FIRE movement, financial independence, retire early, passive income, savings rate, investment strategies, early retirement, financial freedom, lean FIRE, fat FIRE');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'keywords';
-      meta.content = 'FIRE movement, financial independence, retire early, passive income, savings rate, investment strategies, early retirement, financial freedom, lean FIRE, fat FIRE';
-      document.head.appendChild(meta);
-    }
-
-    // Add structured data for SEO
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "EducationalOrganization",
-      "name": "DivTrkr - Learn FIRE Movement",
-      "description": "Comprehensive guide to the FIRE movement and achieving financial independence",
-      "url": window.location.href,
-      "educationalCredentialAwarded": "Financial Education"
-    };
-
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(structuredData);
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup on unmount
-      const existingScript = document.querySelector('script[type="application/ld+json"]');
-      if (existingScript) {
-        document.head.removeChild(existingScript);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "FIRE Movement - Financial Independence Retire Early Guide",
+    "description": "Comprehensive guide to the FIRE movement and achieving financial independence",
+    "author": {
+      "@type": "Organization",
+      "name": "DivTrkr"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "DivTrkr",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.divtrkr.com/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png"
       }
-    };
-  }, []);
+    },
+    "datePublished": "2024-01-01",
+    "dateModified": "2024-11-01"
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="FIRE Movement - Financial Independence Retire Early Guide | DivTrkr"
+        description="Master the FIRE movement strategy. Learn how to achieve financial independence and retire early through proven wealth building methods."
+        keywords="FIRE movement, financial independence, retire early, passive income, savings rate, investment strategies, early retirement, financial freedom, lean FIRE, fat FIRE"
+        canonicalUrl="https://www.divtrkr.com/learn-fire"
+        structuredData={structuredData}
+      />
       <Header />
 
       {/* Hero Section */}
