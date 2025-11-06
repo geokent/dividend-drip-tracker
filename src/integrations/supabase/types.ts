@@ -183,7 +183,7 @@ export type Database = {
           action: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string
         }
@@ -192,7 +192,7 @@ export type Database = {
           action: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id: string
         }
@@ -201,7 +201,7 @@ export type Database = {
           action?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string
         }
@@ -424,10 +424,7 @@ export type Database = {
         }
         Returns: Json
       }
-      cleanup_rate_limit_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      cleanup_rate_limit_logs: { Args: never; Returns: number }
       decrypt_sensitive_data: {
         Args: { encrypted_data: string; key_name?: string }
         Returns: string
@@ -436,30 +433,18 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
-      emergency_lockdown_financial_tables: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      encrypt_existing_tokens: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      emergency_lockdown_financial_tables: { Args: never; Returns: undefined }
+      encrypt_existing_tokens: { Args: never; Returns: number }
       encrypt_sensitive_data: {
         Args: { data: string; key_name?: string }
         Returns: string
       }
-      generate_slug: {
-        Args: { title: string }
-        Returns: string
-      }
+      generate_slug: { Args: { title: string }; Returns: string }
       get_decrypted_access_token: {
         Args: { p_account_id: string; p_user_id: string }
         Returns: string
       }
-      is_emergency_lockdown: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_emergency_lockdown: { Args: never; Returns: boolean }
       log_financial_access: {
         Args: {
           operation: string
@@ -486,10 +471,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      mask_financial_data: {
-        Args: { data: string }
-        Returns: string
-      }
+      mask_financial_data: { Args: { data: string }; Returns: string }
       store_encrypted_access_token: {
         Args: {
           p_access_token: string
