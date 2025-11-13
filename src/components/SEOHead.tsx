@@ -7,6 +7,7 @@ interface SEOHeadProps {
   canonicalUrl?: string;
   ogImage?: string;
   structuredData?: object;
+  noIndex?: boolean;
 }
 
 export const SEOHead = ({
@@ -15,7 +16,8 @@ export const SEOHead = ({
   keywords = "dividend tracker, dividend investing, passive income, FIRE, financial independence, investment portfolio, dividend stocks, portfolio tracking",
   canonicalUrl = "https://www.divtrkr.com/",
   ogImage = "https://www.divtrkr.com/og-image.png",
-  structuredData
+  structuredData,
+  noIndex = false
 }: SEOHeadProps) => {
   
   useEffect(() => {
@@ -43,7 +45,7 @@ export const SEOHead = ({
     // Standard meta tags
     updateMetaTag('description', description);
     updateMetaTag('keywords', keywords);
-    updateMetaTag('robots', 'index, follow');
+    updateMetaTag('robots', noIndex ? 'noindex, nofollow' : 'index, follow');
     
     // Open Graph tags
     updateMetaTag('og:title', title, true);

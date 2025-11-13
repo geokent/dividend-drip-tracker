@@ -97,6 +97,7 @@ export const LearningAcademy = () => {
         canonicalUrl="https://www.divtrkr.com/learning-academy"
         ogImage="https://www.divtrkr.com/lovable-uploads/a49ac46a-1ac9-41d7-b056-7137e301394b.png"
         structuredData={structuredData}
+        noIndex={true}
       />
       <PageHeader
         title="Learning Academy"
