@@ -34,6 +34,7 @@ export const LearnDividends = () => {
         keywords="dividend investing, passive income, dividend yield, stock dividends, financial independence, FIRE movement, investment education"
         canonicalUrl="https://www.divtrkr.com/learn-dividends"
         structuredData={structuredData}
+        noIndex={true}
       />
       <Header />
 

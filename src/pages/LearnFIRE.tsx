@@ -34,6 +34,7 @@ export const LearnFIRE = () => {
         keywords="FIRE movement, financial independence, retire early, passive income, savings rate, investment strategies, early retirement, financial freedom, lean FIRE, fat FIRE"
         canonicalUrl="https://www.divtrkr.com/learn-fire"
         structuredData={structuredData}
+        noIndex={true}
       />
       <Header />
 

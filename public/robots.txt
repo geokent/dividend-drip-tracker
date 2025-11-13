@@ -12,3 +12,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /learn-dividends
+Disallow: /learn-dividend-snowball
+Disallow: /learn-fire
+Disallow: /learning-academy
+Disallow: /auth

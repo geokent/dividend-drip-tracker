@@ -1078,6 +1078,7 @@ export const DividendDashboard = () => {
         description="Monitor your dividend portfolio in real-time. Track holdings, analyze yields, sync with brokerages, and watch your passive income grow."
         keywords="dividend portfolio tracker, portfolio dashboard, dividend monitoring, investment tracking, passive income tracker"
         canonicalUrl="https://www.divtrkr.com/dashboard"
+        noIndex={true}
       />
       <PageHeader 
         title="Your Dividend Portfolio"

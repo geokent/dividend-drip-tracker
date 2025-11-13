@@ -34,6 +34,7 @@ export const LearnDividendSnowball = () => {
         keywords="dividend snowball, compound dividends, dividend reinvestment, DRIP, passive income growth, wealth building, investment strategy, dividend compounding"
         canonicalUrl="https://www.divtrkr.com/learn-dividend-snowball"
         structuredData={structuredData}
+        noIndex={true}
       />
       <Header />
 

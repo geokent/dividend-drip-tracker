@@ -21,6 +21,10 @@ import { DividendDashboard } from "@/components/DividendDashboard";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import FAQ from "./pages/FAQ";
+import { About } from "./pages/About";
+import { Contact } from "./pages/Contact";
+import { Author } from "./pages/Author";
+import { Editorial } from "./pages/Editorial";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +72,10 @@ const App = () => {
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/author" element={<Author />} />
+            <Route path="/editorial" element={<Editorial />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
