@@ -215,11 +215,6 @@ const LandingPageV2 = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
             <div className="relative z-20 text-center lg:text-left animate-fade-in">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 shadow-sm">
-                <Star className="h-4 w-4 mr-2" />
-                #1 Dividend Tracking Platform
-              </div>
-              
               <h1 className="page-title text-4xl lg:text-6xl mb-10 leading-relaxed">
                 Build Wealth Through
                 <span className="gradient-text block pb-2">Dividend Investing</span>
