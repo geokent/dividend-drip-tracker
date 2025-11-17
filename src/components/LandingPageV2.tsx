@@ -353,61 +353,6 @@ const LandingPageV2 = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-accent/5">
-        <div className="container">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="section-title text-3xl lg:text-5xl mb-6">
-              Trusted by Smart
-              <span className="gradient-text block">Investors</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              See what our users are saying about their dividend tracking journey
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="card-feature p-6 rounded-xl hover-scale">
-              <div className="flex items-center mb-4">
-                <div className="flex text-yellow-400">
-                  {"★".repeat(5)}
-                </div>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                "Finally found a tool that makes dividend tracking simple. The future income projections help me plan my retirement with confidence."
-              </p>
-              <div className="font-medium">Sarah M.</div>
-              <div className="text-sm text-muted-foreground">Retired Teacher</div>
-            </div>
-            
-            <div className="card-feature p-6 rounded-xl hover-scale">
-              <div className="flex items-center mb-4">
-                <div className="flex text-yellow-400">
-                  {"★".repeat(5)}
-                </div>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                "The automatic sync with my broker saves me hours every month. Love seeing my dividend snowball grow in real-time!"
-              </p>
-              <div className="font-medium">Mike R.</div>
-              <div className="text-sm text-muted-foreground">Software Engineer</div>
-            </div>
-            
-            <div className="card-feature p-6 rounded-xl hover-scale">
-              <div className="flex items-center mb-4">
-                <div className="flex text-yellow-400">
-                  {"★".repeat(5)}
-                </div>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                "The learning academy taught me everything about dividend investing. Now I'm on track to reach financial independence!"
-              </p>
-              <div className="font-medium">Jennifer L.</div>
-              <div className="text-sm text-muted-foreground">Marketing Manager</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Features Grid */}
       <section className="py-20">
