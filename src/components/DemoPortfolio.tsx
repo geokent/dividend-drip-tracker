@@ -2,6 +2,33 @@ import { PortfolioTopStrip } from "@/components/PortfolioTopStrip";
 import { PortfolioTable } from "@/components/PortfolioTable";
 import { UpcomingDividendsCard } from "@/components/UpcomingDividendsCard";
 
+// Calculate dynamic dates relative to today
+const now = new Date();
+
+// Helper to format date as YYYY-MM-DD
+const formatDate = (date: Date) => {
+  return date.toISOString().split('T')[0];
+};
+
+// Recent dividends (past dates)
+const twoDaysAgo = formatDate(new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000));
+const threeDaysAgo = formatDate(new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000));
+const nineDaysAgo = formatDate(new Date(now.getTime() - 9 * 24 * 60 * 60 * 1000));
+const tenDaysAgo = formatDate(new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000));
+const elevenDaysAgo = formatDate(new Date(now.getTime() - 11 * 24 * 60 * 60 * 1000));
+
+// Upcoming dividends (future dates)
+const eightDaysFromNow = formatDate(new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000));
+const fifteenDaysFromNow = formatDate(new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000));
+const twentyThreeDaysFromNow = formatDate(new Date(now.getTime() + 23 * 24 * 60 * 60 * 1000));
+const twentyEightDaysFromNow = formatDate(new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000));
+const fortyThreeDaysFromNow = formatDate(new Date(now.getTime() + 43 * 24 * 60 * 60 * 1000));
+
+// Far future for "next" ex-dividend dates
+const seventyFiveDaysFromNow = formatDate(new Date(now.getTime() + 75 * 24 * 60 * 60 * 1000));
+const ninetyDaysFromNow = formatDate(new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000));
+const oneHundredDaysFromNow = formatDate(new Date(now.getTime() + 100 * 24 * 60 * 60 * 1000));
+
 interface DemoStock {
   symbol: string;
   companyName: string;
@@ -25,9 +52,9 @@ const demoStocks: DemoStock[] = [
     dividendYield: 0.50,
     dividendPerShare: 0.96,
     annualDividend: 0.96,
-    exDividendDate: "2025-10-30",
-    dividendDate: "2025-11-08",
-    nextExDividendDate: "2026-01-30",
+    exDividendDate: tenDaysAgo,
+    dividendDate: nineDaysAgo,
+    nextExDividendDate: seventyFiveDaysFromNow,
     dividendFrequency: "quarterly",
     shares: 30,
     sector: "Technology",
@@ -39,9 +66,9 @@ const demoStocks: DemoStock[] = [
     dividendYield: 0.73,
     dividendPerShare: 3.00,
     annualDividend: 3.00,
-    exDividendDate: "2025-11-06",
-    dividendDate: "2025-11-14",
-    nextExDividendDate: "2026-02-19",
+    exDividendDate: elevenDaysAgo,
+    dividendDate: threeDaysAgo,
+    nextExDividendDate: ninetyDaysFromNow,
     dividendFrequency: "quarterly",
     shares: 20,
     sector: "Technology",
@@ -53,9 +80,9 @@ const demoStocks: DemoStock[] = [
     dividendYield: 3.18,
     dividendPerShare: 1.94,
     annualDividend: 1.94,
-    exDividendDate: "2025-11-25",
-    dividendDate: "2025-12-15",
-    nextExDividendDate: "2026-03-10",
+    exDividendDate: eightDaysFromNow,
+    dividendDate: twentyEightDaysFromNow,
+    nextExDividendDate: oneHundredDaysFromNow,
     dividendFrequency: "quarterly",
     shares: 100,
     sector: "Consumer Defensive",
@@ -67,9 +94,9 @@ const demoStocks: DemoStock[] = [
     dividendYield: 3.18,
     dividendPerShare: 4.96,
     annualDividend: 4.96,
-    exDividendDate: "2025-11-26",
-    dividendDate: "2025-12-10",
-    nextExDividendDate: "2026-03-02",
+    exDividendDate: nineDaysAgo,
+    dividendDate: twentyThreeDaysFromNow,
+    nextExDividendDate: oneHundredDaysFromNow,
     dividendFrequency: "quarterly",
     shares: 40,
     sector: "Healthcare",
@@ -81,9 +108,9 @@ const demoStocks: DemoStock[] = [
     dividendYield: 5.60,
     dividendPerShare: 3.08,
     annualDividend: 3.08,
-    exDividendDate: "2025-11-01",
-    dividendDate: "2025-11-15",
-    nextExDividendDate: "2025-12-01",
+    exDividendDate: fifteenDaysFromNow,
+    dividendDate: twoDaysAgo,
+    nextExDividendDate: fortyThreeDaysFromNow,
     dividendFrequency: "monthly",
     shares: 120,
     sector: "Real Estate",
