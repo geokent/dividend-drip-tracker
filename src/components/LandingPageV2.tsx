@@ -175,6 +175,39 @@ const LandingPageV2 = () => {
       <OrganizationSchema />
       <Header />
 
+      {/* Demo Portfolio Section */}
+      <section className="py-20 bg-gradient-to-b from-background to-accent/5">
+        <div className="container">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="section-title text-3xl lg:text-5xl mb-6">
+              <span className="gradient-text">Track Your Dividend Portfolio</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              This is what a real dividend portfolio looks like in Divtrkr. Track your holdings, 
+              monitor yields, and watch your passive income grow month by month.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto animate-scale-in">
+            <DemoPortfolio />
+          </div>
+          
+          <div className="text-center mt-12">
+            <Button 
+              size="lg" 
+              className="font-semibold shadow-elegant hover:shadow-lg transition-all duration-300"
+              onClick={() => {
+                const heroSection = document.querySelectorAll('section')[1];
+                heroSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              Start Tracking Your Portfolio
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32">
         <div className="absolute inset-0 gradient-primary opacity-5"></div>
@@ -321,36 +354,6 @@ const LandingPageV2 = () => {
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Demo Portfolio Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-accent/5">
-        <div className="container">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="section-title text-3xl lg:text-5xl mb-6">
-              <span className="gradient-text">Track Your Dividend Portfolio</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              This is what a real dividend portfolio looks like in Divtrkr. Track your holdings, 
-              monitor yields, and watch your passive income grow month by month.
-            </p>
-          </div>
-          
-          <div className="max-w-4xl mx-auto animate-scale-in">
-            <DemoPortfolio />
-          </div>
-          
-          <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              className="font-semibold shadow-elegant hover:shadow-lg transition-all duration-300"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              Start Tracking Your Portfolio
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
           </div>
         </div>
       </section>
