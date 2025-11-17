@@ -37,7 +37,6 @@ const LandingPageV2 = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailVerification, setShowEmailVerification] = useState(false);
-  const [showAuthCard, setShowAuthCard] = useState(false);
   
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -199,26 +198,6 @@ const LandingPageV2 = () => {
                 financial independence today.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                <Button 
-                  size="lg" 
-                  className="gradient-primary text-white hover:opacity-90 transition-smooth px-8 py-4 text-lg font-semibold"
-                  onClick={() => setShowAuthCard(true)}
-                >
-                  Create Free Account
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="border-border hover:bg-accent px-8 py-4 text-lg font-semibold"
-                  onClick={() => navigate('/learning-academy')}
-                >
-                  See How It Works
-                </Button>
-              </div>
-              <p className="text-muted-foreground text-sm text-center lg:text-left mb-12">
-                No credit card required • Cancel anytime
-              </p>
 
               {/* Trust Indicators */}
               <div className="flex items-center justify-center lg:justify-start space-x-8 text-sm text-muted-foreground">
@@ -351,8 +330,7 @@ const LandingPageV2 = () => {
         <div className="container">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="section-title text-3xl lg:text-5xl mb-6">
-              See Your Portfolio in Action
-              <span className="gradient-text block">Live Demo</span>
+              <span className="gradient-text">Track Your Dividend Portfolio</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               This is what a real dividend portfolio looks like in Divtrkr. Track your holdings, 
@@ -368,7 +346,7 @@ const LandingPageV2 = () => {
             <Button 
               size="lg" 
               className="font-semibold shadow-elegant hover:shadow-lg transition-all duration-300"
-              onClick={() => setShowAuthCard(true)}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               Start Tracking Your Portfolio
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -804,7 +782,7 @@ const LandingPageV2 = () => {
                 size="lg" 
                 variant="secondary" 
                 className="px-8 py-4 text-lg bg-white text-primary hover:bg-white/90"
-                onClick={() => setShowAuthCard(true)}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               >
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -839,131 +817,18 @@ const LandingPageV2 = () => {
       <Footer />
       
       {/* Mobile Sticky CTA */}
-      {isMobile && !showAuthCard && (
+      {isMobile && (
         <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/20 p-4 z-40">
           <Button 
             className="w-full gradient-primary text-white hover:opacity-90 transition-smooth py-3"
-            onClick={() => setShowAuthCard(true)}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             Create Free Account
           </Button>
         </div>
       )}
 
-      {/* Auth Card Modal */}
-      {showAuthCard && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md relative">
-            <button
-              onClick={() => setShowAuthCard(false)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-            >
-              ✕
-            </button>
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-2xl">
-                {isSignUp ? "Start Your Journey" : "Welcome Back"}
-              </CardTitle>
-              <CardDescription className="text-lg">
-                {isSignUp 
-                  ? "Join thousands building passive income" 
-                  : "Sign in to your dividend portfolio"
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {showEmailVerification && !isSignUp && (
-                <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
-                  <AlertDescription>
-                    <strong>Check your email!</strong> We've sent you a verification link. 
-                    Please check your email and click the link to verify your account, then sign in below.
-                  </AlertDescription>
-                </Alert>
-              )}
-              <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
-                {isSignUp && (
-                  <div>
-                    <Input
-                      type="text"
-                      placeholder="Your name"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="h-12 text-lg"
-                      required
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 text-lg"
-                    required
-                  />
-                </div>
-                
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 text-lg pr-12"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 text-lg" 
-                  disabled={isLoading}
-                  variant="gradient"
-                >
-                  {isLoading 
-                    ? "Please wait..." 
-                    : isSignUp 
-                      ? "Create Free Account" 
-                      : "Sign In to Dashboard"
-                  }
-                </Button>
-                
-                <p className="text-xs text-muted-foreground text-center mt-4">
-                  By continuing, you agree to our{" "}
-                  <Link to="/terms" className="text-primary hover:underline">Terms</Link>
-                  {" "}and{" "}
-                  <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-                </p>
-              </form>
-              
-              <div className="text-center mt-6">
-                <button
-                  onClick={() => {
-                    setIsSignUp(!isSignUp);
-                    setShowEmailVerification(false);
-                  }}
-                  className="text-primary hover:underline transition-smooth"
-                >
-                  {isSignUp 
-                    ? "Already have an account? Sign in" 
-                    : "Need an account? Sign up free"
-                  }
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-      
+      {/* Exit Intent Modal */}
       <ExitIntentModal isOpen={showExitIntent} onClose={hideExitIntent} />
     </div>
   );
