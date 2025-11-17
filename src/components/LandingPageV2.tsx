@@ -208,6 +208,51 @@ const LandingPageV2 = () => {
         </div>
       </section>
 
+      {/* New to Dividend Investing */}
+      <section className="py-20 bg-background/50">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="animate-fade-in">
+              <h2 className="section-title mb-6">
+                New to Dividend Investing?
+                <span className="gradient-text block">We'll Guide You</span>
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                Dividends are payments companies make to shareholders from their profits. 
+                They're one of the most reliable ways to build passive income and long-term wealth. 
+                Our platform makes it easy to track and optimize your dividend strategy.
+              </p>
+              <div className="space-y-4 mb-8">
+                {[
+                  "Learn the fundamentals of dividend investing",
+                  "Understand dividend yields and payout ratios",
+                  "Build a diversified dividend portfolio",
+                  "Track your progress toward financial goals"
+                 ].map((item, index) => (
+                   <div key={index} className="flex items-center">
+                     <CheckCircle className="h-5 w-5 text-financial-green mr-3 flex-shrink-0" />
+                     <span className="text-foreground">{item}</span>
+                   </div>
+                 ))}
+              </div>
+              <Link to="/learning-academy">
+                <Button variant="outline" size="lg" className="px-8">
+                  Start Learning
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+            <div className="hover-scale">
+              <img 
+                src={whatdiv} 
+                alt="Understanding dividend investing concepts and strategies"
+                className="rounded-3xl shadow-elegant w-full"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32">
         <div className="absolute inset-0 gradient-primary opacity-5"></div>
@@ -449,51 +494,6 @@ const LandingPageV2 = () => {
       </section>
 
       {/* Educational Content Sections */}
-      
-      {/* What Are Dividends */}
-      <section className="py-20 bg-background/50">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in">
-              <h2 className="section-title mb-6">
-                New to Dividend Investing?
-                <span className="gradient-text block">We'll Guide You</span>
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Dividends are payments companies make to shareholders from their profits. 
-                They're one of the most reliable ways to build passive income and long-term wealth. 
-                Our platform makes it easy to track and optimize your dividend strategy.
-              </p>
-              <div className="space-y-4 mb-8">
-                {[
-                  "Learn the fundamentals of dividend investing",
-                  "Understand dividend yields and payout ratios",
-                  "Build a diversified dividend portfolio",
-                  "Track your progress toward financial goals"
-                 ].map((item, index) => (
-                   <div key={index} className="flex items-center">
-                     <CheckCircle className="h-5 w-5 text-financial-green mr-3 flex-shrink-0" />
-                     <span className="text-foreground">{item}</span>
-                   </div>
-                 ))}
-              </div>
-              <Link to="/learning-academy">
-                <Button variant="outline" size="lg" className="px-8">
-                  Start Learning
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            </div>
-            <div className="hover-scale">
-              <img 
-                src={whatdiv} 
-                alt="Understanding dividend investing concepts and strategies"
-                className="rounded-3xl shadow-elegant w-full"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Dividend Snowball Effect */}
       <section className="py-20">
