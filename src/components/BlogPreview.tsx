@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 export const BlogPreview = () => {
   const { data: posts, isLoading } = useQuery({
@@ -56,7 +57,16 @@ export const BlogPreview = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {posts.map((post) => (
           <Link key={post.id} to={`/blog/${post.slug}`}>
-            <Card className="h-full hover:shadow-lg transition-shadow hover-scale">
+            <Card className="h-full hover:shadow-lg transition-all duration-300 hover-scale overflow-hidden group">
+              {post.featured_image_url && (
+                <AspectRatio ratio={16 / 9} className="overflow-hidden">
+                  <img
+                    src={post.featured_image_url}
+                    alt={post.title}
+                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                  />
+                </AspectRatio>
+              )}
               <CardHeader>
                 <CardTitle className="line-clamp-2">{post.title}</CardTitle>
                 <CardDescription className="flex items-center gap-2">
