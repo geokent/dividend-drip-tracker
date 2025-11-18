@@ -7,7 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, TrendingUp, DollarSign, PieChart, Target, Shield, Zap, ArrowRight, Play, Star, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, TrendingUp, DollarSign, PieChart, Target, Shield, Zap, ArrowRight, Play, Star, CheckCircle, BookOpen, GraduationCap } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
@@ -20,6 +20,8 @@ import { DemoPortfolio } from "@/components/DemoPortfolio";
 import { SEOHead } from "@/components/SEOHead";
 import { BlogPreview } from "@/components/BlogPreview";
 import { OrganizationSchema } from "@/components/OrganizationSchema";
+import { FreeToolsSection } from "@/components/FreeToolsSection";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 // Import images
 import snowball from "@/assets/snowball.jpg";
@@ -153,15 +155,15 @@ const LandingPageV2 = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
-        title="Divtrkr - Track Your Dividend Income & Build Wealth"
-        description="Track your dividend income, monitor portfolio performance, and build passive wealth with our comprehensive dividend tracking platform. Start your journey to financial independence today."
-        keywords="dividend tracker, dividend investing, passive income, FIRE, financial independence, investment portfolio, dividend stocks, portfolio tracking, dividend snowball"
+        title="Master Dividend Investing | Free Guides, Calculators & Portfolio Tracker"
+        description="Learn dividend investing strategies with free calculators, expert guides, and comprehensive resources. Track your portfolio and build passive income toward financial independence."
+        keywords="dividend investing, passive income, FIRE, financial independence, dividend calculator, DRIP calculator, investment education, portfolio tracker, dividend stocks"
         canonicalUrl="https://www.divtrkr.com/"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "WebApplication",
           "name": "Divtrkr",
-          "description": "Track your dividend income, monitor portfolio performance, and build passive wealth",
+          "description": "Master dividend investing with free tools, guides, and portfolio tracking",
           "url": "https://www.divtrkr.com",
           "applicationCategory": "FinanceApplication",
           "operatingSystem": "Web Browser",
@@ -175,35 +177,70 @@ const LandingPageV2 = () => {
       <OrganizationSchema />
       <Header />
 
-      {/* Demo Portfolio Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-accent/5">
-        <div className="container">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="section-title text-3xl lg:text-5xl mb-6">
-              <span className="gradient-text">Track Your Dividend Portfolio</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Connect your investment account for free and automatically track your dividend portfolio. Monitor real-time yields, upcoming payments, and watch your passive income grow month by month.
+      {/* HERO SECTION - Education First */}
+      <section className="relative py-20 lg:py-32 overflow-hidden">
+        <div className="absolute inset-0 gradient-hero opacity-50"></div>
+        <div className="container relative z-10">
+          <div className="text-center max-w-4xl mx-auto animate-fade-in">
+            <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              Master Dividend Investing &
+              <span className="gradient-text block">Build Passive Income</span>
+            </h1>
+            <p className="text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
+              Free calculators, expert strategies, and comprehensive guides to grow your wealth through dividend investing. No sign-up required to get started.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                size="lg" 
+                variant="gradient"
+                className="px-8 py-6 text-lg"
+                onClick={() => {
+                  const toolsSection = document.getElementById('free-tools');
+                  toolsSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Explore Free Tools
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="px-8 py-6 text-lg"
+                asChild
+              >
+                <Link to="/blog">
+                  Read Expert Guides
+                  <BookOpen className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-6">
+              💡 <strong>100% Free.</strong> No credit card or account required to access our educational resources.
             </p>
           </div>
-          
-          <div className="max-w-4xl mx-auto animate-scale-in">
-            <DemoPortfolio />
+        </div>
+      </section>
+
+      {/* FREE TOOLS SECTION - Immediate Value */}
+      <div id="free-tools">
+        <FreeToolsSection />
+      </div>
+
+      {/* BLOG PREVIEW - Moved Up for Content Focus */}
+      <section className="py-20 bg-gradient-subtle">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <GraduationCap className="h-8 w-8 text-primary" />
+              <h2 className="text-3xl lg:text-5xl font-bold text-foreground">
+                Latest Dividend Investing Insights
+              </h2>
+            </div>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Expert strategies, stock analysis, and wealth-building tips from dividend investing professionals
+            </p>
           </div>
-          
-          <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              className="font-semibold shadow-elegant hover:shadow-lg transition-all duration-300"
-              onClick={() => {
-                const heroSection = document.querySelectorAll('section')[1];
-                heroSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-            >
-              Start Tracking Your Portfolio
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
+          <BlogPreview />
         </div>
       </section>
 
@@ -219,7 +256,7 @@ const LandingPageV2 = () => {
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 Dividends are payments companies make to shareholders from their profits. 
                 They're one of the most reliable ways to build passive income and long-term wealth. 
-                Our platform makes it easy to track and optimize your dividend strategy.
+                Our comprehensive guides make it easy to learn and implement a winning strategy.
               </p>
               <div className="space-y-4 mb-8">
                 {[
@@ -254,7 +291,62 @@ const LandingPageV2 = () => {
 
 
 
-      {/* Features Grid */}
+      {/* NEWSLETTER SIGNUP - Prominent Conversion */}
+      <section className="py-20 bg-gradient-primary">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+              Get Weekly Dividend Insights
+            </h2>
+            <p className="text-xl text-white/90 mb-8">
+              Join 1,000+ investors receiving expert dividend stock picks, income strategies, and market analysis
+            </p>
+            <div className="max-w-md mx-auto">
+              <NewsletterSignup />
+            </div>
+            <p className="text-sm text-white/70 mt-4">
+              💌 Free forever. Unsubscribe anytime. No spam, ever.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* DEMO PORTFOLIO - Demoted, Secondary Feature */}
+      <section className="py-20 bg-background/50">
+        <div className="container">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="section-title text-3xl lg:text-4xl mb-6">
+              <span className="gradient-text">Ready to Take Action?</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              After learning the fundamentals, use our free portfolio tracker to monitor your dividend investments, track upcoming payments, and watch your passive income grow.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto animate-scale-in">
+            <DemoPortfolio />
+          </div>
+          
+          <div className="text-center mt-12">
+            <Button 
+              size="lg" 
+              className="font-semibold shadow-elegant hover:shadow-lg transition-all duration-300"
+              onClick={() => {
+                const signupSection = document.getElementById('signup-section');
+                signupSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              Create Free Account
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <p className="text-sm text-muted-foreground mt-4">
+              No credit card required • 100% free • Track unlimited stocks
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Platform Features - Simplified */}
       <section className="py-20">
         <div className="container">
           <div className="text-center mb-16 animate-fade-in">
@@ -263,8 +355,7 @@ const LandingPageV2 = () => {
               <span className="gradient-text block pb-1">Master Dividend Investing</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our comprehensive platform gives you all the tools to track, analyze, 
-              and optimize your dividend portfolio for maximum returns.
+              Comprehensive tools and resources to track, analyze, and optimize your dividend portfolio
             </p>
           </div>
 
@@ -273,220 +364,23 @@ const LandingPageV2 = () => {
               {
                 icon: TrendingUp,
                 title: "Real-Time Tracking",
-                description: "Monitor your dividend income as it happens with live portfolio updates and instant notifications.",
+                description: "Monitor your dividend income with live portfolio updates and instant notifications.",
                 color: "text-primary"
               },
               {
                 icon: PieChart,
                 title: "Portfolio Analytics",
-                description: "Deep insights into your holdings with advanced charts, performance metrics, and risk analysis.",
+                description: "Deep insights into your holdings with advanced charts and performance metrics.",
                 color: "text-financial-green"
               },
               {
                 icon: DollarSign,
                 title: "Income Projections",
-                description: "Forecast your future dividend income with our AI-powered prediction algorithms.",
-                color: "text-accent",
-                link: "/future-income-projects"
+                description: "Forecast your future dividend income with our projection tools.",
+                color: "text-accent"
               },
-              {
-                icon: Shield,
-                title: "Bank-Level Security",
-                description: "Your financial data is protected with enterprise-grade encryption and security protocols.",
-                color: "text-primary"
-              },
-              {
-                icon: Zap,
-                title: "Auto-Sync Accounts",
-                description: "Connect your brokerage accounts for automatic dividend tracking and portfolio updates.",
-                color: "text-secondary"
-              },
-              {
-                icon: Target,
-                title: "Goal Setting",
-                description: "Set and track your financial independence goals with personalized FIRE calculators.",
-                color: "text-primary"
-              }
-            ].map((feature, index) => {
-              if (feature.link) {
-                return (
-                  <Link key={index} to={feature.link}>
-                    <Card className="card-feature group hover-scale h-full cursor-pointer">
-                      <CardHeader>
-                        <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
-                          <feature.icon className="h-6 w-6" />
-                        </div>
-                        <CardTitle className="card-title">{feature.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className="text-base leading-relaxed">
-                          {feature.description}
-                        </CardDescription>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              } else {
-                return (
-                  <Card key={index} className="card-feature group hover-scale">
-                    <CardHeader>
-                      <div className={`inline-flex p-3 rounded-2xl bg-background/80 w-fit ${feature.color}`}>
-                        <feature.icon className="h-6 w-6" />
-                      </div>
-                      <CardTitle className="card-title">{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="text-base leading-relaxed">
-                        {feature.description}
-                      </CardDescription>
-                    </CardContent>
-                  </Card>
-                );
-              }
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Educational Content Sections */}
-
-      {/* Dividend Snowball Effect */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="order-2 lg:order-1 hover-scale">
-              <img 
-                src={snowball} 
-                alt="The compounding power of dividend reinvestment over time"
-                className="rounded-3xl shadow-elegant w-full"
-              />
-            </div>
-            <div className="order-1 lg:order-2 animate-fade-in">
-              <h2 className="section-title mb-6">
-                The Power of the
-                <span className="gradient-text block">Dividend Snowball</span>
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Like a snowball rolling down a hill, your dividend income grows larger and 
-                faster over time through the power of compounding. As you reinvest dividends 
-                to buy more shares, those shares generate even more dividends, creating an 
-                exponential growth effect.
-              </p>
-                <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="metric-card">
-                  <div className="text-3xl font-bold text-foreground mb-2">$500</div>
-                  <div className="metric-label">Monthly Investment</div>
-                </div>
-                 <div className="metric-card">
-                   <div className="text-3xl font-bold text-foreground mb-2">$2.1M</div>
-                   <div className="metric-label">30-Year Total</div>
-                 </div>
-              </div>
-              <div className="flex flex-col items-center">
-                <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
-                  <Link to="/learning-academy">
-                    Learn Dividend Snowball
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FIRE Movement */}
-      <section className="py-20 bg-background/50">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in">
-              <h2 className="section-title mb-6">
-                Achieve Financial Independence
-                <span className="gradient-text block">The FIRE Way</span>
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                FIRE (Financial Independence, Retire Early) is a movement that emphasizes 
-                extreme savings and smart investing to achieve financial freedom decades 
-                earlier than traditional retirement. Dividend investing is a cornerstone 
-                strategy for many FIRE practitioners.
-              </p>
-              <div className="space-y-6 mb-8">
-                <div className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-4 mt-1">
-                    <span className="text-primary font-bold">1</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">Build Your Emergency Fund</h3>
-                    <p className="text-muted-foreground">Start with 3-6 months of expenses in a high-yield savings account.</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-4 mt-1">
-                    <span className="text-primary font-bold">2</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">Maximize Savings Rate</h3>
-                    <p className="text-muted-foreground">Aim to save 50% or more of your income through smart budgeting.</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-4 mt-1">
-                    <span className="text-primary font-bold">3</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">Invest in Dividends</h3>
-                    <p className="text-muted-foreground">Build a portfolio of dividend-paying stocks for passive income.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-center">
-                <Button variant="outline" size="lg" className="px-8 hover-scale" asChild>
-                  <Link to="/learning-academy">
-                    Learn FIRE Strategy
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <div className="hover-scale">
-              <img 
-                src={fire} 
-                alt="Financial Independence Retire Early (FIRE) movement and strategies"
-                className="rounded-3xl shadow-elegant w-full"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Platform Features */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="section-title text-3xl lg:text-5xl mb-6">
-              Advanced Features for
-              <span className="gradient-text block">Serious Investors</span>
-            </h2>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-            <div className="animate-fade-in">
-              <h3 className="card-title text-2xl lg:text-3xl mb-2 text-center">
-                Automatic Portfolio Syncing
-              </h3>
-              <p className="text-xs text-muted-foreground mb-6 font-medium text-center">Coming Soon</p>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Connect your brokerage accounts securely and let our platform automatically 
-                track your dividend payments, portfolio performance, and tax implications. 
-                No more manual data entry or spreadsheet maintenance.
-              </p>
-              <div className="space-y-4">
-                {[
-                  "Secure bank-level encryption",
-                  "Real-time portfolio updates",
-                  "Automated dividend tracking",
-                  "Tax-loss harvesting alerts"
-                 ].map((feature, index) => (
+...
+            ].map((feature, index) => (
                    <div key={index} className="flex items-center">
                      <CheckCircle className="h-5 w-5 text-financial-green mr-3" />
                      <span className="text-foreground">{feature}</span>
@@ -607,7 +501,7 @@ const LandingPageV2 = () => {
                   </CardTitle>
                   <CardDescription className="text-lg">
                     {isSignUp 
-                      ? "Join thousands building passive income" 
+                      ? "Create your free account" 
                       : "Sign in to your dividend portfolio"
                     }
                   </CardDescription>
@@ -707,21 +601,6 @@ const LandingPageV2 = () => {
         </div>
       </section>
 
-      {/* Blog Preview Section */}
-      <section className="py-20 bg-gradient-subtle">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">
-              Latest Dividend Investing Insights
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Learn strategies, tips, and insights to maximize your dividend portfolio and build lasting wealth
-            </p>
-          </div>
-          <BlogPreview />
-        </div>
-      </section>
-
       {/* FAQ Section */}
       <FAQ />
 
@@ -733,7 +612,10 @@ const LandingPageV2 = () => {
         <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/20 p-4 z-40">
           <Button 
             className="w-full gradient-primary text-white hover:opacity-90 transition-smooth py-3"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => {
+              const signupSection = document.getElementById('signup-section');
+              signupSection?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             Create Free Account
           </Button>
