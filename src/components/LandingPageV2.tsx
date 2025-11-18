@@ -140,11 +140,6 @@ const LandingPageV2 = () => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
-  }, [user, navigate]);
 
   return (
     <>
@@ -438,98 +433,120 @@ const LandingPageV2 = () => {
           {/* Auth Section - Moved to Bottom */}
           <section id="auth-section" className="py-20 bg-background">
             <div className="container max-w-md mx-auto">
-              <Card>
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl">
-                    {isSignUp ? "Create Free Account" : "Welcome Back"}
-                  </CardTitle>
-                  <CardDescription>
-                    {isSignUp 
-                      ? "Start tracking your dividend portfolio today" 
-                      : "Sign in to access your portfolio"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {showEmailVerification && (
-                    <Alert className="mb-4">
-                      <AlertDescription>
-                        Please check your email to verify your account before signing in.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
-                    {isSignUp && (
-                      <div className="space-y-2">
-                        <label htmlFor="displayName" className="text-sm font-medium">
-                          Display Name
-                        </label>
-                        <Input
-                          id="displayName"
-                          type="text"
-                          placeholder="Your name"
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          required={isSignUp}
-                        />
-                      </div>
+              {user ? (
+                <Card className="text-center">
+                  <CardHeader>
+                    <CardTitle className="text-2xl">Welcome Back!</CardTitle>
+                    <CardDescription>
+                      You're already logged in. Ready to track your dividends?
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button size="lg" asChild className="w-full gap-2">
+                      <Link to="/dashboard">
+                        <TrendingUp className="h-5 w-5" />
+                        Go to Dashboard
+                      </Link>
+                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                      Continue exploring educational content or access your portfolio tracker
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-2xl">
+                      {isSignUp ? "Create Free Account" : "Welcome Back"}
+                    </CardTitle>
+                    <CardDescription>
+                      {isSignUp 
+                        ? "Start tracking your dividend portfolio today" 
+                        : "Sign in to access your portfolio"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {showEmailVerification && (
+                      <Alert className="mb-4">
+                        <AlertDescription>
+                          Please check your email to verify your account before signing in.
+                        </AlertDescription>
+                      </Alert>
                     )}
 
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium">
-                        Email
-                      </label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
+                    <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
+                      {isSignUp && (
+                        <div className="space-y-2">
+                          <label htmlFor="displayName" className="text-sm font-medium">
+                            Display Name
+                          </label>
+                          <Input
+                            id="displayName"
+                            type="text"
+                            placeholder="Your name"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            required={isSignUp}
+                          />
+                        </div>
+                      )}
 
-                    <div className="space-y-2">
-                      <label htmlFor="password" className="text-sm font-medium">
-                        Password
-                      </label>
-                      <div className="relative">
+                      <div className="space-y-2">
+                        <label htmlFor="email" className="text-sm font-medium">
+                          Email
+                        </label>
                         <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          id="email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                           required
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                        </button>
                       </div>
+
+                      <div className="space-y-2">
+                        <label htmlFor="password" className="text-sm font-medium">
+                          Password
+                        </label>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
+                      </Button>
+                    </form>
+
+                    <div className="text-center mt-4">
+                      <button
+                        onClick={() => {
+                          setIsSignUp(!isSignUp);
+                          setShowEmailVerification(false);
+                        }}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+                      </button>
                     </div>
-
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
-                    </Button>
-                  </form>
-
-                  <div className="text-center mt-4">
-                    <button
-                      onClick={() => {
-                        setIsSignUp(!isSignUp);
-                        setShowEmailVerification(false);
-                      }}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </section>
         </main>
