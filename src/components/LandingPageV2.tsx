@@ -144,10 +144,10 @@ const LandingPageV2 = () => {
   return (
     <>
       <SEOHead
-        title="Master Dividend Investing & Build Passive Income | DivIntel"
+        title="Master Dividend Investing & Build Passive Income | Divtrkr"
         description="Free dividend investing guides, calculators, and expert strategies. Learn to build wealth through dividend stocks with our comprehensive educational resources and portfolio tracking tools."
         keywords="dividend investing, passive income, dividend stocks, FIRE movement, financial independence, dividend calculator, DRIP calculator, dividend portfolio"
-        ogImage="https://divintel.lovable.app/lovable-uploads/dividend-hero.jpg"
+        ogImage="https://www.divtrkr.com/lovable-uploads/dividend-hero.jpg"
       />
       <OrganizationSchema />
       <div className="min-h-screen flex flex-col bg-background">
@@ -373,7 +373,7 @@ const LandingPageV2 = () => {
           <section className="py-20 bg-background">
             <div className="container">
               <h2 className="section-title text-center text-3xl lg:text-5xl mb-12">
-                <span className="gradient-text">Why Choose DivIntel</span>
+                <span className="gradient-text">Why Choose Divtrkr</span>
               </h2>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
