@@ -190,13 +190,25 @@ const LandingPageV2 = () => {
             </div>
           </section>
 
+          {/* Featured Blog Content */}
+          <section className="py-20 bg-background">
+            <div className="container">
+              <div className="text-center mb-12 animate-fade-in">
+                <h2 className="section-title text-3xl lg:text-5xl mb-4">
+                  <span className="gradient-text">Latest Dividend Investing Insights</span>
+                </h2>
+                <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                  Expert articles on dividend strategies, portfolio building, and financial independence
+                </p>
+              </div>
+              <BlogPreview />
+            </div>
+          </section>
+
           {/* Free Tools Section */}
           <div id="free-tools">
             <FreeToolsSection />
           </div>
-
-          {/* Featured Blog Content */}
-          <BlogPreview />
 
           {/* Newsletter Signup - Primary Conversion Goal */}
           <NewsletterSignup />
