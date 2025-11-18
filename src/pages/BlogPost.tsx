@@ -116,7 +116,7 @@ export default function BlogPost() {
       } else if (data) {
         setPost({
           ...data,
-          author: data.author as { display_name: string }
+          author: { display_name: data.author?.display_name || 'DivTrkr Team' }
         });
         
         // Fetch related posts with same tags
