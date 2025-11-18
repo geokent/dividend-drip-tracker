@@ -260,7 +260,7 @@ const LandingPageV2 = () => {
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="section-title text-3xl lg:text-5xl mb-6">
               Everything You Need to
-              <span className="gradient-text block">Master Dividend Investing</span>
+              <span className="gradient-text block pb-1">Master Dividend Investing</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Our comprehensive platform gives you all the tools to track, analyze, 
