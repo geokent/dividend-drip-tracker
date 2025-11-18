@@ -183,8 +183,7 @@ const LandingPageV2 = () => {
               <span className="gradient-text">Track Your Dividend Portfolio</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              This is what a real dividend portfolio looks like in Divtrkr. Track your holdings, 
-              monitor yields, and watch your passive income grow month by month.
+              Connect your investment account for free and automatically track your dividend portfolio. Monitor real-time yields, upcoming payments, and watch your passive income grow month by month.
             </p>
           </div>
           
