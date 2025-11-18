@@ -1,273 +1,283 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { SEOHead } from "@/components/SEOHead";
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Search, RefreshCw, Shield, AlertCircle, FileText } from "lucide-react";
+import { AppLayout } from '@/components/layout/AppLayout';
+import { SEOHead } from '@/components/SEOHead';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, Shield, Users, BookOpen, AlertCircle } from 'lucide-react';
 
-export const Editorial = () => {
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "Editorial Standards & Content Policy",
-    "description": "Learn about DivTrkr's editorial standards, fact-checking process, and content methodology",
-    "url": "https://www.divtrkr.com/editorial"
-  };
-
+export default function Editorial() {
   return (
-    <div className="min-h-screen bg-background">
-      <SEOHead
-        title="Editorial Standards & Content Policy - DivTrkr"
-        description="Learn about DivTrkr's editorial standards, fact-checking process, research methodology, and commitment to providing accurate, trustworthy dividend investing information."
-        keywords="editorial standards, content policy, fact checking, research methodology, investment content, financial accuracy"
+    <AppLayout>
+      <SEOHead 
+        title="Editorial Standards & Team - DivTrkr"
+        description="Learn about DivTrkr's editorial standards, research methodology, and meet our team of dividend investing experts committed to providing accurate, unbiased financial content."
         canonicalUrl="https://www.divtrkr.com/editorial"
-        structuredData={structuredData}
       />
-      <Header />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Hero Section */}
-        <section className="text-center mb-16">
-          <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Editorial <span className="text-primary">Standards</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our commitment to providing accurate, trustworthy, and actionable dividend investing information
-          </p>
-        </section>
+      <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90">
+        <div className="container mx-auto px-4 py-12 max-w-4xl">
+          {/* Header */}
+          <div className="text-center mb-12 animate-fade-in">
+            <Badge className="mb-4">Editorial Standards</Badge>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-6">
+              Our Editorial Mission & Team
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Committed to providing accurate, unbiased, and actionable dividend investing information
+            </p>
+          </div>
 
-        {/* Mission Section */}
-        <section className="mb-16">
-          <Card>
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-bold text-foreground mb-6">Our Editorial Mission</h2>
-              <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-                At DivTrkr, we are committed to providing investors with accurate, reliable, and actionable information 
-                about dividend investing. Every piece of content we publish undergoes rigorous research, fact-checking, 
-                and review to ensure it meets our high standards for quality and accuracy.
+          {/* Editorial Mission */}
+          <Card className="mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Our Editorial Mission
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-lg max-w-none dark:prose-invert">
+              <p>
+                At DivTrkr, we are dedicated to empowering investors with reliable, thoroughly researched information 
+                about dividend investing. Our content is designed to help both beginners and experienced investors make 
+                informed decisions about building sustainable passive income through dividend stocks.
               </p>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                We believe that informed investors make better decisions. Our goal is to educate, empower, and inspire 
-                investors to build lasting wealth through dividend investing strategies.
+              <p>
+                We maintain strict editorial independence and never allow advertising relationships to influence our 
+                content, recommendations, or analysis.
               </p>
             </CardContent>
           </Card>
-        </section>
 
-        {/* Research Process */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-8">Our Research Process</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <Search className="h-10 w-10 text-primary mb-4" />
-                <h3 className="text-xl font-bold text-foreground mb-3">1. Primary Research</h3>
-                <p className="text-muted-foreground">
-                  We conduct extensive research using official company filings, financial statements, earnings reports, 
-                  and regulatory disclosures from sources like SEC Edgar, company investor relations pages, and verified 
-                  financial databases.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <CheckCircle className="h-10 w-10 text-primary mb-4" />
-                <h3 className="text-xl font-bold text-foreground mb-3">2. Data Verification</h3>
-                <p className="text-muted-foreground">
-                  All financial data, statistics, and claims are cross-referenced with multiple authoritative sources 
-                  to ensure accuracy. We verify dividend yields, payout ratios, ex-dividend dates, and company fundamentals 
-                  before publication.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <FileText className="h-10 w-10 text-primary mb-4" />
-                <h3 className="text-xl font-bold text-foreground mb-3">3. Expert Review</h3>
-                <p className="text-muted-foreground">
-                  Content is reviewed by our team of dividend investing experts with real-world experience managing 
-                  portfolios and achieving financial independence through passive income strategies.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <RefreshCw className="h-10 w-10 text-primary mb-4" />
-                <h3 className="text-xl font-bold text-foreground mb-3">4. Regular Updates</h3>
-                <p className="text-muted-foreground">
-                  We regularly review and update our content to reflect current market conditions, new data, and 
-                  changes in dividend policies. Articles include "Last Updated" dates for transparency.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Content Standards */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-8">Our Content Standards</h2>
-          <Card>
-            <CardContent className="p-8">
-              <div className="space-y-6">
+          {/* Research Process */}
+          <Card className="mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Our Research Process
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex gap-4">
+                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-primary" />
-                    Accuracy & Fact-Checking
-                  </h3>
+                  <h3 className="font-semibold text-lg mb-2">Primary Research</h3>
                   <p className="text-muted-foreground">
-                    Every article is thoroughly fact-checked before publication. We cite authoritative sources, verify 
-                    all statistics, and ensure financial data is current and accurate. Any corrections are made promptly 
-                    and noted transparently.
+                    We analyze company financial statements, SEC filings, dividend history, and earnings reports 
+                    directly from official sources including company investor relations pages and the SEC EDGAR database.
                   </p>
                 </div>
+              </div>
 
+              <div className="flex gap-4">
+                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    Objectivity & Transparency
-                  </h3>
+                  <h3 className="font-semibold text-lg mb-2">Data Verification</h3>
                   <p className="text-muted-foreground">
-                    We maintain editorial independence and do not accept payment for coverage or recommendations. 
-                    Any affiliations, partnerships, or potential conflicts of interest are clearly disclosed.
+                    All dividend data, stock prices, and financial metrics are cross-referenced using multiple 
+                    trusted financial data providers including Alpha Vantage and Financial Modeling Prep to ensure accuracy.
                   </p>
                 </div>
+              </div>
 
+              <div className="flex gap-4">
+                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    Source Attribution
-                  </h3>
+                  <h3 className="font-semibold text-lg mb-2">Expert Review</h3>
                   <p className="text-muted-foreground">
-                    We properly cite and link to all sources of data, research, and information. This allows readers 
-                    to verify information and explore topics further.
+                    Our content undergoes thorough review by experienced financial analysts and dividend investing 
+                    experts before publication to ensure technical accuracy and practical applicability.
                   </p>
                 </div>
+              </div>
 
+              <div className="flex gap-4">
+                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-primary" />
-                    Clear Disclaimers
-                  </h3>
+                  <h3 className="font-semibold text-lg mb-2">Regular Updates</h3>
                   <p className="text-muted-foreground">
-                    All content includes appropriate disclaimers making it clear that our content is for educational 
-                    purposes only and not personalized investment advice. We encourage readers to consult with financial 
-                    professionals for their specific situations.
+                    We continuously monitor and update our content to reflect current market conditions, dividend 
+                    changes, and new investment opportunities to keep our readers informed.
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </section>
 
-        {/* Data Sources */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-8">Trusted Data Sources</h2>
-          <Card>
-            <CardContent className="p-8">
-              <p className="text-muted-foreground mb-6">
-                We rely on authoritative, verified sources for all financial data and investment information:
+          {/* Content Standards */}
+          <Card className="mb-8 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Content Standards
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Accuracy</h3>
+                <p className="text-muted-foreground">
+                  Every piece of financial data, statistic, and claim in our content is verified and cited from 
+                  reputable sources. We prioritize factual accuracy above all else.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Objectivity</h3>
+                <p className="text-muted-foreground">
+                  We provide balanced perspectives on dividend investing strategies, highlighting both advantages 
+                  and potential risks to help readers make well-informed decisions.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Source Attribution</h3>
+                <p className="text-muted-foreground">
+                  All data sources, research studies, and expert opinions are properly cited and linked to original 
+                  sources for reader verification and transparency.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Clear Disclaimers</h3>
+                <p className="text-muted-foreground">
+                  We clearly distinguish between educational content and personal financial advice, always reminding 
+                  readers to consult with financial advisors for personalized guidance.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Meet Our Team */}
+          <Card className="mb-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Meet Our Team
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="border-l-4 border-primary pl-6 py-2">
+                <h3 className="font-semibold text-xl mb-1">Geo</h3>
+                <p className="text-sm text-primary mb-3">Lead Financial Analyst</p>
+                <p className="text-muted-foreground mb-3">
+                  Lead financial analyst and dividend investing expert with over 10 years of experience in portfolio 
+                  management. Specializes in dividend growth strategies, REITs, and building sustainable passive income 
+                  streams. Geo has helped thousands of investors understand the fundamentals of dividend investing through 
+                  clear, actionable content.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">Dividend Growth</Badge>
+                  <Badge variant="secondary">Portfolio Management</Badge>
+                  <Badge variant="secondary">REIT Analysis</Badge>
+                  <Badge variant="secondary">Passive Income Strategies</Badge>
+                </div>
+              </div>
+
+              <div className="border-l-4 border-muted pl-6 py-2">
+                <h3 className="font-semibold text-xl mb-1">DivTrkr Research Team</h3>
+                <p className="text-sm text-primary mb-3">Content Contributors</p>
+                <p className="text-muted-foreground mb-3">
+                  Our dedicated research team consists of financial content writers specializing in dividend investing 
+                  strategies, portfolio building, and long-term wealth creation. Each team member is passionate about 
+                  helping investors achieve financial independence through smart dividend investing.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">Financial Research</Badge>
+                  <Badge variant="secondary">Content Writing</Badge>
+                  <Badge variant="secondary">Market Analysis</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Trusted Data Sources */}
+          <Card className="mb-8 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            <CardHeader>
+              <CardTitle>Trusted Data Sources</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                We source our financial data and market information from industry-leading providers:
               </p>
-              <ul className="space-y-3 text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                  <span><strong className="text-foreground">SEC Edgar Database:</strong> Official company filings, 10-Ks, 10-Qs, and proxy statements</span>
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span><strong>Alpha Vantage</strong> - Real-time and historical stock market data</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                  <span><strong className="text-foreground">Company Investor Relations:</strong> Official dividend announcements and financial reports</span>
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span><strong>Financial Modeling Prep</strong> - Company financials and dividend information</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                  <span><strong className="text-foreground">Financial Data Providers:</strong> Verified market data from established financial institutions</span>
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span><strong>SEC EDGAR</strong> - Official company filings and disclosures</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                  <span><strong className="text-foreground">Industry Research:</strong> Reports from reputable financial research firms and institutions</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                  <span><strong className="text-foreground">Academic Studies:</strong> Peer-reviewed research on investing strategies and market performance</span>
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span><strong>Company Investor Relations</strong> - Direct from company sources</span>
                 </li>
               </ul>
             </CardContent>
           </Card>
-        </section>
 
-        {/* Corrections Policy */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-8">Corrections Policy</h2>
-          <Card>
-            <CardContent className="p-8">
-              <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-                We strive for accuracy in all our content, but if an error is identified, we take immediate action 
-                to correct it. Material corrections are clearly noted at the top of the article with the date of 
-                correction and nature of the error.
+          {/* Corrections Policy */}
+          <Card className="mb-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <CardHeader>
+              <CardTitle>Corrections Policy</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-lg max-w-none dark:prose-invert">
+              <p>
+                We strive for accuracy in all our content. If you notice an error or outdated information, please 
+                contact us immediately at <a href="mailto:editorial@divtrkr.com" className="text-primary hover:underline">
+                editorial@divtrkr.com</a>. We will review all correction requests promptly and update content as needed, 
+                noting significant corrections at the top of the relevant article.
               </p>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                If you believe you've found an error in our content, please contact us at{' '}
+            </CardContent>
+          </Card>
+
+          {/* Disclaimer */}
+          <Card className="mb-8 animate-fade-in border-warning/50" style={{ animationDelay: '0.7s' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-warning">
+                <AlertCircle className="h-5 w-5" />
+                Important Disclaimer
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-lg max-w-none dark:prose-invert">
+              <p className="text-muted-foreground">
+                The content on DivTrkr is for educational and informational purposes only. It should not be considered 
+                personalized investment advice. All investing involves risk, including the potential loss of principal. 
+                Past performance does not guarantee future results. Dividend payments are not guaranteed and can be 
+                reduced or eliminated at any time by the issuing company.
+              </p>
+              <p className="text-muted-foreground">
+                Before making any investment decisions, please consult with a qualified financial advisor who understands 
+                your personal financial situation and goals. DivTrkr and its team members are not registered investment 
+                advisors and do not provide personalized investment recommendations.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Contact */}
+          <Card className="animate-fade-in" style={{ animationDelay: '0.8s' }}>
+            <CardHeader>
+              <CardTitle>Contact Our Editorial Team</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                For editorial inquiries, correction requests, or questions about our research methodology:
+              </p>
+              <p className="text-lg">
+                <strong>Email:</strong>{' '}
                 <a href="mailto:editorial@divtrkr.com" className="text-primary hover:underline">
                   editorial@divtrkr.com
-                </a>{' '}
-                with details, and we will investigate promptly.
+                </a>
+              </p>
+              <p className="text-muted-foreground mt-4">
+                <strong>Location:</strong> United States
               </p>
             </CardContent>
           </Card>
-        </section>
-
-        {/* Disclaimer */}
-        <section className="mb-16">
-          <Card className="bg-muted/50 border-muted">
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-                <AlertCircle className="h-6 w-6 text-primary" />
-                Important Disclaimer
-              </h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
-                <p>
-                  The content provided on DivTrkr is for informational and educational purposes only. It is not 
-                  intended as investment advice, financial advice, or a recommendation to buy or sell any security.
-                </p>
-                <p>
-                  All investing involves risk, including the potential loss of principal. Past performance does not 
-                  guarantee future results. Dividend payments are not guaranteed and can be reduced or eliminated at 
-                  any time by the issuing company.
-                </p>
-                <p>
-                  Before making any investment decisions, you should consult with a qualified financial advisor who 
-                  can assess your individual circumstances, financial goals, and risk tolerance.
-                </p>
-                <p>
-                  DivTrkr and its authors may hold positions in the securities discussed in articles. We do not receive 
-                  compensation from companies for coverage or recommendations.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Contact */}
-        <section>
-          <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Questions About Our Editorial Process?</h2>
-              <p className="text-muted-foreground mb-6">
-                We're committed to transparency and are happy to answer any questions about our editorial standards, 
-                research methodology, or content review process.
-              </p>
-              <a 
-                href="/contact" 
-                className="inline-block bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
-              >
-                Contact Us
-              </a>
-            </CardContent>
-          </Card>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+        </div>
+      </div>
+    </AppLayout>
   );
-};
+}

@@ -72,6 +72,11 @@ export const Footer = () => {
                   Privacy Policy
                 </Link>
               </li>
+              <li>
+                <Link to="/editorial" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
+                  Editorial Standards
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -80,7 +85,7 @@ export const Footer = () => {
         <div className="border-t border-border/10 pt-8">
           <div className="text-center">
             <p className="text-muted-foreground mb-2">
-              © 2024 DivTrkr. Building wealth through dividend investing.
+              © 2025 DivTrkr. Building wealth through dividend investing.
             </p>
             <p className="text-xs text-muted-foreground">
               This is not investment advice. We are not investment professionals. All data is provided for educational and entertainment purposes only.
