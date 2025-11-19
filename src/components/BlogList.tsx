@@ -108,7 +108,7 @@ export function BlogList() {
             </div>
           )}
           <CardHeader>
-            <CardTitle className="line-clamp-2">
+            <CardTitle className="line-clamp-2 leading-snug">
               <Link 
                 to={`/blog/${post.slug}`}
                 className="hover:text-primary transition-colors"
@@ -116,7 +116,7 @@ export function BlogList() {
                 {post.title}
               </Link>
             </CardTitle>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-3">
               {post.profiles?.display_name && (
                 <div className="flex items-center gap-1">
                   <User className="h-3 w-3" />
