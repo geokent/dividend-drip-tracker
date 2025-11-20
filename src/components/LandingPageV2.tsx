@@ -211,7 +211,13 @@ const LandingPageV2 = () => {
           </div>
 
           {/* Newsletter Signup - Primary Conversion Goal */}
-          <NewsletterSignup />
+          <section className="py-12 bg-background">
+            <div className="container">
+              <div className="max-w-md mx-auto">
+                <NewsletterSignup />
+              </div>
+            </div>
+          </section>
 
           {/* Learning Paths Section */}
           <section className="py-20 bg-secondary/30">
