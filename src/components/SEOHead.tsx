@@ -54,11 +54,6 @@ export const SEOHead = ({
     updateMetaTag('og:image', ogImage, true);
     updateMetaTag('og:type', 'website', true);
     
-    // Twitter tags
-    updateMetaTag('twitter:title', title);
-    updateMetaTag('twitter:description', description);
-    updateMetaTag('twitter:image', ogImage);
-    updateMetaTag('twitter:card', 'summary_large_image');
     
     // Canonical URL
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
