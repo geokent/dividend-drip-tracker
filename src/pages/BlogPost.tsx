@@ -174,6 +174,11 @@ export default function BlogPost() {
   if (!post) {
     return (
       <AppLayout>
+        <SEOHead
+          title="Post Not Found | DivTrkr Blog"
+          description="This blog post could not be found."
+          noIndex={true}
+        />
         <div className="container mx-auto px-4 py-8 max-w-4xl text-center">
           <h1 className="text-2xl font-bold mb-4">Post Not Found</h1>
           <Link to="/blog">

@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /auth
 
 User-agent: Bingbot
 Allow: /
+Disallow: /auth
 
 User-agent: Twitterbot
 Allow: /
@@ -18,3 +20,6 @@ Disallow: /learn-dividend-snowball
 Disallow: /learn-fire
 Disallow: /learning-academy
 Disallow: /auth
+Disallow: /future-income-projects
+
+Sitemap: https://www.divtrkr.com/sitemap.xml

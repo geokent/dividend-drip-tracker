@@ -217,23 +217,30 @@ export const FutureIncomeProjects = () => {
   // Redirect to login if not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>
-              Please sign in to access your dividend projections
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/">
-                Go to Home Page
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <SEOHead
+          title="Sign In Required | DivTrkr"
+          description="Please sign in to access your dividend projections"
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle>Sign In Required</CardTitle>
+              <CardDescription>
+                Please sign in to access your dividend projections
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/">
+                  Go to Home Page
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     );
   }
 
