@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/Header';
+import { SEOHead } from '@/components/SEOHead';
 import { BookOpen, TrendingUp, Target, Star, CheckCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -154,6 +155,11 @@ export const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Sign In | DivTrkr"
+        description="Sign in to your DivTrkr account to access the Learning Academy"
+        noIndex={true}
+      />
       <Header />
       
       <div className="min-h-screen flex">
