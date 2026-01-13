@@ -32,9 +32,10 @@ Deno.serve(async (req) => {
     console.log(`Fetching data for symbol: ${symbol}`);
     
     // Optimized: Only fetch time-sensitive data (price and dividends)
+    // Using FMP's stable/current endpoints (legacy endpoints deprecated Aug 2025)
     const [priceResponse, dividendsResponse] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${apiKey}`),
-      fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/stock_dividend/${symbol}?apikey=${apiKey}`)
+      fetch(`https://financialmodelingprep.com/stable/quote?symbol=${symbol}&apikey=${apiKey}`),
+      fetch(`https://financialmodelingprep.com/stable/historical-price-eod/dividend?symbol=${symbol}&apikey=${apiKey}`)
     ]);
 
     const [priceData, dividendsData] = await Promise.all([
