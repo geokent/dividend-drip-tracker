@@ -5,6 +5,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Safe JSON parser - prevents crashes when API returns non-JSON (e.g., "Premium required" text)
+async function safeJsonParse(response: Response, label: string): Promise<{ ok: boolean; data: any; text: string; status: number }> {
+  const status = response.status;
+  const text = await response.text();
+  
+  console.log(`${label} response status: ${status}, first 200 chars: ${text.substring(0, 200)}`);
+  
+  try {
+    const data = JSON.parse(text);
+    return { ok: true, data, text, status };
+  } catch {
+    return { ok: false, data: null, text, status };
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -31,38 +46,67 @@ Deno.serve(async (req) => {
 
     console.log(`Fetching data for symbol: ${symbol}`);
     
-    // Optimized: Only fetch time-sensitive data (price and dividends)
-    // Using FMP's stable/current endpoints (legacy endpoints deprecated Aug 2025)
+    // Using v3 endpoints which are more reliable for free/basic tiers
     const [priceResponse, dividendsResponse] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/stable/quote?symbol=${symbol}&apikey=${apiKey}`),
-      fetch(`https://financialmodelingprep.com/stable/historical-price-eod/dividend?symbol=${symbol}&apikey=${apiKey}`)
+      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${apiKey}`),
+      fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/stock_dividend/${symbol}?apikey=${apiKey}`)
     ]);
 
-    const [priceData, dividendsData] = await Promise.all([
-      priceResponse.json(),
-      dividendsResponse.json()
+    // Safe parse both responses
+    const [priceResult, dividendsResult] = await Promise.all([
+      safeJsonParse(priceResponse, 'Price'),
+      safeJsonParse(dividendsResponse, 'Dividends')
     ]);
 
-    console.log('Price data:', JSON.stringify(priceData, null, 2));
-    console.log('Dividends data:', JSON.stringify(dividendsData, null, 2));
-
-    // Check for API errors
-    if (priceData['Error Message'] || dividendsData['Error Message']) {
-      const errorMsg = priceData['Error Message'] || dividendsData['Error Message'];
-      console.log('API Error:', errorMsg);
+    // Check for non-JSON responses (usually "Premium required" or rate limit messages)
+    if (!priceResult.ok) {
+      console.error('Price API returned non-JSON:', priceResult.text.substring(0, 200));
+      const errorMsg = priceResult.text.includes('Premium') 
+        ? 'This endpoint requires a premium FMP subscription' 
+        : `FMP API error: ${priceResult.text.substring(0, 100)}`;
       return new Response(
         JSON.stringify({ error: errorMsg }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!dividendsResult.ok) {
+      console.error('Dividends API returned non-JSON:', dividendsResult.text.substring(0, 200));
+      // For dividends, we can continue with just price data if needed
+      console.log('Continuing with price data only...');
+    }
+
+    const priceData = priceResult.data;
+    const dividendsData = dividendsResult.ok ? dividendsResult.data : null;
+
+    console.log('Price data:', JSON.stringify(priceData, null, 2));
+    if (dividendsData) {
+      console.log('Dividends data:', JSON.stringify(dividendsData, null, 2));
+    }
+
+    // Check for API errors in JSON response
+    if (priceData && priceData['Error Message']) {
+      console.log('API Error:', priceData['Error Message']);
+      return new Response(
+        JSON.stringify({ error: priceData['Error Message'] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Check for rate limiting
-    if (priceData.Note || dividendsData.Note) {
-      const noteMsg = priceData.Note || dividendsData.Note;
-      console.log('API Note (rate limit):', noteMsg);
+    if (priceData && priceData.Note) {
+      console.log('API Note (rate limit):', priceData.Note);
       return new Response(
         JSON.stringify({ error: 'API rate limit reached. Please try again later.' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if we got valid data
+    if (!priceData || (Array.isArray(priceData) && priceData.length === 0)) {
+      return new Response(
+        JSON.stringify({ error: `No data found for symbol: ${symbol}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -236,6 +280,7 @@ Deno.serve(async (req) => {
 
     const result = {
       symbol: symbol.toUpperCase(),
+      companyName: quote?.name || null,
       currentPrice,
       dividendYield,
       dividendPerShare,
