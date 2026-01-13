@@ -1,11 +1,11 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
-// Safe JSON parser - prevents crashes when API returns non-JSON (e.g., "Premium required" text)
+// Safe JSON parser that handles non-JSON responses gracefully
 async function safeJsonParse(response: Response, label: string): Promise<{ ok: boolean; data: any; text: string; status: number }> {
   const status = response.status;
   const text = await response.text();
@@ -21,35 +21,36 @@ async function safeJsonParse(response: Response, label: string): Promise<{ ok: b
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { symbol } = await req.json()
-
+    const { symbol } = await req.json();
+    
     if (!symbol) {
       return new Response(
-        JSON.stringify({ error: 'Missing symbol parameter' }),
+        JSON.stringify({ error: 'Symbol is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    const apiKey = Deno.env.get('FMP_API_KEY')
+    const apiKey = Deno.env.get('FMP_API_KEY');
     if (!apiKey) {
+      console.error('FMP_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'FMP API key not configured' }),
+        JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     console.log(`Fetching data for symbol: ${symbol}`);
     
-    // Using v3 endpoints which are more reliable for free/basic tiers
+    // Using FMP's stable endpoints (required since Aug 2025)
     const [priceResponse, dividendsResponse] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${apiKey}`),
-      fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/stock_dividend/${symbol}?apikey=${apiKey}`)
+      fetch(`https://financialmodelingprep.com/stable/quote?symbol=${symbol}&apikey=${apiKey}`),
+      fetch(`https://financialmodelingprep.com/stable/dividends?symbol=${symbol}&apikey=${apiKey}`)
     ]);
 
     // Safe parse both responses
@@ -58,250 +59,216 @@ Deno.serve(async (req) => {
       safeJsonParse(dividendsResponse, 'Dividends')
     ]);
 
-    // Check for non-JSON responses (usually "Premium required" or rate limit messages)
-    if (!priceResult.ok) {
-      console.error('Price API returned non-JSON:', priceResult.text.substring(0, 200));
-      const errorMsg = priceResult.text.includes('Premium') 
-        ? 'This endpoint requires a premium FMP subscription' 
-        : `FMP API error: ${priceResult.text.substring(0, 100)}`;
+    // Log parsed data for debugging
+    console.log('Price data:', JSON.stringify(priceResult.data, null, 2));
+    console.log('Dividends data:', JSON.stringify(dividendsResult.data, null, 2));
+
+    // Check for API errors in the response
+    if (priceResult.data?.['Error Message']) {
+      console.log('API Error:', priceResult.data['Error Message']);
       return new Response(
-        JSON.stringify({ error: errorMsg }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: `FMP API Error: ${priceResult.data['Error Message']}` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (dividendsResult.data?.['Error Message']) {
+      console.log('API Error:', dividendsResult.data['Error Message']);
+      return new Response(
+        JSON.stringify({ error: `FMP API Error: ${dividendsResult.data['Error Message']}` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Handle non-JSON responses (like "Premium required" text)
+    if (!priceResult.ok) {
+      console.log('Price response was not valid JSON:', priceResult.text.substring(0, 100));
+      return new Response(
+        JSON.stringify({ error: `FMP API returned invalid response for price data: ${priceResult.text.substring(0, 100)}` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (!dividendsResult.ok) {
-      console.error('Dividends API returned non-JSON:', dividendsResult.text.substring(0, 200));
-      // For dividends, we can continue with just price data if needed
-      console.log('Continuing with price data only...');
+      console.log('Dividends response was not valid JSON:', dividendsResult.text.substring(0, 100));
+      return new Response(
+        JSON.stringify({ error: `FMP API returned invalid response for dividend data: ${dividendsResult.text.substring(0, 100)}` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Handle HTTP error status codes
+    if (priceResult.status === 401 || priceResult.status === 403) {
+      return new Response(
+        JSON.stringify({ error: 'FMP API access denied. Please check your API key.' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (priceResult.status === 429) {
+      return new Response(
+        JSON.stringify({ error: 'FMP API rate limit reached. Please try again later.' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const priceData = priceResult.data;
-    const dividendsData = dividendsResult.ok ? dividendsResult.data : null;
+    const dividendsData = dividendsResult.data;
 
-    console.log('Price data:', JSON.stringify(priceData, null, 2));
-    if (dividendsData) {
-      console.log('Dividends data:', JSON.stringify(dividendsData, null, 2));
-    }
-
-    // Check for API errors in JSON response
-    if (priceData && priceData['Error Message']) {
-      console.log('API Error:', priceData['Error Message']);
-      return new Response(
-        JSON.stringify({ error: priceData['Error Message'] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check for rate limiting
-    if (priceData && priceData.Note) {
-      console.log('API Note (rate limit):', priceData.Note);
-      return new Response(
-        JSON.stringify({ error: 'API rate limit reached. Please try again later.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if we got valid data
-    if (!priceData || (Array.isArray(priceData) && priceData.length === 0)) {
-      return new Response(
-        JSON.stringify({ error: `No data found for symbol: ${symbol}` }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Extract price data (FMP returns an array)
-    const quote = Array.isArray(priceData) ? priceData[0] : priceData;
-    const currentPrice = quote?.price ? parseFloat(quote.price) : null;
+    // Handle empty or invalid price data
+    // Stable API returns an array, check if it has data
+    const quoteData = Array.isArray(priceData) ? priceData[0] : priceData;
     
-    // Helper functions for enhanced dividend analysis
-    const analyzeDividendFrequency = (dividendHistory: any[]) => {
-      if (!dividendHistory || dividendHistory.length < 2) return 'unknown';
-      
-      const dates = dividendHistory.map((d: any) => new Date(d.date || d.exDividendDate).getTime());
-      dates.sort((a: number, b: number) => b - a); // Most recent first
-      
-      const daysBetween: number[] = [];
-      for (let i = 0; i < Math.min(dates.length - 1, 4); i++) {
-        const diff = Math.abs(dates[i] - dates[i + 1]) / (1000 * 60 * 60 * 24);
-        daysBetween.push(diff);
-      }
-      
-      if (daysBetween.length === 0) return 'unknown';
-      
-      const avgDays = daysBetween.reduce((sum, days) => sum + days, 0) / daysBetween.length;
-      
-      if (avgDays >= 350) return 'annual';
-      if (avgDays >= 80 && avgDays <= 100) return 'quarterly';
-      if (avgDays >= 25 && avgDays <= 35) return 'monthly';
-      return 'irregular';
+    if (!quoteData || (Array.isArray(priceData) && priceData.length === 0)) {
+      console.log('No price data found for symbol:', symbol);
+      return new Response(
+        JSON.stringify({ error: `Stock not found. Could not find data for ${symbol}.` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Extract basic stock info from quote data
+    const stockData: any = {
+      symbol: quoteData.symbol || symbol,
+      companyName: quoteData.name || quoteData.companyName || symbol,
+      currentPrice: quoteData.price || null,
+      dividendYield: null,
+      dividendPerShare: null,
+      annualDividend: null,
+      exDividendDate: null,
+      dividendDate: null,
+      nextExDividendDate: null,
+      dividendFrequency: null,
+      sector: quoteData.sector || null,
+      industry: quoteData.industry || null,
+      marketCap: quoteData.marketCap || null,
+      peRatio: quoteData.pe || quoteData.peRatio || null,
     };
-    
-    const estimateNextDividendDate = (lastExDate: string, frequency: string) => {
-      if (!lastExDate) return null;
+
+    // Helper function to analyze dividend frequency
+    const analyzeDividendFrequency = (dividends: any[]): string => {
+      if (dividends.length < 2) return 'Unknown';
       
-      const lastDate = new Date(lastExDate);
-      const today = new Date();
+      // Get dates from last year
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
       
-      let nextDate = new Date(lastDate);
+      const recentDividends = dividends.filter(d => new Date(d.date || d.paymentDate) > oneYearAgo);
+      const count = recentDividends.length;
       
+      if (count >= 11 && count <= 13) return 'Monthly';
+      if (count >= 3 && count <= 5) return 'Quarterly';
+      if (count === 2) return 'Semi-Annual';
+      if (count === 1) return 'Annual';
+      if (count > 13) return 'Monthly';
+      
+      return 'Quarterly'; // Default assumption
+    };
+
+    // Helper function to estimate next dividend date
+    const estimateNextDividendDate = (dividends: any[], frequency: string): string | null => {
+      if (dividends.length === 0) return null;
+      
+      const lastDividend = dividends[0];
+      const lastDate = new Date(lastDividend.date || lastDividend.paymentDate);
+      
+      let monthsToAdd = 3; // Default quarterly
       switch (frequency) {
-        case 'quarterly':
-          nextDate.setMonth(lastDate.getMonth() + 3);
-          break;
-        case 'monthly':
-          nextDate.setMonth(lastDate.getMonth() + 1);
-          break;
-        case 'annual':
-          nextDate.setFullYear(lastDate.getFullYear() + 1);
-          break;
-        default:
-          // For irregular or unknown, estimate quarterly as most common
-          nextDate.setMonth(lastDate.getMonth() + 3);
+        case 'Monthly': monthsToAdd = 1; break;
+        case 'Quarterly': monthsToAdd = 3; break;
+        case 'Semi-Annual': monthsToAdd = 6; break;
+        case 'Annual': monthsToAdd = 12; break;
       }
       
-      // If estimated date is in the past, add another period
-      while (nextDate <= today) {
-        switch (frequency) {
-          case 'quarterly':
-            nextDate.setMonth(nextDate.getMonth() + 3);
-            break;
-          case 'monthly':
-            nextDate.setMonth(nextDate.getMonth() + 1);
-            break;
-          case 'annual':
-            nextDate.setFullYear(nextDate.getFullYear() + 1);
-            break;
-          default:
-            nextDate.setMonth(nextDate.getMonth() + 3);
-        }
+      const nextDate = new Date(lastDate);
+      nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
+      
+      // If estimated date is in the past, keep adding intervals
+      const now = new Date();
+      while (nextDate < now) {
+        nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
       }
       
-      return nextDate.toISOString().split('T')[0]; // Return YYYY-MM-DD format
+      return nextDate.toISOString().split('T')[0];
     };
 
-    // Enhanced dividend parsing using dedicated DIVIDENDS API
-    let dividendYield = null;
-    let dividendPerShare = null;
-    let annualDividend = null;
-    let exDividendDate = null;
-    let dividendDate = null;
-    let nextExDividendDate = null;
-    let dividendFrequency = 'unknown';
+    // Handle both new stable format (array) and legacy format (object with .historical)
+    let dividendHistory: any[] | null = null;
+    if (dividendsData) {
+      if (Array.isArray(dividendsData)) {
+        // New stable format: returns array directly
+        dividendHistory = dividendsData;
+        console.log(`Found ${dividendsData.length} dividend records (stable format)`);
+      } else if (dividendsData.historical && Array.isArray(dividendsData.historical)) {
+        // Legacy format: object with .historical array
+        dividendHistory = dividendsData.historical;
+        console.log(`Found ${dividendsData.historical.length} dividend records (legacy format)`);
+      }
+    }
     
-    console.log('Processing dividend data from FMP API...');
-    
-    // Extract data from FMP's historical dividend data
-    if (dividendsData && dividendsData.historical && Array.isArray(dividendsData.historical)) {
-      console.log(`Found ${dividendsData.historical.length} dividend records from FMP API`);
-      
-      const sortedDividends = dividendsData.historical.sort((a: any, b: any) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+    if (dividendHistory && dividendHistory.length > 0) {
+      // Sort by date descending (most recent first)
+      const sortedDividends = dividendHistory.sort((a: any, b: any) => {
+        const dateA = new Date(a.date || a.paymentDate || a.exDividendDate || 0);
+        const dateB = new Date(b.date || b.paymentDate || b.exDividendDate || 0);
+        return dateB.getTime() - dateA.getTime();
+      });
       
       // Analyze frequency
-      dividendFrequency = analyzeDividendFrequency(sortedDividends);
-      console.log('Detected dividend frequency:', dividendFrequency);
+      const frequency = analyzeDividendFrequency(sortedDividends);
+      stockData.dividendFrequency = frequency;
       
-      if (sortedDividends.length > 0) {
-        const mostRecent = sortedDividends[0];
-        
-        // FMP uses 'date' as ex-dividend date and 'paymentDate' for payment
-        const rawExDividendDate = mostRecent.date || null;
-        const rawDividendDate = mostRecent.paymentDate || null;
-        
-        // Sanitize date values - set to null if "None", empty, or invalid
-        exDividendDate = (rawExDividendDate && rawExDividendDate !== 'None' && rawExDividendDate !== '') ? rawExDividendDate : null;
-        dividendDate = (rawDividendDate && rawDividendDate !== 'None' && rawDividendDate !== '') ? rawDividendDate : exDividendDate;
-        
-        // FMP uses 'dividend' field
-        dividendPerShare = parseFloat(mostRecent.dividend || mostRecent.adjDividend || 0);
-        
-        // Calculate annual dividend based on frequency and recent payments
-        if (dividendPerShare > 0) {
-          const recentYear = sortedDividends.filter((d: any) => {
-            const divDate = new Date(d.date);
-            const oneYearAgo = new Date();
-            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-            return divDate >= oneYearAgo;
-          });
-          
-          if (recentYear.length > 0) {
-            annualDividend = recentYear.reduce((sum: number, d: any) => 
-              sum + parseFloat(d.dividend || d.adjDividend || 0), 0
-            );
-          } else {
-            // Estimate based on frequency
-            switch (dividendFrequency) {
-              case 'quarterly':
-                annualDividend = dividendPerShare * 4;
-                break;
-              case 'monthly':
-                annualDividend = dividendPerShare * 12;
-                break;
-              case 'annual':
-                annualDividend = dividendPerShare;
-                break;
-              default:
-                annualDividend = dividendPerShare * 4; // Default to quarterly estimate
-            }
-          }
-        }
-        
-        // Estimate next ex-dividend date
-        nextExDividendDate = estimateNextDividendDate(exDividendDate, dividendFrequency);
-        
-        console.log('Extracted from FMP API:', {
-          exDividendDate,
-          dividendDate,
-          dividendPerShare,
-          annualDividend,
-          frequency: dividendFrequency,
-          nextEstimated: nextExDividendDate
-        });
+      // Get most recent dividend data
+      const latestDividend = sortedDividends[0];
+      
+      // Handle different field names in the API response
+      const dividendAmount = latestDividend.dividend || latestDividend.adjDividend || latestDividend.amount || 0;
+      stockData.dividendPerShare = dividendAmount;
+      
+      // Calculate annual dividend based on frequency
+      let multiplier = 4; // Default quarterly
+      switch (frequency) {
+        case 'Monthly': multiplier = 12; break;
+        case 'Quarterly': multiplier = 4; break;
+        case 'Semi-Annual': multiplier = 2; break;
+        case 'Annual': multiplier = 1; break;
       }
-    }
-    
-    // Calculate yield if we have price and annual dividend
-    if (!dividendYield && currentPrice && annualDividend) {
-      dividendYield = (annualDividend / currentPrice) * 100;
-    }
-    
-    // Log final dividend analysis
-    console.log('Final dividend data:', {
-      dividendYield,
-      dividendPerShare,
-      annualDividend,
-      exDividendDate,
-      dividendDate,
-      nextExDividendDate,
-      frequency: dividendFrequency
-    });
-
-    const result = {
-      symbol: symbol.toUpperCase(),
-      companyName: quote?.name || null,
-      currentPrice,
-      dividendYield,
-      dividendPerShare,
-      annualDividend,
-      exDividendDate,
-      dividendDate,
-      nextExDividendDate,
-      dividendFrequency,
+      stockData.annualDividend = dividendAmount * multiplier;
+      
+      // Calculate yield if we have price and annual dividend
+      if (stockData.currentPrice && stockData.annualDividend) {
+        stockData.dividendYield = (stockData.annualDividend / stockData.currentPrice) * 100;
+      }
+      
+      // Set dividend dates - handle different field names
+      stockData.exDividendDate = latestDividend.exDividendDate || latestDividend.date || null;
+      stockData.dividendDate = latestDividend.paymentDate || latestDividend.date || null;
+      
+      // Estimate next ex-dividend date
+      stockData.nextExDividendDate = estimateNextDividendDate(sortedDividends, frequency);
+      
+      console.log('Processed dividend data:', {
+        frequency,
+        latestDividend: dividendAmount,
+        annualDividend: stockData.annualDividend,
+        yield: stockData.dividendYield
+      });
+    } else {
+      console.log('No dividend history found for symbol:', symbol);
     }
 
-    console.log('Final result being returned:', JSON.stringify(result, null, 2));
+    console.log('Final stock data:', stockData);
 
     return new Response(
-      JSON.stringify(result),
+      JSON.stringify(stockData),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
+
   } catch (error) {
-    console.error('Error fetching dividend data:', error)
+    console.error('Error in get-dividend-data:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   }
-})
+});
