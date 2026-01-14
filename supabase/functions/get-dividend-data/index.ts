@@ -20,6 +20,228 @@ async function safeJsonParse(response: Response, label: string): Promise<{ ok: b
   }
 }
 
+// Fetch data from Tiingo API (fallback for ETFs that require premium FMP access)
+async function fetchFromTiingo(symbol: string, apiKey: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  const headers = { 
+    'Content-Type': 'application/json',
+    'Authorization': `Token ${apiKey}`
+  };
+  
+  console.log(`Attempting Tiingo fallback for symbol: ${symbol}`);
+  
+  try {
+    // Tiingo IEX endpoint for real-time price data
+    const priceUrl = `https://api.tiingo.com/iex/${symbol.toLowerCase()}`;
+    // Tiingo distributions endpoint for dividend history
+    const dividendUrl = `https://api.tiingo.com/tiingo/corporate-actions/${symbol.toLowerCase()}/distributions`;
+    
+    const [priceResponse, dividendResponse] = await Promise.all([
+      fetch(priceUrl, { headers }),
+      fetch(dividendUrl, { headers })
+    ]);
+
+    console.log(`Tiingo price response status: ${priceResponse.status}`);
+    console.log(`Tiingo dividend response status: ${dividendResponse.status}`);
+
+    // Check if Tiingo found the symbol
+    if (priceResponse.status === 404) {
+      console.log('Tiingo: Symbol not found');
+      return { success: false, error: `Symbol ${symbol} not found on Tiingo` };
+    }
+
+    if (priceResponse.status !== 200) {
+      const errorText = await priceResponse.text();
+      console.log('Tiingo price error:', errorText);
+      return { success: false, error: `Tiingo API error: ${errorText.substring(0, 100)}` };
+    }
+
+    const priceData = await priceResponse.json();
+    let dividendData: any[] = [];
+    
+    if (dividendResponse.status === 200) {
+      dividendData = await dividendResponse.json();
+    } else {
+      console.log('Tiingo dividend data not available, continuing with price only');
+    }
+
+    console.log('Tiingo price data:', JSON.stringify(priceData, null, 2));
+    console.log('Tiingo dividend data count:', dividendData?.length || 0);
+
+    // Tiingo IEX returns array with single element for single symbol
+    const quote = Array.isArray(priceData) ? priceData[0] : priceData;
+    
+    if (!quote) {
+      return { success: false, error: `No price data found for ${symbol} on Tiingo` };
+    }
+
+    // Build normalized stock data
+    const stockData: any = {
+      symbol: symbol.toUpperCase(),
+      companyName: quote.ticker?.toUpperCase() || symbol.toUpperCase(),
+      currentPrice: quote.last || quote.prevClose || quote.tngoLast || null,
+      dividendYield: null,
+      dividendPerShare: null,
+      annualDividend: null,
+      exDividendDate: null,
+      dividendDate: null,
+      nextExDividendDate: null,
+      dividendFrequency: null,
+      sector: null,
+      industry: null,
+      marketCap: null,
+      peRatio: null,
+    };
+
+    // Process dividend data if available
+    if (dividendData && dividendData.length > 0) {
+      // Sort by exDate descending (most recent first)
+      const sortedDividends = dividendData.sort((a: any, b: any) => {
+        const dateA = new Date(a.exDate || 0);
+        const dateB = new Date(b.exDate || 0);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      // Analyze frequency from recent dividends
+      const frequency = analyzeTiingoDividendFrequency(sortedDividends);
+      stockData.dividendFrequency = frequency;
+
+      // Get most recent dividend
+      const latestDividend = sortedDividends[0];
+      const dividendAmount = latestDividend.divCash || latestDividend.dividend || 0;
+      stockData.dividendPerShare = dividendAmount;
+
+      // Calculate annual dividend based on frequency
+      let multiplier = 12; // Default monthly for most ETFs like QQQI/SPYI
+      switch (frequency) {
+        case 'Monthly': multiplier = 12; break;
+        case 'Quarterly': multiplier = 4; break;
+        case 'Semi-Annual': multiplier = 2; break;
+        case 'Annual': multiplier = 1; break;
+      }
+      stockData.annualDividend = dividendAmount * multiplier;
+
+      // Calculate yield
+      if (stockData.currentPrice && stockData.annualDividend) {
+        stockData.dividendYield = (stockData.annualDividend / stockData.currentPrice) * 100;
+      }
+
+      // Set dividend dates
+      stockData.exDividendDate = latestDividend.exDate || null;
+      stockData.dividendDate = latestDividend.payDate || null;
+
+      // Estimate next ex-dividend date
+      stockData.nextExDividendDate = estimateNextDividendDateFromTiingo(sortedDividends, frequency);
+
+      console.log('Tiingo processed dividend data:', {
+        frequency,
+        latestDividend: dividendAmount,
+        annualDividend: stockData.annualDividend,
+        yield: stockData.dividendYield
+      });
+    }
+
+    return { success: true, data: stockData };
+
+  } catch (error) {
+    console.error('Tiingo fetch error:', error);
+    return { success: false, error: `Tiingo API error: ${error.message}` };
+  }
+}
+
+// Analyze dividend frequency from Tiingo data
+function analyzeTiingoDividendFrequency(dividends: any[]): string {
+  if (dividends.length < 2) return 'Unknown';
+  
+  // Get dates from last year
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  
+  const recentDividends = dividends.filter(d => new Date(d.exDate) > oneYearAgo);
+  const count = recentDividends.length;
+  
+  if (count >= 11 && count <= 13) return 'Monthly';
+  if (count >= 3 && count <= 5) return 'Quarterly';
+  if (count === 2) return 'Semi-Annual';
+  if (count === 1) return 'Annual';
+  if (count > 13) return 'Monthly';
+  
+  return 'Monthly'; // Default for ETFs like QQQI/SPYI
+}
+
+// Estimate next dividend date from Tiingo data
+function estimateNextDividendDateFromTiingo(dividends: any[], frequency: string): string | null {
+  if (dividends.length === 0) return null;
+  
+  const lastDividend = dividends[0];
+  const lastDate = new Date(lastDividend.exDate);
+  
+  let monthsToAdd = 1; // Default monthly
+  switch (frequency) {
+    case 'Monthly': monthsToAdd = 1; break;
+    case 'Quarterly': monthsToAdd = 3; break;
+    case 'Semi-Annual': monthsToAdd = 6; break;
+    case 'Annual': monthsToAdd = 12; break;
+  }
+  
+  const nextDate = new Date(lastDate);
+  nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
+  
+  // If estimated date is in the past, keep adding intervals
+  const now = new Date();
+  while (nextDate < now) {
+    nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
+  }
+  
+  return nextDate.toISOString().split('T')[0];
+}
+
+// Helper function to analyze dividend frequency (for FMP data)
+const analyzeDividendFrequency = (dividends: any[]): string => {
+  if (dividends.length < 2) return 'Unknown';
+  
+  // Get dates from last year
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  
+  const recentDividends = dividends.filter(d => new Date(d.date || d.paymentDate) > oneYearAgo);
+  const count = recentDividends.length;
+  
+  if (count >= 11 && count <= 13) return 'Monthly';
+  if (count >= 3 && count <= 5) return 'Quarterly';
+  if (count === 2) return 'Semi-Annual';
+  if (count === 1) return 'Annual';
+  if (count > 13) return 'Monthly';
+  
+  return 'Quarterly'; // Default assumption
+};
+
+// Helper function to estimate next dividend date (for FMP data)
+const estimateNextDividendDate = (dividends: any[], frequency: string): string | null => {
+  if (dividends.length === 0) return null;
+  
+  const lastDividend = dividends[0];
+  const lastDate = new Date(lastDividend.date || lastDividend.paymentDate);
+  
+  let monthsToAdd = 3; // Default quarterly
+  switch (frequency) {
+    case 'Monthly': monthsToAdd = 1; break;
+    case 'Quarterly': monthsToAdd = 3; break;
+    case 'Semi-Annual': monthsToAdd = 6; break;
+    case 'Annual': monthsToAdd = 12; break;
+  }
+  
+  const nextDate = new Date(lastDate);
+  nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
+  
+  // If estimated date is in the past, keep adding intervals
+  const now = new Date();
+  while (nextDate < now) {
+    nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
+  }
+  
+  return nextDate.toISOString().split('T')[0];
+};
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -36,8 +258,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('FMP_API_KEY');
-    if (!apiKey) {
+    const fmpApiKey = Deno.env.get('FMP_API_KEY');
+    const tiingoApiKey = Deno.env.get('TIINGO_API_KEY');
+    
+    if (!fmpApiKey) {
       console.error('FMP_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
@@ -49,8 +273,8 @@ Deno.serve(async (req) => {
     
     // Using FMP's stable endpoints (required since Aug 2025)
     const [priceResponse, dividendsResponse] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/stable/quote?symbol=${symbol}&apikey=${apiKey}`),
-      fetch(`https://financialmodelingprep.com/stable/dividends?symbol=${symbol}&apikey=${apiKey}`)
+      fetch(`https://financialmodelingprep.com/stable/quote?symbol=${symbol}&apikey=${fmpApiKey}`),
+      fetch(`https://financialmodelingprep.com/stable/dividends?symbol=${symbol}&apikey=${fmpApiKey}`)
     ]);
 
     // Safe parse both responses
@@ -60,10 +284,46 @@ Deno.serve(async (req) => {
     ]);
 
     // Log parsed data for debugging
-    console.log('Price data:', JSON.stringify(priceResult.data, null, 2));
-    console.log('Dividends data:', JSON.stringify(dividendsResult.data, null, 2));
+    console.log('FMP Price data:', JSON.stringify(priceResult.data, null, 2));
+    console.log('FMP Dividends data:', JSON.stringify(dividendsResult.data, null, 2));
 
-    // Check for API errors in the response
+    // Check if FMP requires premium for this symbol (402 status or premium-related messages)
+    const needsFallback = 
+      priceResult.status === 402 || 
+      dividendsResult.status === 402 ||
+      (priceResult.text && priceResult.text.toLowerCase().includes('premium')) ||
+      (dividendsResult.text && dividendsResult.text.toLowerCase().includes('premium'));
+
+    if (needsFallback) {
+      console.log('FMP returned premium-required, attempting Tiingo fallback...');
+      
+      if (!tiingoApiKey) {
+        return new Response(
+          JSON.stringify({ 
+            error: `${symbol} requires premium FMP access. Please configure TIINGO_API_KEY for ETF support.` 
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const tiingoResult = await fetchFromTiingo(symbol, tiingoApiKey);
+      
+      if (tiingoResult.success) {
+        console.log('Tiingo fallback successful for:', symbol);
+        return new Response(
+          JSON.stringify(tiingoResult.data),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        console.log('Tiingo fallback failed:', tiingoResult.error);
+        return new Response(
+          JSON.stringify({ error: tiingoResult.error || `Unable to find data for ${symbol}` }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Check for API errors in the FMP response
     if (priceResult.data?.['Error Message']) {
       console.log('API Error:', priceResult.data['Error Message']);
       return new Response(
@@ -83,6 +343,19 @@ Deno.serve(async (req) => {
     // Handle non-JSON responses (like "Premium required" text)
     if (!priceResult.ok) {
       console.log('Price response was not valid JSON:', priceResult.text.substring(0, 100));
+      
+      // Try Tiingo fallback for invalid JSON responses too
+      if (tiingoApiKey) {
+        console.log('Attempting Tiingo fallback for non-JSON FMP response...');
+        const tiingoResult = await fetchFromTiingo(symbol, tiingoApiKey);
+        if (tiingoResult.success) {
+          return new Response(
+            JSON.stringify(tiingoResult.data),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+      
       return new Response(
         JSON.stringify({ error: `FMP API returned invalid response for price data: ${priceResult.text.substring(0, 100)}` }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -91,10 +364,7 @@ Deno.serve(async (req) => {
 
     if (!dividendsResult.ok) {
       console.log('Dividends response was not valid JSON:', dividendsResult.text.substring(0, 100));
-      return new Response(
-        JSON.stringify({ error: `FMP API returned invalid response for dividend data: ${dividendsResult.text.substring(0, 100)}` }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // Continue with price data only - dividends might not be available
     }
 
     // Handle HTTP error status codes
@@ -113,14 +383,27 @@ Deno.serve(async (req) => {
     }
 
     const priceData = priceResult.data;
-    const dividendsData = dividendsResult.data;
+    const dividendsData = dividendsResult.ok ? dividendsResult.data : null;
 
     // Handle empty or invalid price data
     // Stable API returns an array, check if it has data
     const quoteData = Array.isArray(priceData) ? priceData[0] : priceData;
     
     if (!quoteData || (Array.isArray(priceData) && priceData.length === 0)) {
-      console.log('No price data found for symbol:', symbol);
+      console.log('No FMP price data found for symbol:', symbol);
+      
+      // Try Tiingo fallback for symbols not found in FMP
+      if (tiingoApiKey) {
+        console.log('Attempting Tiingo fallback for symbol not found in FMP...');
+        const tiingoResult = await fetchFromTiingo(symbol, tiingoApiKey);
+        if (tiingoResult.success) {
+          return new Response(
+            JSON.stringify(tiingoResult.data),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+      
       return new Response(
         JSON.stringify({ error: `Stock not found. Could not find data for ${symbol}.` }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -143,53 +426,6 @@ Deno.serve(async (req) => {
       industry: quoteData.industry || null,
       marketCap: quoteData.marketCap || null,
       peRatio: quoteData.pe || quoteData.peRatio || null,
-    };
-
-    // Helper function to analyze dividend frequency
-    const analyzeDividendFrequency = (dividends: any[]): string => {
-      if (dividends.length < 2) return 'Unknown';
-      
-      // Get dates from last year
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-      
-      const recentDividends = dividends.filter(d => new Date(d.date || d.paymentDate) > oneYearAgo);
-      const count = recentDividends.length;
-      
-      if (count >= 11 && count <= 13) return 'Monthly';
-      if (count >= 3 && count <= 5) return 'Quarterly';
-      if (count === 2) return 'Semi-Annual';
-      if (count === 1) return 'Annual';
-      if (count > 13) return 'Monthly';
-      
-      return 'Quarterly'; // Default assumption
-    };
-
-    // Helper function to estimate next dividend date
-    const estimateNextDividendDate = (dividends: any[], frequency: string): string | null => {
-      if (dividends.length === 0) return null;
-      
-      const lastDividend = dividends[0];
-      const lastDate = new Date(lastDividend.date || lastDividend.paymentDate);
-      
-      let monthsToAdd = 3; // Default quarterly
-      switch (frequency) {
-        case 'Monthly': monthsToAdd = 1; break;
-        case 'Quarterly': monthsToAdd = 3; break;
-        case 'Semi-Annual': monthsToAdd = 6; break;
-        case 'Annual': monthsToAdd = 12; break;
-      }
-      
-      const nextDate = new Date(lastDate);
-      nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
-      
-      // If estimated date is in the past, keep adding intervals
-      const now = new Date();
-      while (nextDate < now) {
-        nextDate.setMonth(nextDate.getMonth() + monthsToAdd);
-      }
-      
-      return nextDate.toISOString().split('T')[0];
     };
 
     // Handle both new stable format (array) and legacy format (object with .historical)
