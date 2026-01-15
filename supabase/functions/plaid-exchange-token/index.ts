@@ -12,12 +12,39 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate JWT and get authenticated user
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const anonSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const { data: { user: authUser }, error: authError } = await anonSupabase.auth.getUser()
+    if (authError || !authUser) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Use authenticated user ID, NOT from request body
+    const user_id = authUser.id
+
+    // Service role client for privileged operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { public_token, user_id } = await req.json()
+    const { public_token } = await req.json()
     
     // Extract request metadata for security logging
     const xForwardedFor = req.headers.get('x-forwarded-for')
@@ -37,9 +64,9 @@ Deno.serve(async (req) => {
       console.error('Failed to log token exchange attempt:', logError)
     }
 
-    if (!public_token || !user_id) {
+    if (!public_token) {
       return new Response(
-        JSON.stringify({ error: 'Missing public_token or user_id' }),
+        JSON.stringify({ error: 'Missing public_token' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
