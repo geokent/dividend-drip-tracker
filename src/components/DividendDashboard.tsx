@@ -317,7 +317,13 @@ export const DividendDashboard = () => {
       }
     };
 
-    loadData();
+    loadData().then(() => {
+      // Auto-refresh stocks with missing dividend data in the background
+      fetchDividendDataForStocks().then(() => {
+        // Reload stocks to show updated dividend data
+        loadUserStocks();
+      });
+    });
   }, [user?.id, toast]);
 
   const handleStockFound = async (stockData: StockData) => {
