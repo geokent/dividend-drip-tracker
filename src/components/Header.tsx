@@ -2,9 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { useAuth } from "@/components/AuthProvider";
-import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -13,10 +11,7 @@ export const Header = () => {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", requireAuth: true },
-    { name: "Income Projections", href: "/future-income-projects" },
-    { name: "Blog", href: "/blog" },
-    { name: "FAQ", href: "/faq" },
-    { name: "Learning Academy", href: "/learning-academy" },
+    { name: "Income Projections", href: "/future-income-projects", requireAuth: true },
   ];
 
   const isActivePath = (path: string) => location.pathname === path;
@@ -58,13 +53,6 @@ export const Header = () => {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {!user && (
-              <div className="w-64">
-                <NewsletterSignup />
-              </div>
-            )}
-            <PWAInstallButton />
-            
             {user ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-muted-foreground hidden lg:block">
@@ -125,23 +113,28 @@ export const Header = () => {
                   </Link>
                 );
               })}
-              
-              <div className="px-3 py-2 flex items-center space-x-3">
-                <PWAInstallButton />
-                
+              <div className="pt-2 border-t border-border/10">
                 {user ? (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={signOut}
-                    className="flex items-center gap-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </Button>
+                  <div className="space-y-2 px-3 py-2">
+                    <span className="text-sm text-muted-foreground block">
+                      {user.email}
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        signOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </div>
                 ) : (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/">Sign In</Link>
+                  <Button variant="outline" size="sm" asChild className="w-full mx-3">
+                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
                   </Button>
                 )}
               </div>
