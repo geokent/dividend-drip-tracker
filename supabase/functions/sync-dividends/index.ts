@@ -12,12 +12,37 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate JWT and get authenticated user
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const anonSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const { data: { user: authUser }, error: authError } = await anonSupabase.auth.getUser()
+    if (authError || !authUser) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Use authenticated user ID, NOT from request body
+    const user_id = authUser.id
+
+    // Service role client for privileged operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
-
-    const { user_id } = await req.json()
     
     // Extract request metadata for security logging
     const xForwardedFor = req.headers.get('x-forwarded-for')
@@ -59,13 +84,6 @@ Deno.serve(async (req) => {
       })
     } catch (logError) {
       console.error('Failed to log sync attempt:', logError)
-    }
-
-    if (!user_id) {
-      return new Response(
-        JSON.stringify({ error: 'Missing user_id' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
     }
 
     // Get only ACTIVE Plaid accounts for the user
