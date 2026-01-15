@@ -20,143 +20,15 @@ async function safeJsonParse(response: Response, label: string): Promise<{ ok: b
   }
 }
 
-// Fetch data from Tiingo API (fallback for ETFs that require premium FMP access)
-async function fetchFromTiingo(symbol: string, apiKey: string): Promise<{ success: boolean; data?: any; error?: string }> {
-  const headers = { 
-    'Content-Type': 'application/json',
-    'Authorization': `Token ${apiKey}`
-  };
-  
-  console.log(`Attempting Tiingo fallback for symbol: ${symbol}`);
-  
-  try {
-    // Tiingo IEX endpoint for real-time price data
-    const priceUrl = `https://api.tiingo.com/iex/${symbol.toLowerCase()}`;
-    // Tiingo distributions endpoint for dividend history
-    const dividendUrl = `https://api.tiingo.com/tiingo/corporate-actions/${symbol.toLowerCase()}/distributions`;
-    
-    const [priceResponse, dividendResponse] = await Promise.all([
-      fetch(priceUrl, { headers }),
-      fetch(dividendUrl, { headers })
-    ]);
-
-    console.log(`Tiingo price response status: ${priceResponse.status}`);
-    console.log(`Tiingo dividend response status: ${dividendResponse.status}`);
-
-    // Check if Tiingo found the symbol
-    if (priceResponse.status === 404) {
-      console.log('Tiingo: Symbol not found');
-      return { success: false, error: `Symbol ${symbol} not found on Tiingo` };
-    }
-
-    if (priceResponse.status !== 200) {
-      const errorText = await priceResponse.text();
-      console.log('Tiingo price error:', errorText);
-      return { success: false, error: `Tiingo API error: ${errorText.substring(0, 100)}` };
-    }
-
-    const priceData = await priceResponse.json();
-    let dividendData: any[] = [];
-    
-    if (dividendResponse.status === 200) {
-      dividendData = await dividendResponse.json();
-    } else {
-      console.log('Tiingo dividend data not available, continuing with price only');
-    }
-
-    console.log('Tiingo price data:', JSON.stringify(priceData, null, 2));
-    console.log('Tiingo dividend data count:', dividendData?.length || 0);
-
-    // Tiingo IEX returns array with single element for single symbol
-    const quote = Array.isArray(priceData) ? priceData[0] : priceData;
-    
-    if (!quote) {
-      return { success: false, error: `No price data found for ${symbol} on Tiingo` };
-    }
-
-    // Build normalized stock data
-    const stockData: any = {
-      symbol: symbol.toUpperCase(),
-      companyName: quote.ticker?.toUpperCase() || symbol.toUpperCase(),
-      currentPrice: quote.last || quote.prevClose || quote.tngoLast || null,
-      dividendYield: null,
-      dividendPerShare: null,
-      annualDividend: null,
-      exDividendDate: null,
-      dividendDate: null,
-      nextExDividendDate: null,
-      dividendFrequency: null,
-      sector: null,
-      industry: null,
-      marketCap: null,
-      peRatio: null,
-    };
-
-    // Process dividend data if available
-    if (dividendData && dividendData.length > 0) {
-      // Sort by exDate descending (most recent first)
-      const sortedDividends = dividendData.sort((a: any, b: any) => {
-        const dateA = new Date(a.exDate || 0);
-        const dateB = new Date(b.exDate || 0);
-        return dateB.getTime() - dateA.getTime();
-      });
-
-      // Analyze frequency from recent dividends
-      const frequency = analyzeTiingoDividendFrequency(sortedDividends);
-      stockData.dividendFrequency = frequency;
-
-      // Get most recent dividend
-      const latestDividend = sortedDividends[0];
-      const dividendAmount = latestDividend.divCash || latestDividend.dividend || 0;
-      stockData.dividendPerShare = dividendAmount;
-
-      // Calculate annual dividend based on frequency
-      let multiplier = 12; // Default monthly for most ETFs like QQQI/SPYI
-      switch (frequency) {
-        case 'Monthly': multiplier = 12; break;
-        case 'Quarterly': multiplier = 4; break;
-        case 'Semi-Annual': multiplier = 2; break;
-        case 'Annual': multiplier = 1; break;
-      }
-      stockData.annualDividend = dividendAmount * multiplier;
-
-      // Calculate yield
-      if (stockData.currentPrice && stockData.annualDividend) {
-        stockData.dividendYield = (stockData.annualDividend / stockData.currentPrice) * 100;
-      }
-
-      // Set dividend dates
-      stockData.exDividendDate = latestDividend.exDate || null;
-      stockData.dividendDate = latestDividend.payDate || null;
-
-      // Estimate next ex-dividend date
-      stockData.nextExDividendDate = estimateNextDividendDateFromTiingo(sortedDividends, frequency);
-
-      console.log('Tiingo processed dividend data:', {
-        frequency,
-        latestDividend: dividendAmount,
-        annualDividend: stockData.annualDividend,
-        yield: stockData.dividendYield
-      });
-    }
-
-    return { success: true, data: stockData };
-
-  } catch (error) {
-    console.error('Tiingo fetch error:', error);
-    return { success: false, error: `Tiingo API error: ${error.message}` };
-  }
-}
-
-// Analyze dividend frequency from Tiingo data
-function analyzeTiingoDividendFrequency(dividends: any[]): string {
+// Analyze dividend frequency from Yahoo Finance data
+function analyzeYahooDividendFrequency(dividends: { date: string; amount: number }[]): string {
   if (dividends.length < 2) return 'Unknown';
   
   // Get dates from last year
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
   
-  const recentDividends = dividends.filter(d => new Date(d.exDate) > oneYearAgo);
+  const recentDividends = dividends.filter(d => new Date(d.date) > oneYearAgo);
   const count = recentDividends.length;
   
   if (count >= 11 && count <= 13) return 'Monthly';
@@ -168,12 +40,12 @@ function analyzeTiingoDividendFrequency(dividends: any[]): string {
   return 'Monthly'; // Default for ETFs like QQQI/SPYI
 }
 
-// Estimate next dividend date from Tiingo data
-function estimateNextDividendDateFromTiingo(dividends: any[], frequency: string): string | null {
+// Estimate next dividend date from dividend history
+function estimateNextDividendDate(dividends: { date: string; amount: number }[], frequency: string): string | null {
   if (dividends.length === 0) return null;
   
   const lastDividend = dividends[0];
-  const lastDate = new Date(lastDividend.exDate);
+  const lastDate = new Date(lastDividend.date);
   
   let monthsToAdd = 1; // Default monthly
   switch (frequency) {
@@ -193,6 +65,134 @@ function estimateNextDividendDateFromTiingo(dividends: any[], frequency: string)
   }
   
   return nextDate.toISOString().split('T')[0];
+}
+
+// Fetch data from Yahoo Finance (fallback for ETFs that require premium FMP access)
+async function fetchFromYahoo(symbol: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  console.log(`Attempting Yahoo Finance fallback for symbol: ${symbol}`);
+  
+  try {
+    // Fetch quote data from Yahoo Finance
+    const quoteUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`;
+    const quoteResponse = await fetch(quoteUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    console.log(`Yahoo quote response status: ${quoteResponse.status}`);
+    
+    if (quoteResponse.status !== 200) {
+      const errorText = await quoteResponse.text();
+      console.log('Yahoo quote error:', errorText.substring(0, 200));
+      return { success: false, error: `Yahoo Finance: Symbol ${symbol} not found` };
+    }
+    
+    const quoteData = await quoteResponse.json();
+    const meta = quoteData?.chart?.result?.[0]?.meta;
+    
+    if (!meta) {
+      console.log('Yahoo: No meta data in response');
+      return { success: false, error: `Yahoo Finance: No data for ${symbol}` };
+    }
+    
+    console.log('Yahoo quote meta:', JSON.stringify({
+      symbol: meta.symbol,
+      shortName: meta.shortName,
+      regularMarketPrice: meta.regularMarketPrice
+    }));
+    
+    // Fetch dividend history from Yahoo Finance (last 2 years)
+    const now = Math.floor(Date.now() / 1000);
+    const twoYearsAgo = now - (2 * 365 * 24 * 60 * 60);
+    const divUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${twoYearsAgo}&period2=${now}&interval=1d&events=div`;
+    
+    const divResponse = await fetch(divUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    console.log(`Yahoo dividend response status: ${divResponse.status}`);
+    
+    let dividends: { date: string; amount: number }[] = [];
+    
+    if (divResponse.status === 200) {
+      const divData = await divResponse.json();
+      const events = divData?.chart?.result?.[0]?.events?.dividends;
+      
+      if (events) {
+        dividends = Object.values(events).map((d: any) => ({
+          date: new Date(d.date * 1000).toISOString().split('T')[0],
+          amount: d.amount
+        })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
+        console.log(`Yahoo dividend count: ${dividends.length}`);
+        if (dividends.length > 0) {
+          console.log('Most recent dividend:', dividends[0]);
+        }
+      } else {
+        console.log('Yahoo: No dividend events in response');
+      }
+    }
+    
+    // Build normalized stock data
+    const stockData: any = {
+      symbol: symbol.toUpperCase(),
+      companyName: meta.shortName || meta.longName || symbol.toUpperCase(),
+      currentPrice: meta.regularMarketPrice || null,
+      dividendYield: null,
+      dividendPerShare: null,
+      annualDividend: null,
+      exDividendDate: null,
+      dividendDate: null,
+      nextExDividendDate: null,
+      dividendFrequency: null,
+      sector: null,
+      industry: null,
+      marketCap: null,
+      peRatio: null,
+    };
+    
+    // Process dividend data if available
+    if (dividends.length > 0) {
+      const frequency = analyzeYahooDividendFrequency(dividends);
+      stockData.dividendFrequency = frequency;
+      stockData.dividendPerShare = dividends[0].amount;
+      
+      // Calculate annual dividend based on frequency
+      let multiplier = 12; // Default monthly for ETFs
+      switch (frequency) {
+        case 'Monthly': multiplier = 12; break;
+        case 'Quarterly': multiplier = 4; break;
+        case 'Semi-Annual': multiplier = 2; break;
+        case 'Annual': multiplier = 1; break;
+      }
+      stockData.annualDividend = dividends[0].amount * multiplier;
+      
+      // Calculate yield
+      if (stockData.currentPrice && stockData.annualDividend) {
+        stockData.dividendYield = (stockData.annualDividend / stockData.currentPrice) * 100;
+      }
+      
+      stockData.exDividendDate = dividends[0].date;
+      stockData.nextExDividendDate = estimateNextDividendDate(dividends, frequency);
+      
+      console.log('Yahoo processed dividend data:', {
+        frequency,
+        latestDividend: dividends[0].amount,
+        annualDividend: stockData.annualDividend,
+        yield: stockData.dividendYield
+      });
+    }
+    
+    console.log('Yahoo Finance fallback successful for:', symbol);
+    return { success: true, data: stockData };
+    
+  } catch (error) {
+    console.error('Yahoo Finance fetch error:', error);
+    return { success: false, error: `Yahoo Finance error: ${error.message}` };
+  }
 }
 
 // Helper function to analyze dividend frequency (for FMP data)
@@ -216,7 +216,7 @@ const analyzeDividendFrequency = (dividends: any[]): string => {
 };
 
 // Helper function to estimate next dividend date (for FMP data)
-const estimateNextDividendDate = (dividends: any[], frequency: string): string | null => {
+const estimateFMPNextDividendDate = (dividends: any[], frequency: string): string | null => {
   if (dividends.length === 0) return null;
   
   const lastDividend = dividends[0];
@@ -259,7 +259,6 @@ Deno.serve(async (req) => {
     }
 
     const fmpApiKey = Deno.env.get('FMP_API_KEY');
-    const tiingoApiKey = Deno.env.get('TIINGO_API_KEY');
     
     if (!fmpApiKey) {
       console.error('FMP_API_KEY not configured');
@@ -295,29 +294,19 @@ Deno.serve(async (req) => {
       (dividendsResult.text && dividendsResult.text.toLowerCase().includes('premium'));
 
     if (needsFallback) {
-      console.log('FMP returned premium-required, attempting Tiingo fallback...');
+      console.log('FMP returned premium-required, attempting Yahoo Finance fallback...');
       
-      if (!tiingoApiKey) {
+      const yahooResult = await fetchFromYahoo(symbol);
+      
+      if (yahooResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: `${symbol} requires premium FMP access. Please configure TIINGO_API_KEY for ETF support.` 
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      const tiingoResult = await fetchFromTiingo(symbol, tiingoApiKey);
-      
-      if (tiingoResult.success) {
-        console.log('Tiingo fallback successful for:', symbol);
-        return new Response(
-          JSON.stringify(tiingoResult.data),
+          JSON.stringify(yahooResult.data),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       } else {
-        console.log('Tiingo fallback failed:', tiingoResult.error);
+        console.log('Yahoo Finance fallback failed:', yahooResult.error);
         return new Response(
-          JSON.stringify({ error: tiingoResult.error || `Unable to find data for ${symbol}` }),
+          JSON.stringify({ error: yahooResult.error || `Unable to find data for ${symbol}` }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -344,16 +333,14 @@ Deno.serve(async (req) => {
     if (!priceResult.ok) {
       console.log('Price response was not valid JSON:', priceResult.text.substring(0, 100));
       
-      // Try Tiingo fallback for invalid JSON responses too
-      if (tiingoApiKey) {
-        console.log('Attempting Tiingo fallback for non-JSON FMP response...');
-        const tiingoResult = await fetchFromTiingo(symbol, tiingoApiKey);
-        if (tiingoResult.success) {
-          return new Response(
-            JSON.stringify(tiingoResult.data),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      // Try Yahoo Finance fallback for invalid JSON responses too
+      console.log('Attempting Yahoo Finance fallback for non-JSON FMP response...');
+      const yahooResult = await fetchFromYahoo(symbol);
+      if (yahooResult.success) {
+        return new Response(
+          JSON.stringify(yahooResult.data),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
       
       return new Response(
@@ -392,16 +379,14 @@ Deno.serve(async (req) => {
     if (!quoteData || (Array.isArray(priceData) && priceData.length === 0)) {
       console.log('No FMP price data found for symbol:', symbol);
       
-      // Try Tiingo fallback for symbols not found in FMP
-      if (tiingoApiKey) {
-        console.log('Attempting Tiingo fallback for symbol not found in FMP...');
-        const tiingoResult = await fetchFromTiingo(symbol, tiingoApiKey);
-        if (tiingoResult.success) {
-          return new Response(
-            JSON.stringify(tiingoResult.data),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      // Try Yahoo Finance fallback for symbols not found in FMP
+      console.log('Attempting Yahoo Finance fallback for symbol not found in FMP...');
+      const yahooResult = await fetchFromYahoo(symbol);
+      if (yahooResult.success) {
+        return new Response(
+          JSON.stringify(yahooResult.data),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
       
       return new Response(
@@ -481,7 +466,7 @@ Deno.serve(async (req) => {
       stockData.dividendDate = latestDividend.paymentDate || latestDividend.date || null;
       
       // Estimate next ex-dividend date
-      stockData.nextExDividendDate = estimateNextDividendDate(sortedDividends, frequency);
+      stockData.nextExDividendDate = estimateFMPNextDividendDate(sortedDividends, frequency);
       
       console.log('Processed dividend data:', {
         frequency,
