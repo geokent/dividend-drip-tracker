@@ -67,18 +67,55 @@ function estimateNextDividendDate(dividends: { date: string; amount: number }[],
   return nextDate.toISOString().split('T')[0];
 }
 
+// Fetch sector data from Yahoo Finance quoteSummary
+async function fetchYahooSector(symbol: string): Promise<{ sector: string | null; industry: string | null }> {
+  try {
+    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=assetProfile`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    if (response.status !== 200) {
+      console.log(`Yahoo quoteSummary status: ${response.status}`);
+      return { sector: null, industry: null };
+    }
+    
+    const data = await response.json();
+    const assetProfile = data?.quoteSummary?.result?.[0]?.assetProfile;
+    
+    if (assetProfile) {
+      console.log(`Yahoo sector for ${symbol}: ${assetProfile.sector}, industry: ${assetProfile.industry}`);
+      return {
+        sector: assetProfile.sector || null,
+        industry: assetProfile.industry || null
+      };
+    }
+    
+    return { sector: null, industry: null };
+  } catch (error) {
+    console.error(`Error fetching Yahoo sector for ${symbol}:`, error);
+    return { sector: null, industry: null };
+  }
+}
+
 // Fetch data from Yahoo Finance (fallback for ETFs that require premium FMP access)
 async function fetchFromYahoo(symbol: string): Promise<{ success: boolean; data?: any; error?: string }> {
   console.log(`Attempting Yahoo Finance fallback for symbol: ${symbol}`);
   
   try {
-    // Fetch quote data from Yahoo Finance
+    // Fetch quote data AND sector data in parallel
     const quoteUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`;
-    const quoteResponse = await fetch(quoteUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
+    
+    const [quoteResponse, sectorResult] = await Promise.all([
+      fetch(quoteUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      }),
+      fetchYahooSector(symbol)
+    ]);
     
     console.log(`Yahoo quote response status: ${quoteResponse.status}`);
     
@@ -136,7 +173,7 @@ async function fetchFromYahoo(symbol: string): Promise<{ success: boolean; data?
       }
     }
     
-    // Build normalized stock data
+    // Build normalized stock data with sector from quoteSummary
     const stockData: any = {
       symbol: symbol.toUpperCase(),
       companyName: meta.shortName || meta.longName || symbol.toUpperCase(),
@@ -148,8 +185,8 @@ async function fetchFromYahoo(symbol: string): Promise<{ success: boolean; data?
       dividendDate: null,
       nextExDividendDate: null,
       dividendFrequency: null,
-      sector: null,
-      industry: null,
+      sector: sectorResult.sector,
+      industry: sectorResult.industry,
       marketCap: null,
       peRatio: null,
     };
