@@ -13,6 +13,7 @@ import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import { FutureIncomeProjects } from "./pages/FutureIncomeProjects";
 import { DividendDashboard } from "@/components/DividendDashboard";
+import DividendCalendar from "./pages/DividendCalendar";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => {
                 } />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
+                <Route path="/dividend-calendar" element={<DividendCalendar />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
