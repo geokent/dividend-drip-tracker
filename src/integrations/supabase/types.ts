@@ -73,6 +73,63 @@ export type Database = {
           },
         ]
       }
+      dividend_data: {
+        Row: {
+          annual_dividend: number | null
+          company_name: string
+          created_at: string | null
+          dividend_amount: number
+          dividend_yield: number
+          frequency: string
+          id: number
+          is_dividend_aristocrat: boolean | null
+          is_dividend_king: boolean | null
+          last_updated: string | null
+          next_ex_date: string
+          next_payment_date: string
+          payout_ratio: number | null
+          sector: string | null
+          ticker: string
+          years_of_growth: number | null
+        }
+        Insert: {
+          annual_dividend?: number | null
+          company_name: string
+          created_at?: string | null
+          dividend_amount: number
+          dividend_yield: number
+          frequency: string
+          id?: number
+          is_dividend_aristocrat?: boolean | null
+          is_dividend_king?: boolean | null
+          last_updated?: string | null
+          next_ex_date: string
+          next_payment_date: string
+          payout_ratio?: number | null
+          sector?: string | null
+          ticker: string
+          years_of_growth?: number | null
+        }
+        Update: {
+          annual_dividend?: number | null
+          company_name?: string
+          created_at?: string | null
+          dividend_amount?: number
+          dividend_yield?: number
+          frequency?: string
+          id?: number
+          is_dividend_aristocrat?: boolean | null
+          is_dividend_king?: boolean | null
+          last_updated?: string | null
+          next_ex_date?: string
+          next_payment_date?: string
+          payout_ratio?: number | null
+          sector?: string | null
+          ticker?: string
+          years_of_growth?: number | null
+        }
+        Relationships: []
+      }
       dividend_transactions: {
         Row: {
           amount: number
