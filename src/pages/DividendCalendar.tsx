@@ -1,16 +1,21 @@
-import { useState, useMemo } from "react";
-import { Calendar, DollarSign, TrendingUp, Search } from "lucide-react";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { SEOHead } from "@/components/SEOHead";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
+import { Calendar, Search, Filter, DollarSign, TrendingUp, Clock, Lock, UserPlus, Briefcase } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { SEOHead } from "@/components/SEOHead";
 
 interface DividendEntry {
-  ticker: string;
+  symbol: string;
   companyName: string;
   sector: string;
   frequency: "Monthly" | "Quarterly";
@@ -18,461 +23,465 @@ interface DividendEntry {
   dividendAmount: number;
   exDividendDate: string;
   paymentDate: string;
+  shares?: number;
+  yourPayout?: number;
 }
 
-// Sample data for 2026 with realistic dates and amounts
+interface UserStock {
+  symbol: string;
+  shares: number;
+  company_name: string | null;
+}
+
+// Popular dividend stocks for unauthenticated users
 const sampleDividendData: DividendEntry[] = [
-  // SCHD - Quarterly (March, June, September, December)
+  // SCHD - Schwab US Dividend Equity ETF (Quarterly)
   {
-    ticker: "SCHD",
+    symbol: "SCHD",
     companyName: "Schwab US Dividend Equity ETF",
     sector: "ETF",
     frequency: "Quarterly",
     yield: 3.45,
-    dividendAmount: 0.68,
+    dividendAmount: 0.62,
     exDividendDate: "2026-03-18",
-    paymentDate: "2026-03-24",
+    paymentDate: "2026-03-25",
   },
   {
-    ticker: "SCHD",
+    symbol: "SCHD",
     companyName: "Schwab US Dividend Equity ETF",
     sector: "ETF",
     frequency: "Quarterly",
     yield: 3.45,
-    dividendAmount: 0.69,
+    dividendAmount: 0.63,
     exDividendDate: "2026-06-17",
-    paymentDate: "2026-06-23",
+    paymentDate: "2026-06-24",
   },
   {
-    ticker: "SCHD",
+    symbol: "SCHD",
     companyName: "Schwab US Dividend Equity ETF",
     sector: "ETF",
     frequency: "Quarterly",
     yield: 3.45,
-    dividendAmount: 0.7,
+    dividendAmount: 0.64,
     exDividendDate: "2026-09-16",
-    paymentDate: "2026-09-22",
+    paymentDate: "2026-09-23",
   },
   {
-    ticker: "SCHD",
+    symbol: "SCHD",
     companyName: "Schwab US Dividend Equity ETF",
     sector: "ETF",
     frequency: "Quarterly",
     yield: 3.45,
-    dividendAmount: 0.71,
+    dividendAmount: 0.65,
     exDividendDate: "2026-12-16",
-    paymentDate: "2026-12-22",
+    paymentDate: "2026-12-23",
   },
-
-  // JEPQ - Monthly
+  // JEPQ - JPMorgan Nasdaq Equity Premium Income ETF (Monthly)
   {
-    ticker: "JEPQ",
+    symbol: "JEPQ",
     companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
+    yield: 9.85,
     dividendAmount: 0.42,
-    exDividendDate: "2026-01-05",
-    paymentDate: "2026-01-08",
+    exDividendDate: "2026-01-28",
+    paymentDate: "2026-02-04",
   },
   {
-    ticker: "JEPQ",
+    symbol: "JEPQ",
     companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
+    yield: 9.85,
+    dividendAmount: 0.43,
+    exDividendDate: "2026-02-25",
+    paymentDate: "2026-03-04",
+  },
+  {
+    symbol: "JEPQ",
+    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
+    sector: "ETF",
+    frequency: "Monthly",
+    yield: 9.85,
     dividendAmount: 0.41,
-    exDividendDate: "2026-02-04",
-    paymentDate: "2026-02-09",
+    exDividendDate: "2026-03-25",
+    paymentDate: "2026-04-01",
   },
   {
-    ticker: "JEPQ",
+    symbol: "JEPQ",
     companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.43,
-    exDividendDate: "2026-03-04",
-    paymentDate: "2026-03-09",
+    yield: 9.85,
+    dividendAmount: 0.44,
+    exDividendDate: "2026-04-28",
+    paymentDate: "2026-05-05",
   },
   {
-    ticker: "JEPQ",
+    symbol: "JEPQ",
     companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
+    yield: 9.85,
     dividendAmount: 0.42,
-    exDividendDate: "2026-04-06",
-    paymentDate: "2026-04-09",
+    exDividendDate: "2026-05-27",
+    paymentDate: "2026-06-03",
   },
   {
-    ticker: "JEPQ",
+    symbol: "JEPQ",
     companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.44,
-    exDividendDate: "2026-05-05",
-    paymentDate: "2026-05-08",
-  },
-  {
-    ticker: "JEPQ",
-    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
-    sector: "ETF",
-    frequency: "Monthly",
-    yield: 9.2,
+    yield: 9.85,
     dividendAmount: 0.43,
-    exDividendDate: "2026-06-04",
-    paymentDate: "2026-06-09",
+    exDividendDate: "2026-06-26",
+    paymentDate: "2026-07-06",
   },
+  // JEPI - JPMorgan Equity Premium Income ETF (Monthly)
   {
-    ticker: "JEPQ",
-    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
+    symbol: "JEPI",
+    companyName: "JPMorgan Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.45,
-    exDividendDate: "2026-07-06",
-    paymentDate: "2026-07-09",
+    yield: 7.25,
+    dividendAmount: 0.38,
+    exDividendDate: "2026-01-28",
+    paymentDate: "2026-02-04",
   },
   {
-    ticker: "JEPQ",
-    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
+    symbol: "JEPI",
+    companyName: "JPMorgan Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.44,
-    exDividendDate: "2026-08-05",
-    paymentDate: "2026-08-10",
+    yield: 7.25,
+    dividendAmount: 0.39,
+    exDividendDate: "2026-02-25",
+    paymentDate: "2026-03-04",
   },
   {
-    ticker: "JEPQ",
-    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
+    symbol: "JEPI",
+    companyName: "JPMorgan Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.43,
-    exDividendDate: "2026-09-04",
-    paymentDate: "2026-09-09",
+    yield: 7.25,
+    dividendAmount: 0.37,
+    exDividendDate: "2026-03-25",
+    paymentDate: "2026-04-01",
   },
   {
-    ticker: "JEPQ",
-    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
+    symbol: "JEPI",
+    companyName: "JPMorgan Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.45,
-    exDividendDate: "2026-10-05",
-    paymentDate: "2026-10-08",
+    yield: 7.25,
+    dividendAmount: 0.40,
+    exDividendDate: "2026-04-28",
+    paymentDate: "2026-05-05",
   },
   {
-    ticker: "JEPQ",
-    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
+    symbol: "JEPI",
+    companyName: "JPMorgan Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.44,
-    exDividendDate: "2026-11-04",
-    paymentDate: "2026-11-09",
+    yield: 7.25,
+    dividendAmount: 0.38,
+    exDividendDate: "2026-05-27",
+    paymentDate: "2026-06-03",
   },
   {
-    ticker: "JEPQ",
-    companyName: "JPMorgan Nasdaq Equity Premium Income ETF",
+    symbol: "JEPI",
+    companyName: "JPMorgan Equity Premium Income ETF",
     sector: "ETF",
     frequency: "Monthly",
-    yield: 9.2,
-    dividendAmount: 0.46,
-    exDividendDate: "2026-12-04",
-    paymentDate: "2026-12-09",
+    yield: 7.25,
+    dividendAmount: 0.39,
+    exDividendDate: "2026-06-26",
+    paymentDate: "2026-07-06",
   },
-
-  // O - Monthly
+  // SPYI - NEOS S&P 500 High Income ETF (Monthly)
   {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
+    symbol: "SPYI",
+    companyName: "NEOS S&P 500 High Income ETF",
+    sector: "ETF",
     frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.26,
+    yield: 11.50,
+    dividendAmount: 0.48,
     exDividendDate: "2026-01-30",
-    paymentDate: "2026-02-13",
+    paymentDate: "2026-02-05",
   },
   {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
+    symbol: "SPYI",
+    companyName: "NEOS S&P 500 High Income ETF",
+    sector: "ETF",
     frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.26,
+    yield: 11.50,
+    dividendAmount: 0.49,
     exDividendDate: "2026-02-27",
-    paymentDate: "2026-03-13",
+    paymentDate: "2026-03-05",
   },
   {
-    ticker: "O",
+    symbol: "SPYI",
+    companyName: "NEOS S&P 500 High Income ETF",
+    sector: "ETF",
+    frequency: "Monthly",
+    yield: 11.50,
+    dividendAmount: 0.47,
+    exDividendDate: "2026-03-30",
+    paymentDate: "2026-04-06",
+  },
+  {
+    symbol: "SPYI",
+    companyName: "NEOS S&P 500 High Income ETF",
+    sector: "ETF",
+    frequency: "Monthly",
+    yield: 11.50,
+    dividendAmount: 0.50,
+    exDividendDate: "2026-04-29",
+    paymentDate: "2026-05-06",
+  },
+  {
+    symbol: "SPYI",
+    companyName: "NEOS S&P 500 High Income ETF",
+    sector: "ETF",
+    frequency: "Monthly",
+    yield: 11.50,
+    dividendAmount: 0.48,
+    exDividendDate: "2026-05-28",
+    paymentDate: "2026-06-04",
+  },
+  {
+    symbol: "SPYI",
+    companyName: "NEOS S&P 500 High Income ETF",
+    sector: "ETF",
+    frequency: "Monthly",
+    yield: 11.50,
+    dividendAmount: 0.49,
+    exDividendDate: "2026-06-29",
+    paymentDate: "2026-07-07",
+  },
+  // O - Realty Income (Monthly)
+  {
+    symbol: "O",
     companyName: "Realty Income Corporation",
     sector: "Real Estate",
     frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.26,
+    yield: 5.82,
+    dividendAmount: 0.263,
+    exDividendDate: "2026-01-30",
+    paymentDate: "2026-02-14",
+  },
+  {
+    symbol: "O",
+    companyName: "Realty Income Corporation",
+    sector: "Real Estate",
+    frequency: "Monthly",
+    yield: 5.82,
+    dividendAmount: 0.263,
+    exDividendDate: "2026-02-27",
+    paymentDate: "2026-03-14",
+  },
+  {
+    symbol: "O",
+    companyName: "Realty Income Corporation",
+    sector: "Real Estate",
+    frequency: "Monthly",
+    yield: 5.82,
+    dividendAmount: 0.264,
     exDividendDate: "2026-03-30",
     paymentDate: "2026-04-15",
   },
   {
-    ticker: "O",
+    symbol: "O",
     companyName: "Realty Income Corporation",
     sector: "Real Estate",
     frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.27,
+    yield: 5.82,
+    dividendAmount: 0.264,
     exDividendDate: "2026-04-29",
     paymentDate: "2026-05-15",
   },
   {
-    ticker: "O",
+    symbol: "O",
     companyName: "Realty Income Corporation",
     sector: "Real Estate",
     frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.27,
+    yield: 5.82,
+    dividendAmount: 0.265,
     exDividendDate: "2026-05-28",
     paymentDate: "2026-06-15",
   },
   {
-    ticker: "O",
+    symbol: "O",
     companyName: "Realty Income Corporation",
     sector: "Real Estate",
     frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.27,
+    yield: 5.82,
+    dividendAmount: 0.265,
     exDividendDate: "2026-06-29",
     paymentDate: "2026-07-15",
   },
+  // AAPL - Apple (Quarterly)
   {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
-    frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.27,
-    exDividendDate: "2026-07-30",
+    symbol: "AAPL",
+    companyName: "Apple Inc.",
+    sector: "Technology",
+    frequency: "Quarterly",
+    yield: 0.52,
+    dividendAmount: 0.25,
+    exDividendDate: "2026-02-06",
+    paymentDate: "2026-02-13",
+  },
+  {
+    symbol: "AAPL",
+    companyName: "Apple Inc.",
+    sector: "Technology",
+    frequency: "Quarterly",
+    yield: 0.52,
+    dividendAmount: 0.26,
+    exDividendDate: "2026-05-08",
+    paymentDate: "2026-05-15",
+  },
+  {
+    symbol: "AAPL",
+    companyName: "Apple Inc.",
+    sector: "Technology",
+    frequency: "Quarterly",
+    yield: 0.52,
+    dividendAmount: 0.26,
+    exDividendDate: "2026-08-07",
     paymentDate: "2026-08-14",
   },
   {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
-    frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.27,
-    exDividendDate: "2026-08-28",
-    paymentDate: "2026-09-15",
-  },
-  {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
-    frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.27,
-    exDividendDate: "2026-09-29",
-    paymentDate: "2026-10-15",
-  },
-  {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
-    frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.28,
-    exDividendDate: "2026-10-29",
-    paymentDate: "2026-11-13",
-  },
-  {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
-    frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.28,
-    exDividendDate: "2026-11-27",
-    paymentDate: "2026-12-15",
-  },
-  {
-    ticker: "O",
-    companyName: "Realty Income Corporation",
-    sector: "Real Estate",
-    frequency: "Monthly",
-    yield: 5.6,
-    dividendAmount: 0.28,
-    exDividendDate: "2026-12-30",
-    paymentDate: "2027-01-15",
-  },
-
-  // AAPL - Quarterly
-  {
-    ticker: "AAPL",
+    symbol: "AAPL",
     companyName: "Apple Inc.",
     sector: "Technology",
     frequency: "Quarterly",
-    yield: 0.5,
-    dividendAmount: 0.25,
-    exDividendDate: "2026-02-06",
-    paymentDate: "2026-02-12",
-  },
-  {
-    ticker: "AAPL",
-    companyName: "Apple Inc.",
-    sector: "Technology",
-    frequency: "Quarterly",
-    yield: 0.5,
-    dividendAmount: 0.25,
-    exDividendDate: "2026-05-08",
-    paymentDate: "2026-05-14",
-  },
-  {
-    ticker: "AAPL",
-    companyName: "Apple Inc.",
-    sector: "Technology",
-    frequency: "Quarterly",
-    yield: 0.5,
-    dividendAmount: 0.26,
-    exDividendDate: "2026-08-07",
-    paymentDate: "2026-08-13",
-  },
-  {
-    ticker: "AAPL",
-    companyName: "Apple Inc.",
-    sector: "Technology",
-    frequency: "Quarterly",
-    yield: 0.5,
+    yield: 0.52,
     dividendAmount: 0.26,
     exDividendDate: "2026-11-06",
-    paymentDate: "2026-11-12",
+    paymentDate: "2026-11-13",
   },
-
-  // JNJ - Quarterly
+  // JNJ - Johnson & Johnson (Quarterly)
   {
-    ticker: "JNJ",
+    symbol: "JNJ",
     companyName: "Johnson & Johnson",
     sector: "Healthcare",
     frequency: "Quarterly",
-    yield: 3.18,
+    yield: 3.15,
     dividendAmount: 1.24,
-    exDividendDate: "2026-02-20",
+    exDividendDate: "2026-02-23",
     paymentDate: "2026-03-10",
   },
   {
-    ticker: "JNJ",
+    symbol: "JNJ",
     companyName: "Johnson & Johnson",
     sector: "Healthcare",
     frequency: "Quarterly",
-    yield: 3.18,
-    dividendAmount: 1.24,
+    yield: 3.15,
+    dividendAmount: 1.26,
     exDividendDate: "2026-05-22",
     paymentDate: "2026-06-09",
   },
   {
-    ticker: "JNJ",
+    symbol: "JNJ",
     companyName: "Johnson & Johnson",
     sector: "Healthcare",
     frequency: "Quarterly",
-    yield: 3.18,
-    dividendAmount: 1.27,
-    exDividendDate: "2026-08-21",
+    yield: 3.15,
+    dividendAmount: 1.26,
+    exDividendDate: "2026-08-24",
     paymentDate: "2026-09-08",
   },
   {
-    ticker: "JNJ",
+    symbol: "JNJ",
     companyName: "Johnson & Johnson",
     sector: "Healthcare",
     frequency: "Quarterly",
-    yield: 3.18,
-    dividendAmount: 1.27,
-    exDividendDate: "2026-11-20",
+    yield: 3.15,
+    dividendAmount: 1.26,
+    exDividendDate: "2026-11-23",
     paymentDate: "2026-12-08",
   },
-
-  // KO - Quarterly
+  // KO - Coca-Cola (Quarterly)
   {
-    ticker: "KO",
-    companyName: "Coca-Cola Company",
-    sector: "Consumer Defensive",
+    symbol: "KO",
+    companyName: "The Coca-Cola Company",
+    sector: "Consumer Staples",
     frequency: "Quarterly",
-    yield: 3.1,
+    yield: 3.08,
     dividendAmount: 0.49,
     exDividendDate: "2026-03-13",
     paymentDate: "2026-04-01",
   },
   {
-    ticker: "KO",
-    companyName: "Coca-Cola Company",
-    sector: "Consumer Defensive",
+    symbol: "KO",
+    companyName: "The Coca-Cola Company",
+    sector: "Consumer Staples",
     frequency: "Quarterly",
-    yield: 3.1,
+    yield: 3.08,
     dividendAmount: 0.49,
     exDividendDate: "2026-06-12",
     paymentDate: "2026-07-01",
   },
   {
-    ticker: "KO",
-    companyName: "Coca-Cola Company",
-    sector: "Consumer Defensive",
+    symbol: "KO",
+    companyName: "The Coca-Cola Company",
+    sector: "Consumer Staples",
     frequency: "Quarterly",
-    yield: 3.1,
-    dividendAmount: 0.5,
-    exDividendDate: "2026-09-14",
+    yield: 3.08,
+    dividendAmount: 0.50,
+    exDividendDate: "2026-09-11",
     paymentDate: "2026-10-01",
   },
   {
-    ticker: "KO",
-    companyName: "Coca-Cola Company",
-    sector: "Consumer Defensive",
+    symbol: "KO",
+    companyName: "The Coca-Cola Company",
+    sector: "Consumer Staples",
     frequency: "Quarterly",
-    yield: 3.1,
-    dividendAmount: 0.5,
-    exDividendDate: "2026-11-27",
-    paymentDate: "2026-12-15",
+    yield: 3.08,
+    dividendAmount: 0.50,
+    exDividendDate: "2026-12-11",
+    paymentDate: "2026-12-31",
   },
-
-  // VZ - Quarterly
+  // VZ - Verizon (Quarterly)
   {
-    ticker: "VZ",
-    companyName: "Verizon Communications",
-    sector: "Communication Services",
+    symbol: "VZ",
+    companyName: "Verizon Communications Inc.",
+    sector: "Telecommunications",
     frequency: "Quarterly",
-    yield: 6.5,
-    dividendAmount: 0.67,
+    yield: 6.45,
+    dividendAmount: 0.6775,
     exDividendDate: "2026-01-09",
     paymentDate: "2026-02-02",
   },
   {
-    ticker: "VZ",
-    companyName: "Verizon Communications",
-    sector: "Communication Services",
+    symbol: "VZ",
+    companyName: "Verizon Communications Inc.",
+    sector: "Telecommunications",
     frequency: "Quarterly",
-    yield: 6.5,
-    dividendAmount: 0.67,
-    exDividendDate: "2026-04-08",
+    yield: 6.45,
+    dividendAmount: 0.6825,
+    exDividendDate: "2026-04-10",
     paymentDate: "2026-05-01",
   },
   {
-    ticker: "VZ",
-    companyName: "Verizon Communications",
-    sector: "Communication Services",
+    symbol: "VZ",
+    companyName: "Verizon Communications Inc.",
+    sector: "Telecommunications",
     frequency: "Quarterly",
-    yield: 6.5,
-    dividendAmount: 0.68,
-    exDividendDate: "2026-07-08",
+    yield: 6.45,
+    dividendAmount: 0.6825,
+    exDividendDate: "2026-07-10",
     paymentDate: "2026-08-03",
   },
   {
-    ticker: "VZ",
-    companyName: "Verizon Communications",
-    sector: "Communication Services",
+    symbol: "VZ",
+    companyName: "Verizon Communications Inc.",
+    sector: "Telecommunications",
     frequency: "Quarterly",
-    yield: 6.5,
-    dividendAmount: 0.68,
-    exDividendDate: "2026-10-07",
+    yield: 6.45,
+    dividendAmount: 0.6825,
+    exDividendDate: "2026-10-09",
     paymentDate: "2026-11-02",
   },
 ];
@@ -482,18 +491,18 @@ const sectors = [
   "ETF",
   "Technology",
   "Healthcare",
+  "Consumer Staples",
   "Real Estate",
-  "Consumer Defensive",
-  "Communication Services",
+  "Telecommunications",
 ];
 
 const frequencies = ["All Frequencies", "Monthly", "Quarterly"];
 
 const timeRanges = [
-  { value: "week", label: "Next Week", days: 7 },
-  { value: "month", label: "Next Month", days: 30 },
-  { value: "quarter", label: "Next Quarter", days: 90 },
-  { value: "year", label: "Full Year", days: 365 },
+  { value: "week", label: "This Week", days: 7 },
+  { value: "month", label: "This Month", days: 30 },
+  { value: "quarter", label: "This Quarter", days: 90 },
+  { value: "year", label: "This Year", days: 365 },
 ];
 
 const formatDate = (dateString: string) => {
@@ -513,294 +522,488 @@ const formatCurrency = (amount: number) => {
 };
 
 const DividendCalendar = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSector, setSelectedSector] = useState("All Sectors");
   const [selectedFrequency, setSelectedFrequency] = useState("All Frequencies");
   const [selectedTimeRange, setSelectedTimeRange] = useState("year");
 
+  // State for authenticated users
+  const [userStocks, setUserStocks] = useState<UserStock[]>([]);
+  const [dividendData, setDividendData] = useState<DividendEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasPortfolio, setHasPortfolio] = useState(true);
+
+  // Fetch user data when authenticated
+  useEffect(() => {
+    const fetchUserDividendData = async () => {
+      if (!user) {
+        setDividendData([]);
+        setHasPortfolio(true);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        // Fetch user's stocks from user_stocks table
+        const { data: stocks, error: stocksError } = await supabase
+          .from('user_stocks')
+          .select('symbol, shares, company_name')
+          .eq('user_id', user.id);
+
+        if (stocksError) throw stocksError;
+
+        if (!stocks || stocks.length === 0) {
+          setHasPortfolio(false);
+          setUserStocks([]);
+          setDividendData([]);
+          setIsLoading(false);
+          return;
+        }
+
+        setUserStocks(stocks);
+        setHasPortfolio(true);
+
+        // Get unique symbols
+        const symbols = stocks.map(s => s.symbol);
+
+        // Fetch dividend data for user's stocks
+        const { data: divData, error: divError } = await supabase
+          .from('dividend_data')
+          .select('*')
+          .in('ticker', symbols);
+
+        if (divError) throw divError;
+
+        // Map dividend data with user's shares and calculate payouts
+        const personalizedData: DividendEntry[] = (divData || []).map(div => {
+          const userStock = stocks.find(s => s.symbol === div.ticker);
+          const shares = Number(userStock?.shares) || 0;
+          const yourPayout = shares * Number(div.dividend_amount);
+
+          return {
+            symbol: div.ticker,
+            companyName: div.company_name,
+            sector: div.sector || 'Unknown',
+            frequency: div.frequency as "Monthly" | "Quarterly",
+            yield: Number(div.dividend_yield),
+            dividendAmount: Number(div.dividend_amount),
+            exDividendDate: div.next_ex_date,
+            paymentDate: div.next_payment_date,
+            shares,
+            yourPayout,
+          };
+        });
+
+        setDividendData(personalizedData);
+      } catch (error) {
+        console.error('Error fetching dividend data:', error);
+        setDividendData([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserDividendData();
+  }, [user]);
+
+  // Determine data source based on authentication
+  const dataSource = user && hasPortfolio ? dividendData : sampleDividendData;
+
   const filteredData = useMemo(() => {
-    const now = new Date("2026-01-21"); // Current date context
+    const now = new Date("2026-01-21");
     const timeRange = timeRanges.find((t) => t.value === selectedTimeRange);
     const endDate = new Date(now);
     endDate.setDate(endDate.getDate() + (timeRange?.days || 365));
 
-    return sampleDividendData
+    return dataSource
       .filter((entry) => {
-        // Time range filter
         const exDate = new Date(entry.exDividendDate);
-        if (exDate < now || exDate > endDate) return false;
+        const inTimeRange = exDate >= now && exDate <= endDate;
 
-        // Search filter
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          if (!entry.ticker.toLowerCase().includes(query) && !entry.companyName.toLowerCase().includes(query)) {
-            return false;
-          }
-        }
+        const matchesSearch =
+          searchQuery === "" ||
+          entry.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          entry.companyName.toLowerCase().includes(searchQuery.toLowerCase());
 
-        // Sector filter
-        if (selectedSector !== "All Sectors" && entry.sector !== selectedSector) {
-          return false;
-        }
+        const matchesSector =
+          selectedSector === "All Sectors" || entry.sector === selectedSector;
 
-        // Frequency filter
-        if (selectedFrequency !== "All Frequencies" && entry.frequency !== selectedFrequency) {
-          return false;
-        }
+        const matchesFrequency =
+          selectedFrequency === "All Frequencies" ||
+          entry.frequency === selectedFrequency;
 
-        return true;
+        return inTimeRange && matchesSearch && matchesSector && matchesFrequency;
       })
-      .sort((a, b) => new Date(a.exDividendDate).getTime() - new Date(b.exDividendDate).getTime());
-  }, [searchQuery, selectedSector, selectedFrequency, selectedTimeRange]);
+      .sort(
+        (a, b) =>
+          new Date(a.exDividendDate).getTime() -
+          new Date(b.exDividendDate).getTime()
+      );
+  }, [dataSource, searchQuery, selectedSector, selectedFrequency, selectedTimeRange]);
 
   const stats = useMemo(() => {
-    const now = new Date("2026-01-21");
-    const weekFromNow = new Date(now);
-    weekFromNow.setDate(weekFromNow.getDate() + 7);
-
-    const totalDividends = filteredData.reduce((sum, entry) => sum + entry.dividendAmount, 0);
+    const totalDividends = filteredData.length;
     const avgYield =
-      filteredData.length > 0 ? filteredData.reduce((sum, entry) => sum + entry.yield, 0) / filteredData.length : 0;
+      filteredData.length > 0
+        ? filteredData.reduce((sum, entry) => sum + entry.yield, 0) /
+          filteredData.length
+        : 0;
+
+    const now = new Date("2026-01-21");
+    const weekEnd = new Date(now);
+    weekEnd.setDate(weekEnd.getDate() + 7);
     const thisWeekCount = filteredData.filter((entry) => {
       const exDate = new Date(entry.exDividendDate);
-      return exDate >= now && exDate <= weekFromNow;
+      return exDate >= now && exDate <= weekEnd;
     }).length;
 
-    return { totalDividends, avgYield, thisWeekCount };
-  }, [filteredData]);
+    // Calculate total expected payout for authenticated users
+    const totalExpectedIncome = user && hasPortfolio
+      ? filteredData.reduce((sum, entry) => sum + (entry.yourPayout || 0), 0)
+      : 0;
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: "Dividend Calendar 2026",
-    description: "Track upcoming dividend payments, ex-dividend dates, and yields for top dividend stocks.",
-    publisher: {
-      "@type": "Organization",
-      name: "DivTrkr",
-      url: "https://www.divtrkr.com",
-    },
-  };
+    return { totalDividends, avgYield, thisWeekCount, totalExpectedIncome };
+  }, [filteredData, user, hasPortfolio]);
+
+  const tableColSpan = user && hasPortfolio ? 9 : 7;
 
   return (
-    <>
+    <AppLayout>
       <SEOHead
-        title="Dividend Calendar 2026 - Track Upcoming Dividend Payments | DivTrkr"
-        description="Plan your dividend income with our 2026 dividend calendar. Track ex-dividend dates, payment dates, and yields for top dividend stocks like SCHD, O, AAPL, JNJ, KO, and VZ."
-        keywords="dividend calendar 2026, upcoming dividends, ex-dividend dates, dividend payment schedule, dividend investing, FIRE, passive income"
-        canonicalUrl="https://www.divtrkr.com/dividend-calendar"
-        structuredData={structuredData}
+        title="2026 Dividend Calendar - Track Ex-Dividend Dates | DivTrkr"
+        description="Complete 2026 dividend calendar with ex-dividend dates, payment dates, and yields for popular dividend stocks. Track your portfolio's dividend income."
+        keywords="dividend calendar 2026, ex-dividend dates, dividend payment schedule, dividend tracker, SCHD dividends, dividend income"
+        canonicalUrl="https://divtrkr.lovable.app/dividend-calendar"
       />
-      <AppLayout>
+
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <PageHeader
-          icon={Calendar}
-          title="Dividend Calendar 2026"
+          title="2026 Dividend Calendar"
           description="Track upcoming ex-dividend dates and payment schedules for dividend-paying stocks"
+          icon={Calendar}
         />
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search ticker or company..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+        {/* Unauthenticated user CTA */}
+        {!user && (
+          <Alert className="mb-6 border-primary/50 bg-primary/5">
+            <Lock className="h-4 w-4" />
+            <AlertTitle>See Your Personal Dividend Calendar</AlertTitle>
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <span>
+                Create a free account to track your own portfolio, see personalized payouts, 
+                and calculate your total expected dividend income.
+              </span>
+              <Button onClick={() => navigate('/auth')} className="shrink-0">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Create Free Account
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Authenticated user welcome message */}
+        {user && hasPortfolio && !isLoading && dividendData.length > 0 && (
+          <Alert className="mb-6 border-green-500/50 bg-green-500/5">
+            <Calendar className="h-4 w-4 text-green-600" />
+            <AlertTitle>Your Personalized Dividend Calendar</AlertTitle>
+            <AlertDescription>
+              Welcome back, {user.email}! Viewing dividend schedule for your {userStocks.length} holdings.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Empty portfolio alert */}
+        {user && !hasPortfolio && !isLoading && (
+          <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/5">
+            <Briefcase className="h-4 w-4 text-yellow-600" />
+            <AlertTitle>Add Your First Holdings</AlertTitle>
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <span>
+                Start tracking your dividend income by adding stocks to your portfolio.
+              </span>
+              <Button onClick={() => navigate('/dashboard')} variant="outline" className="shrink-0">
+                Go to Dashboard
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
+        )}
 
-          <Select value={selectedSector} onValueChange={setSelectedSector}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select sector" />
-            </SelectTrigger>
-            <SelectContent>
-              {sectors.map((sector) => (
-                <SelectItem key={sector} value={sector}>
-                  {sector}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {!isLoading && (
+          <>
+            {/* Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by ticker or company..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-          <Select value={selectedFrequency} onValueChange={setSelectedFrequency}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select frequency" />
-            </SelectTrigger>
-            <SelectContent>
-              {frequencies.map((freq) => (
-                <SelectItem key={freq} value={freq}>
-                  {freq}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              <Select value={selectedSector} onValueChange={setSelectedSector}>
+                <SelectTrigger>
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sectors.map((sector) => (
+                    <SelectItem key={sector} value={sector}>
+                      {sector}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-          <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select time range" />
-            </SelectTrigger>
-            <SelectContent>
-              {timeRanges.map((range) => (
-                <SelectItem key={range.value} value={range.value}>
-                  {range.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+              <Select
+                value={selectedFrequency}
+                onValueChange={setSelectedFrequency}
+              >
+                <SelectTrigger>
+                  <Clock className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {frequencies.map((freq) => (
+                    <SelectItem key={freq} value={freq}>
+                      {freq}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Dividends</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalDividends)}</div>
-              <p className="text-xs text-muted-foreground">In selected timeframe ({filteredData.length} payments)</p>
-            </CardContent>
-          </Card>
+              <Select
+                value={selectedTimeRange}
+                onValueChange={setSelectedTimeRange}
+              >
+                <SelectTrigger>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Time range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeRanges.map((range) => (
+                    <SelectItem key={range.value} value={range.value}>
+                      {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Yield</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.avgYield.toFixed(2)}%</div>
-              <p className="text-xs text-muted-foreground">Across filtered stocks</p>
-            </CardContent>
-          </Card>
+            {/* Summary Cards */}
+            <div className={`grid gap-4 mb-6 ${user && hasPortfolio ? 'grid-cols-1 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Dividends
+                  </CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalDividends}</div>
+                  <p className="text-xs text-muted-foreground">
+                    In selected period
+                  </p>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Week</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.thisWeekCount}</div>
-              <p className="text-xs text-muted-foreground">Dividends coming up</p>
-            </CardContent>
-          </Card>
-        </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Average Yield
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {stats.avgYield.toFixed(2)}%
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Across filtered stocks
+                  </p>
+                </CardContent>
+              </Card>
 
-        {/* Data Table */}
-        <Card className="mb-8">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Stock</TableHead>
-                  <TableHead className="text-center">Ex-Dividend Date</TableHead>
-                  <TableHead className="text-center">Payment Date</TableHead>
-                  <TableHead className="text-right">Dividend</TableHead>
-                  <TableHead className="text-center">Yield</TableHead>
-                  <TableHead className="text-center">Frequency</TableHead>
-                  <TableHead>Sector</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      No dividends found matching your filters.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredData.map((entry, index) => (
-                    <TableRow
-                      key={`${entry.ticker}-${entry.exDividendDate}-${index}`}
-                      className="hover:bg-muted/50 transition-colors"
-                    >
-                      <TableCell>
-                        <div>
-                          <div className="font-semibold">{entry.ticker}</div>
-                          <div className="text-sm text-muted-foreground">{entry.companyName}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">{formatDate(entry.exDividendDate)}</TableCell>
-                      <TableCell className="text-center">{formatDate(entry.paymentDate)}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(entry.dividendAmount)}</TableCell>
-                      <TableCell className="text-center">{entry.yield.toFixed(2)}%</TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={entry.frequency === "Monthly" ? "default" : "secondary"}>
-                          {entry.frequency}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{entry.sector}</TableCell>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">This Week</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.thisWeekCount}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Upcoming ex-dividend dates
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Your Expected Income - only for authenticated users */}
+              {user && hasPortfolio && (
+                <Card className="border-green-500/50">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Your Expected Income</CardTitle>
+                    <DollarSign className="h-4 w-4 text-green-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatCurrency(stats.totalExpectedIncome)}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      From your portfolio
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Dividend Table */}
+            <Card className="mb-8">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Stock</TableHead>
+                      <TableHead className="text-center">Ex-Dividend Date</TableHead>
+                      <TableHead className="text-center">Payment Date</TableHead>
+                      <TableHead className="text-right">Dividend</TableHead>
+                      <TableHead className="text-center">Yield</TableHead>
+                      {user && hasPortfolio && (
+                        <>
+                          <TableHead className="text-right">Your Shares</TableHead>
+                          <TableHead className="text-right">Your Payout</TableHead>
+                        </>
+                      )}
+                      <TableHead className="text-center">Frequency</TableHead>
+                      <TableHead>Sector</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredData.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={tableColSpan}
+                          className="text-center py-8 text-muted-foreground"
+                        >
+                          {user && !hasPortfolio 
+                            ? "Add stocks to your portfolio to see your personalized dividend calendar"
+                            : "No dividends found matching your criteria"}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredData.map((entry, index) => (
+                        <TableRow key={`${entry.symbol}-${entry.exDividendDate}-${index}`}>
+                          <TableCell>
+                            <div className="font-medium">{entry.symbol}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {entry.companyName}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {formatDate(entry.exDividendDate)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {formatDate(entry.paymentDate)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(entry.dividendAmount)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary">{entry.yield.toFixed(2)}%</Badge>
+                          </TableCell>
+                          {user && hasPortfolio && (
+                            <>
+                              <TableCell className="text-right">
+                                {entry.shares?.toLocaleString() || 0}
+                              </TableCell>
+                              <TableCell className="text-right font-semibold text-green-600">
+                                {formatCurrency(entry.yourPayout || 0)}
+                              </TableCell>
+                            </>
+                          )}
+                          <TableCell className="text-center">
+                            <Badge
+                              variant={
+                                entry.frequency === "Monthly" ? "default" : "outline"
+                              }
+                            >
+                              {entry.frequency}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{entry.sector}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
 
-        {/* SEO Content Section */}
-        <section className="prose prose-slate dark:prose-invert max-w-none">
-          <h2 className="text-2xl font-bold mb-4">What is a Dividend Calendar?</h2>
-          <p className="text-muted-foreground mb-6">
-            A dividend calendar is a scheduling tool that helps investors track upcoming dividend payments from their
-            stock holdings. It displays critical dates including the ex-dividend date (the cutoff to qualify for the
-            dividend), the record date (when you must be on the company's books as a shareholder), and the payment date
-            (when the dividend is deposited to your account).
-          </p>
+            {/* Bottom CTA for unauthenticated users */}
+            {!user && (
+              <Card className="mb-8 border-primary/50 bg-gradient-to-r from-primary/5 to-primary/10">
+                <CardContent className="py-8 text-center">
+                  <UserPlus className="h-12 w-12 mx-auto mb-4 text-primary" />
+                  <h3 className="text-xl font-bold mb-2">Ready to Track Your Own Dividends?</h3>
+                  <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                    Join thousands of FIRE investors using DivTrkr to plan their dividend income. 
+                    It's completely free to get started.
+                  </p>
+                  <Button size="lg" onClick={() => navigate('/auth')}>
+                    <UserPlus className="mr-2 h-5 w-5" />
+                    Create Your Free Account
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
-          <h3 className="text-xl font-semibold mb-3">Key Dividend Calendar Terms</h3>
-          <ul className="text-muted-foreground space-y-2 mb-6">
-            <li>
-              <strong>Ex-Dividend Date:</strong> The first day a stock trades without its upcoming dividend. You must
-              purchase shares before this date to receive the dividend.
-            </li>
-            <li>
-              <strong>Payment Date:</strong> The day dividend payments are distributed to shareholders of record.
-            </li>
-            <li>
-              <strong>Dividend Yield:</strong> The annual dividend payment divided by the stock price, expressed as a
-              percentage.
-            </li>
-            <li>
-              <strong>Payment Frequency:</strong> How often dividends are paid—monthly, quarterly, semi-annually, or
-              annually.
-            </li>
-          </ul>
+            {/* SEO Content Section */}
+            <div className="prose prose-gray dark:prose-invert max-w-none">
+              <h2>Understanding the Dividend Calendar</h2>
+              <p>
+                A dividend calendar is an essential tool for income-focused
+                investors pursuing the FIRE (Financial Independence, Retire Early)
+                movement. By tracking ex-dividend dates and payment schedules, you
+                can optimize your portfolio for consistent monthly income.
+              </p>
 
-          <h3 className="text-xl font-semibold mb-3">How FIRE Investors Use Dividend Calendars</h3>
-          <p className="text-muted-foreground mb-4">
-            For investors pursuing Financial Independence, Retire Early (FIRE), dividend calendars are essential
-            planning tools. They help you:
-          </p>
-          <ul className="text-muted-foreground space-y-2 mb-6">
-            <li>
-              <strong>Plan monthly income:</strong> By combining stocks with different payment schedules, you can create
-              consistent monthly cash flow.
-            </li>
-            <li>
-              <strong>Optimize reinvestment:</strong> Know exactly when dividends arrive to plan DRIP (Dividend
-              Reinvestment Plan) strategies.
-            </li>
-            <li>
-              <strong>Forecast annual income:</strong> Project your total dividend income for budgeting and FIRE number
-              calculations.
-            </li>
-            <li>
-              <strong>Avoid missed opportunities:</strong> Never miss an ex-dividend date by tracking your entire
-              portfolio in one view.
-            </li>
-          </ul>
+              <h3>Key Dates to Know</h3>
+              <ul>
+                <li>
+                  <strong>Ex-Dividend Date:</strong> The date by which you must own
+                  shares to receive the upcoming dividend. Buy before this date to
+                  qualify.
+                </li>
+                <li>
+                  <strong>Payment Date:</strong> When the dividend is actually paid
+                  to shareholders who qualified by holding before the ex-dividend
+                  date.
+                </li>
+              </ul>
 
-          <h3 className="text-xl font-semibold mb-3">Building Monthly Dividend Income</h3>
-          <p className="text-muted-foreground">
-            One popular FIRE strategy is constructing a portfolio that pays dividends every month. This involves
-            selecting stocks and ETFs with staggered payment schedules. For example, combining monthly dividend payers
-            like Realty Income (O) and JEPQ with quarterly payers like SCHD, AAPL, and JNJ creates a steady income
-            stream throughout the year. Our dividend calendar makes it easy to visualize and plan this income
-            distribution.
-          </p>
-        </section>
-      </AppLayout>
-    </>
+              <h3>Building Monthly Income</h3>
+              <p>
+                Many FIRE investors strategically combine monthly dividend payers
+                (like O, JEPI, JEPQ, and SPYI) with quarterly payers (like SCHD, AAPL, and
+                KO) to create a steady stream of passive income throughout the
+                year. This dividend calendar helps you visualize and plan your
+                income schedule.
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    </AppLayout>
   );
 };
 
