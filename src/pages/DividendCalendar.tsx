@@ -544,6 +544,73 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+// Session cache for sector data (persists during page session)
+const sectorCache = new Map<string, string>();
+
+// Fetch sector for a single symbol from edge function
+const fetchSectorForSymbol = async (symbol: string): Promise<string | null> => {
+  // Check cache first
+  if (sectorCache.has(symbol)) {
+    return sectorCache.get(symbol) || null;
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke('get-dividend-data', {
+      body: { symbol }
+    });
+
+    if (error || data?.error) {
+      console.log(`Could not fetch sector for ${symbol}:`, error || data?.error);
+      sectorCache.set(symbol, 'Unknown');
+      return null;
+    }
+
+    const sector = data?.sector || null;
+    sectorCache.set(symbol, sector || 'Unknown');
+    return sector;
+  } catch (err) {
+    console.error(`Error fetching sector for ${symbol}:`, err);
+    sectorCache.set(symbol, 'Unknown');
+    return null;
+  }
+};
+
+// Fetch sectors for entries missing them
+const fetchMissingSectors = async (entries: DividendEntry[]): Promise<DividendEntry[]> => {
+  const entriesNeedingSector = entries.filter(e => !e.sector || e.sector === 'Unknown');
+
+  if (entriesNeedingSector.length === 0) {
+    return entries;
+  }
+
+  console.log(`Fetching sectors for ${entriesNeedingSector.length} stocks...`);
+
+  // Get unique symbols needing sector data
+  const uniqueSymbols = [...new Set(entriesNeedingSector.map(e => e.symbol))];
+  
+  // Fetch sectors in parallel
+  const sectorPromises = uniqueSymbols.map(async (symbol) => {
+    const sector = await fetchSectorForSymbol(symbol);
+    return { symbol, sector };
+  });
+
+  const sectorResults = await Promise.all(sectorPromises);
+  
+  // Create lookup map
+  const sectorMap = new Map<string, string>();
+  sectorResults.forEach(({ symbol, sector }) => {
+    if (sector) sectorMap.set(symbol, sector);
+  });
+
+  // Update entries with fetched sectors
+  return entries.map(entry => ({
+    ...entry,
+    sector: entry.sector && entry.sector !== 'Unknown' 
+      ? entry.sector 
+      : sectorMap.get(entry.symbol) || 'Unknown'
+  }));
+};
+
 const DividendCalendar = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -558,6 +625,7 @@ const DividendCalendar = () => {
   const [dividendData, setDividendData] = useState<DividendEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasPortfolio, setHasPortfolio] = useState(true);
+  const [isFetchingSectors, setIsFetchingSectors] = useState(false);
 
   // Fetch user data when authenticated
   useEffect(() => {
@@ -646,7 +714,18 @@ const DividendCalendar = () => {
         }
 
         // Combine Plaid data with fallback data
-        setDividendData([...plaidDividendEntries, ...fallbackEntries]);
+        const combinedEntries = [...plaidDividendEntries, ...fallbackEntries];
+        setDividendData(combinedEntries);
+        
+        // Fetch missing sectors in background
+        setIsFetchingSectors(true);
+        fetchMissingSectors(combinedEntries).then(enrichedEntries => {
+          setDividendData(enrichedEntries);
+          setIsFetchingSectors(false);
+        }).catch(err => {
+          console.error('Error fetching sectors:', err);
+          setIsFetchingSectors(false);
+        });
       } catch (error) {
         console.error('Error fetching dividend data:', error);
         setDividendData([]);
