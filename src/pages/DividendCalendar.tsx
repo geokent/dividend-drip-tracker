@@ -27,10 +27,33 @@ interface DividendEntry {
   yourPayout?: number;
 }
 
+// Normalize frequency from various formats to our display format
+const normalizeFrequency = (freq: string | null): "Monthly" | "Quarterly" => {
+  if (!freq) return "Quarterly";
+  const lower = freq.toLowerCase();
+  if (lower === "monthly") return "Monthly";
+  return "Quarterly";
+};
+
+// Estimate payment date (typically 2-4 weeks after ex-date)
+const estimatePaymentDate = (exDate: string | null): string => {
+  if (!exDate) return '';
+  const date = new Date(exDate);
+  date.setDate(date.getDate() + 14); // Add 2 weeks as estimate
+  return date.toISOString().split('T')[0];
+};
+
 interface UserStock {
   symbol: string;
   shares: number;
   company_name: string | null;
+  dividend_per_share: number | null;
+  annual_dividend: number | null;
+  next_ex_dividend_date: string | null;
+  dividend_date: string | null;
+  dividend_yield: number | null;
+  dividend_frequency: string | null;
+  sector: string | null;
 }
 
 // Popular dividend stocks for unauthenticated users
@@ -547,11 +570,12 @@ const DividendCalendar = () => {
 
       setIsLoading(true);
       try {
-        // Fetch user's stocks from user_stocks table
+        // Fetch user's stocks from user_stocks table with all dividend fields from Plaid
         const { data: stocks, error: stocksError } = await supabase
           .from('user_stocks')
-          .select('symbol, shares, company_name')
-          .eq('user_id', user.id);
+          .select('symbol, shares, company_name, dividend_per_share, annual_dividend, next_ex_dividend_date, dividend_date, dividend_yield, dividend_frequency, sector')
+          .eq('user_id', user.id)
+          .gt('shares', 0);
 
         if (stocksError) throw stocksError;
 
@@ -566,38 +590,63 @@ const DividendCalendar = () => {
         setUserStocks(stocks);
         setHasPortfolio(true);
 
-        // Get unique symbols
-        const symbols = stocks.map(s => s.symbol);
+        // Separate stocks that have Plaid dividend data vs those that need fallback
+        const stocksWithPlaidData = stocks.filter(s => 
+          s.dividend_per_share && s.next_ex_dividend_date
+        );
+        const stocksNeedingFallback = stocks.filter(s => 
+          !s.dividend_per_share || !s.next_ex_dividend_date
+        );
 
-        // Fetch dividend data for user's stocks
-        const { data: divData, error: divError } = await supabase
-          .from('dividend_data')
-          .select('*')
-          .in('ticker', symbols);
-
-        if (divError) throw divError;
-
-        // Map dividend data with user's shares and calculate payouts
-        const personalizedData: DividendEntry[] = (divData || []).map(div => {
-          const userStock = stocks.find(s => s.symbol === div.ticker);
-          const shares = Number(userStock?.shares) || 0;
-          const yourPayout = shares * Number(div.dividend_amount);
+        // Build dividend entries from Plaid data (primary source)
+        const plaidDividendEntries: DividendEntry[] = stocksWithPlaidData.map(stock => {
+          const shares = Number(stock.shares) || 0;
+          const dividendAmount = Number(stock.dividend_per_share) || 0;
 
           return {
-            symbol: div.ticker,
-            companyName: div.company_name,
-            sector: div.sector || 'Unknown',
-            frequency: div.frequency as "Monthly" | "Quarterly",
-            yield: Number(div.dividend_yield),
-            dividendAmount: Number(div.dividend_amount),
-            exDividendDate: div.next_ex_date,
-            paymentDate: div.next_payment_date,
+            symbol: stock.symbol,
+            companyName: stock.company_name || stock.symbol,
+            sector: stock.sector || 'Unknown',
+            frequency: normalizeFrequency(stock.dividend_frequency),
+            yield: Number(stock.dividend_yield) || 0,
+            dividendAmount: dividendAmount,
+            exDividendDate: stock.next_ex_dividend_date || '',
+            paymentDate: stock.dividend_date || estimatePaymentDate(stock.next_ex_dividend_date),
             shares,
-            yourPayout,
+            yourPayout: shares * dividendAmount,
           };
         });
 
-        setDividendData(personalizedData);
+        // Fetch fallback data from dividend_data table only for stocks missing Plaid data
+        let fallbackEntries: DividendEntry[] = [];
+        if (stocksNeedingFallback.length > 0) {
+          const fallbackSymbols = stocksNeedingFallback.map(s => s.symbol);
+          const { data: divData } = await supabase
+            .from('dividend_data')
+            .select('*')
+            .in('ticker', fallbackSymbols);
+
+          fallbackEntries = (divData || []).map(div => {
+            const userStock = stocksNeedingFallback.find(s => s.symbol === div.ticker);
+            const shares = Number(userStock?.shares) || 0;
+
+            return {
+              symbol: div.ticker,
+              companyName: div.company_name,
+              sector: div.sector || 'Unknown',
+              frequency: div.frequency as "Monthly" | "Quarterly",
+              yield: Number(div.dividend_yield),
+              dividendAmount: Number(div.dividend_amount),
+              exDividendDate: div.next_ex_date,
+              paymentDate: div.next_payment_date,
+              shares,
+              yourPayout: shares * Number(div.dividend_amount),
+            };
+          });
+        }
+
+        // Combine Plaid data with fallback data
+        setDividendData([...plaidDividendEntries, ...fallbackEntries]);
       } catch (error) {
         console.error('Error fetching dividend data:', error);
         setDividendData([]);
