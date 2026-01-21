@@ -24,6 +24,11 @@ export const Footer = () => {
             <h3 className="font-semibold text-foreground mb-3">Resources</h3>
             <ul className="space-y-2">
               <li>
+                <Link to="/dividend-calendar" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
+                  Dividend Calendar
+                </Link>
+              </li>
+              <li>
                 <Link to="/blog" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
                   Blog
                 </Link>
