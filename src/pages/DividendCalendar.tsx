@@ -509,15 +509,7 @@ const sampleDividendData: DividendEntry[] = [
   },
 ];
 
-const sectors = [
-  "All Sectors",
-  "ETF",
-  "Technology",
-  "Healthcare",
-  "Consumer Staples",
-  "Real Estate",
-  "Telecommunications",
-];
+// Sectors are now dynamically generated from data - see dynamicSectors useMemo in component
 
 const frequencies = ["All Frequencies", "Monthly", "Quarterly"];
 
@@ -740,6 +732,21 @@ const DividendCalendar = () => {
   // Determine data source based on authentication
   const dataSource = user && hasPortfolio ? dividendData : sampleDividendData;
 
+  // Build dynamic sectors list from actual data
+  const dynamicSectors = useMemo(() => {
+    const sectorSet = new Set<string>();
+    dataSource.forEach(entry => {
+      if (entry.sector && entry.sector !== 'Unknown') {
+        sectorSet.add(entry.sector);
+      }
+    });
+    // Always include "Unknown" if there are any unknown sectors
+    if (dataSource.some(entry => entry.sector === 'Unknown')) {
+      sectorSet.add('Unknown');
+    }
+    return ['All Sectors', ...Array.from(sectorSet).sort()];
+  }, [dataSource]);
+
   const filteredData = useMemo(() => {
     const now = new Date("2026-01-21");
     const timeRange = timeRanges.find((t) => t.value === selectedTimeRange);
@@ -886,7 +893,7 @@ const DividendCalendar = () => {
                   <SelectValue placeholder="Filter by sector" />
                 </SelectTrigger>
                 <SelectContent>
-                  {sectors.map((sector) => (
+                  {dynamicSectors.map((sector) => (
                     <SelectItem key={sector} value={sector}>
                       {sector}
                     </SelectItem>

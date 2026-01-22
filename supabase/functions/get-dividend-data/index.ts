@@ -67,30 +67,47 @@ function estimateNextDividendDate(dividends: { date: string; amount: number }[],
   return nextDate.toISOString().split('T')[0];
 }
 
-// Fetch sector data from Yahoo Finance quoteSummary
+// Fetch sector data from Yahoo Finance search endpoint (publicly accessible, no auth required)
 async function fetchYahooSector(symbol: string): Promise<{ sector: string | null; industry: string | null }> {
   try {
-    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=assetProfile`;
+    const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${symbol}&quotesCount=1&newsCount=0`;
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
     
+    console.log(`Yahoo search status for ${symbol}: ${response.status}`);
+    
     if (response.status !== 200) {
-      console.log(`Yahoo quoteSummary status: ${response.status}`);
       return { sector: null, industry: null };
     }
     
     const data = await response.json();
-    const assetProfile = data?.quoteSummary?.result?.[0]?.assetProfile;
+    const quote = data?.quotes?.[0];
     
-    if (assetProfile) {
-      console.log(`Yahoo sector for ${symbol}: ${assetProfile.sector}, industry: ${assetProfile.industry}`);
-      return {
-        sector: assetProfile.sector || null,
-        industry: assetProfile.industry || null
-      };
+    if (quote && quote.symbol?.toUpperCase() === symbol.toUpperCase()) {
+      // Get sector from response
+      let sector = quote.sector || quote.sectorDisp || null;
+      const industry = quote.industry || quote.industryDisp || null;
+      
+      // Fallback 1: If quoteType is ETF and no sector, use "ETF"
+      if (!sector && quote.quoteType === 'ETF') {
+        sector = 'ETF';
+        console.log(`${symbol} detected as ETF via quoteType`);
+      }
+      
+      // Fallback 2: If name contains "ETF" and no sector, use "ETF"
+      if (!sector) {
+        const name = quote.shortname || quote.longname || '';
+        if (name.toUpperCase().includes('ETF')) {
+          sector = 'ETF';
+          console.log(`${symbol} detected as ETF via name: ${name}`);
+        }
+      }
+      
+      console.log(`Yahoo sector for ${symbol}: ${sector}, industry: ${industry}`);
+      return { sector, industry };
     }
     
     return { sector: null, industry: null };
