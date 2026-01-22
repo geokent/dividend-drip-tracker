@@ -158,7 +158,13 @@ serve(async (req) => {
         const expiresAt = new Date(cached.expires_at);
         const now = new Date();
         
-        if (expiresAt > now) {
+        // Check if knownETFs has better classification than cache
+        const knownETF = knownETFs[upperSymbol];
+        const cacheHasGenericType = cached.etf_type === 'ETF' || !cached.etf_type;
+        const knownHasBetterType = knownETF && knownETF.etfType !== 'ETF';
+        
+        if (expiresAt > now && !cacheHasGenericType) {
+          // Cache is valid and has meaningful classification
           console.log(`Cache hit for ${upperSymbol}, expires: ${expiresAt.toISOString()}`);
           return new Response(
             JSON.stringify({ 
@@ -167,8 +173,22 @@ serve(async (req) => {
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
+        } else if (cacheHasGenericType && knownHasBetterType) {
+          console.log(`Cache has generic ETF type for ${upperSymbol}, refreshing with known data`);
+          // Continue to refresh - don't return stale cache
+        } else if (expiresAt > now) {
+          // Cache not expired but no better data available
+          console.log(`Cache hit for ${upperSymbol}, expires: ${expiresAt.toISOString()}`);
+          return new Response(
+            JSON.stringify({ 
+              source: 'cache',
+              data: cached 
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          console.log(`Cache expired for ${upperSymbol}`);
         }
-        console.log(`Cache expired for ${upperSymbol}`);
       }
     }
 
