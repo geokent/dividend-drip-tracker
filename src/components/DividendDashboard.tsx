@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { PortfolioTable } from "./PortfolioTable";
-import { UpcomingDividendsCard } from "./UpcomingDividendsCard";
 import { PortfolioTopStrip } from "./PortfolioTopStrip";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "@/hooks/use-toast";
@@ -1141,9 +1140,6 @@ export const DividendDashboard = () => {
           connectedInstitutions={connectedInstitutions}
           hasInactiveAccounts={staleAccounts.length > 0}
         />
-        
-        {/* Upcoming Dividends - Below the chart */}
-        <UpcomingDividendsCard stocks={trackedStocks} />
       </div>
       
       <PlaidDisconnectDialog
