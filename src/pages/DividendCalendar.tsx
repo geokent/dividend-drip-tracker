@@ -539,24 +539,55 @@ const formatCurrency = (amount: number) => {
 // Session cache for sector data (persists during page session)
 const sectorCache = new Map<string, string>();
 
-// Fetch sector for a single symbol from edge function
-const fetchSectorForSymbol = async (symbol: string): Promise<string | null> => {
-  // Check cache first
-  if (sectorCache.has(symbol)) {
-    return sectorCache.get(symbol) || null;
-  }
+// Fetch sector data for a single symbol (with caching)
+// Uses fetch-etf-metadata for ETFs (with DB cache), get-dividend-data for stocks
+const fetchSectorForSymbol = async (symbol: string, companyName?: string): Promise<string | null> => {
+  const cached = sectorCache.get(symbol);
+  if (cached) return cached;
 
   try {
+    // Check if this might be an ETF (name contains ETF or common ETF indicators)
+    const nameHints = (companyName || '').toUpperCase();
+    const symbolHints = symbol.toUpperCase();
+    const isLikelyETF = nameHints.includes('ETF') || 
+                        nameHints.includes('FUND') ||
+                        ['SCHD', 'JEPQ', 'JEPI', 'SPYI', 'QQQI', 'DIVO', 'FDVV', 'VIG', 'VYM', 'DGRO', 'HDV', 'NOBL'].includes(symbolHints);
+
+    if (isLikelyETF) {
+      // Use ETF metadata endpoint (has DB caching)
+      const { data, error } = await supabase.functions.invoke('fetch-etf-metadata', {
+        body: { symbol }
+      });
+
+      if (!error && data?.data) {
+        // For ETFs, use etf_type or sector_focus
+        const etfData = data.data;
+        let sector = etfData.sector_focus || etfData.etf_type || 'ETF';
+        
+        // If it's just a generic type, show as ETF
+        if (['Index', 'Growth', 'Value', 'International', 'Dividend', 'Bond'].includes(sector)) {
+          sector = `ETF - ${sector}`;
+        } else if (sector.startsWith('Sector - ')) {
+          sector = sector.replace('Sector - ', '');
+        } else if (sector === 'Covered Call') {
+          sector = 'ETF - Covered Call';
+        } else if (sector === 'REIT') {
+          sector = 'Real Estate';
+        }
+        
+        console.log(`ETF metadata for ${symbol}: ${sector}`);
+        sectorCache.set(symbol, sector);
+        return sector;
+      }
+    }
+
+    // Fallback to regular dividend data endpoint for stocks
     const { data, error } = await supabase.functions.invoke('get-dividend-data', {
       body: { symbol }
     });
 
-    if (error || data?.error) {
-      console.log(`Could not fetch sector for ${symbol}:`, error || data?.error);
-      sectorCache.set(symbol, 'Unknown');
-      return null;
-    }
-
+    if (error) throw error;
+    
     const sector = data?.sector || null;
     sectorCache.set(symbol, sector || 'Unknown');
     return sector;
@@ -577,12 +608,17 @@ const fetchMissingSectors = async (entries: DividendEntry[]): Promise<DividendEn
 
   console.log(`Fetching sectors for ${entriesNeedingSector.length} stocks...`);
 
-  // Get unique symbols needing sector data
-  const uniqueSymbols = [...new Set(entriesNeedingSector.map(e => e.symbol))];
+  // Get unique symbols needing sector data (with company name for ETF detection)
+  const symbolsWithNames = new Map<string, string>();
+  entriesNeedingSector.forEach(e => {
+    if (!symbolsWithNames.has(e.symbol)) {
+      symbolsWithNames.set(e.symbol, e.companyName);
+    }
+  });
   
   // Fetch sectors in parallel
-  const sectorPromises = uniqueSymbols.map(async (symbol) => {
-    const sector = await fetchSectorForSymbol(symbol);
+  const sectorPromises = Array.from(symbolsWithNames.entries()).map(async ([symbol, companyName]) => {
+    const sector = await fetchSectorForSymbol(symbol, companyName);
     return { symbol, sector };
   });
 

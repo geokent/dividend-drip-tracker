@@ -177,6 +177,63 @@ export type Database = {
           },
         ]
       }
+      etf_cache: {
+        Row: {
+          asset_class: string | null
+          aum: number | null
+          category: string | null
+          created_at: string
+          dividend_yield: number | null
+          etf_name: string | null
+          etf_type: string | null
+          expense_ratio: number | null
+          expires_at: string
+          holdings_count: number | null
+          id: string
+          raw_data: Json | null
+          sector_focus: string | null
+          symbol: string
+          top_holdings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          asset_class?: string | null
+          aum?: number | null
+          category?: string | null
+          created_at?: string
+          dividend_yield?: number | null
+          etf_name?: string | null
+          etf_type?: string | null
+          expense_ratio?: number | null
+          expires_at?: string
+          holdings_count?: number | null
+          id?: string
+          raw_data?: Json | null
+          sector_focus?: string | null
+          symbol: string
+          top_holdings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          asset_class?: string | null
+          aum?: number | null
+          category?: string | null
+          created_at?: string
+          dividend_yield?: number | null
+          etf_name?: string | null
+          etf_type?: string | null
+          expense_ratio?: number | null
+          expires_at?: string
+          holdings_count?: number | null
+          id?: string
+          raw_data?: Json | null
+          sector_focus?: string | null
+          symbol?: string
+          top_holdings?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exit_intent_leads: {
         Row: {
           created_at: string

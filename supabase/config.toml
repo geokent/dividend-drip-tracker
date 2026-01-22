@@ -77,3 +77,6 @@ verify_jwt = true
 
 [functions.exit-intent-capture]
 verify_jwt = false
+
+[functions.fetch-etf-metadata]
+verify_jwt = false
