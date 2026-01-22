@@ -12,6 +12,7 @@ export const Header = () => {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", requireAuth: true },
     { name: "Dividend Calendar", href: "/dividend-calendar", requireAuth: true },
+    { name: "Stock Screener", href: "/stock-screener", requireAuth: false },
     { name: "Income Projections", href: "/future-income-projects", requireAuth: true },
   ];
 

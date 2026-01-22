@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import { FutureIncomeProjects } from "./pages/FutureIncomeProjects";
 import { DividendDashboard } from "@/components/DividendDashboard";
 import DividendCalendar from "./pages/DividendCalendar";
+import StockScreener from "./pages/StockScreener";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => {
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/dividend-calendar" element={<DividendCalendar />} />
+                <Route path="/stock-screener" element={<StockScreener />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
