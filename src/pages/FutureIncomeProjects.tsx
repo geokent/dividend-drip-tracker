@@ -1,15 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -22,16 +19,14 @@ import {
   Target, 
   Brain, 
   BarChart3,
-  LogOut,
   Flame,
   Trophy,
-  Coffee,
-  Rocket,
-  PartyPopper,
-  RefreshCw
+  RefreshCw,
+  Check,
+  ZoomIn
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ReferenceLine, Brush } from 'recharts';
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -55,7 +50,7 @@ interface TrackedStock extends StockData {
 }
 
 export const FutureIncomeProjects = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [trackedStocks, setTrackedStocks] = useState<TrackedStock[]>([]);
   const [monthlyInvestment, setMonthlyInvestment] = useState(0);
   const [dividendGrowthRate, setDividendGrowthRate] = useState(5);
@@ -68,6 +63,15 @@ export const FutureIncomeProjects = () => {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Chart interactivity state
+  const [visibleSeries, setVisibleSeries] = useState({
+    monthlyIncome: true,
+    portfolioValue: true,
+    contributions: false,
+    sp500Comparison: false
+  });
+  const [chartZoomRange, setChartZoomRange] = useState<{ startIndex?: number; endIndex?: number }>({});
 
   // Scenario configurations
   const scenarios = [
@@ -203,6 +207,11 @@ export const FutureIncomeProjects = () => {
     // Use current portfolio yield or default to 4% if no stocks
     const assumedYield = currentMetrics.portfolioYield > 0 ? currentMetrics.portfolioYield / 100 : 0.04;
     
+    // Track S&P 500 benchmark and cumulative contributions
+    let sp500Value = currentMetrics.totalPortfolioValue;
+    let cumulativeContributions = 0;
+    const SP500_GROWTH_RATE = 0.07; // 7% historical average
+    
     for (let year = 0; year <= 30; year++) {
       // For year 0, use current values
       if (year === 0) {
@@ -212,7 +221,9 @@ export const FutureIncomeProjects = () => {
           portfolioValue: Math.round(portfolioValue),
           annualDividends: Math.round(annualDividends),
           monthlyIncome: Math.round(annualDividends / 12),
-          quarterlyIncome: Math.round(annualDividends / 4)
+          quarterlyIncome: Math.round(annualDividends / 4),
+          cumulativeContributions: Math.round(currentMetrics.totalPortfolioValue),
+          sp500Value: Math.round(sp500Value)
         });
         continue;
       }
@@ -220,9 +231,14 @@ export const FutureIncomeProjects = () => {
       // Add yearly investments (monthly + additional)
       const yearlyInvestment = monthlyInvestment * 12 + additionalYearlyContribution;
       portfolioValue += yearlyInvestment;
+      cumulativeContributions += yearlyInvestment;
       
       // Apply portfolio growth
       portfolioValue *= (1 + portfolioGrowthRate);
+      
+      // S&P 500 benchmark calculation (same contributions, 7% growth, no dividends)
+      sp500Value += yearlyInvestment;
+      sp500Value *= (1 + SP500_GROWTH_RATE);
       
       // Calculate dividends based on new portfolio value
       let annualDividends = portfolioValue * assumedYield;
@@ -240,7 +256,9 @@ export const FutureIncomeProjects = () => {
         portfolioValue: Math.round(portfolioValue),
         annualDividends: Math.round(annualDividends),
         monthlyIncome: Math.round(annualDividends / 12),
-        quarterlyIncome: Math.round(annualDividends / 4)
+        quarterlyIncome: Math.round(annualDividends / 4),
+        cumulativeContributions: Math.round(currentMetrics.totalPortfolioValue + cumulativeContributions),
+        sp500Value: Math.round(sp500Value)
       });
     }
     
@@ -261,32 +279,135 @@ export const FutureIncomeProjects = () => {
   
   const currentMetrics = calculateCurrentMetrics();
 
-  // FIRE calculations
-  // Custom tooltip for the income chart
+  // Custom tooltip for the income chart - enhanced with all visible series
   const CustomChartTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-card border-2 border-primary rounded-lg p-3 shadow-lg">
+        <div className="bg-card border-2 border-primary rounded-lg p-3 shadow-lg min-w-[220px]">
           <p className="font-semibold text-primary mb-2">Year {label}</p>
-          <div className="space-y-1 text-sm">
-            <p className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Monthly Income:</span>
-              <span className="font-medium text-financial-green">${data.monthlyIncome?.toLocaleString()}</span>
-            </p>
-            <p className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Annual Income:</span>
-              <span className="font-medium">${data.annualDividends?.toLocaleString()}</span>
-            </p>
-            <p className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Portfolio Value:</span>
-              <span className="font-medium">${data.portfolioValue?.toLocaleString()}</span>
-            </p>
+          <div className="space-y-1.5 text-sm">
+            {visibleSeries.monthlyIncome && (
+              <p className="flex justify-between gap-4">
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-sm bg-primary" />
+                  <span className="text-muted-foreground">Monthly Income:</span>
+                </span>
+                <span className="font-medium text-financial-green">${data.monthlyIncome?.toLocaleString()}</span>
+              </p>
+            )}
+            {visibleSeries.portfolioValue && (
+              <p className="flex justify-between gap-4">
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-sm bg-blue-500" />
+                  <span className="text-muted-foreground">Portfolio Value:</span>
+                </span>
+                <span className="font-medium">${data.portfolioValue?.toLocaleString()}</span>
+              </p>
+            )}
+            {visibleSeries.contributions && (
+              <p className="flex justify-between gap-4">
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-sm bg-emerald-500" />
+                  <span className="text-muted-foreground">Contributions:</span>
+                </span>
+                <span className="font-medium">${data.cumulativeContributions?.toLocaleString()}</span>
+              </p>
+            )}
+            {visibleSeries.sp500Comparison && (
+              <p className="flex justify-between gap-4">
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-sm border border-dashed border-orange-500" />
+                  <span className="text-muted-foreground">S&P 500:</span>
+                </span>
+                <span className="font-medium text-orange-500">${data.sp500Value?.toLocaleString()}</span>
+              </p>
+            )}
           </div>
+          {/* Comparison insight */}
+          {visibleSeries.sp500Comparison && visibleSeries.portfolioValue && (
+            <div className="mt-2 pt-2 border-t border-border">
+              <p className={`text-xs font-medium ${
+                data.portfolioValue > data.sp500Value ? 'text-green-600' : 'text-orange-600'
+              }`}>
+                {data.portfolioValue > data.sp500Value 
+                  ? `+$${(data.portfolioValue - data.sp500Value).toLocaleString()} vs S&P 500`
+                  : `-$${(data.sp500Value - data.portfolioValue).toLocaleString()} vs S&P 500`
+                }
+              </p>
+            </div>
+          )}
         </div>
       );
     }
     return null;
+  };
+
+  // Interactive legend toggle component
+  const ChartLegendToggle = () => (
+    <div className="flex flex-wrap gap-2 mb-4">
+      <button
+        onClick={() => setVisibleSeries(prev => ({ ...prev, monthlyIncome: !prev.monthlyIncome }))}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-sm ${
+          visibleSeries.monthlyIncome 
+            ? 'bg-primary/10 border-primary text-primary' 
+            : 'bg-muted/50 border-muted-foreground/30 text-muted-foreground'
+        }`}
+      >
+        <div className={`w-3 h-3 rounded-sm ${visibleSeries.monthlyIncome ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+        <span className="font-medium">Monthly Income</span>
+        {visibleSeries.monthlyIncome && <Check className="h-3 w-3" />}
+      </button>
+      
+      <button
+        onClick={() => setVisibleSeries(prev => ({ ...prev, portfolioValue: !prev.portfolioValue }))}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-sm ${
+          visibleSeries.portfolioValue 
+            ? 'bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-400' 
+            : 'bg-muted/50 border-muted-foreground/30 text-muted-foreground'
+        }`}
+      >
+        <div className={`w-3 h-3 rounded-sm ${visibleSeries.portfolioValue ? 'bg-blue-500' : 'bg-muted-foreground/30'}`} />
+        <span className="font-medium">Portfolio Value</span>
+        {visibleSeries.portfolioValue && <Check className="h-3 w-3" />}
+      </button>
+      
+      <button
+        onClick={() => setVisibleSeries(prev => ({ ...prev, contributions: !prev.contributions }))}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-sm ${
+          visibleSeries.contributions 
+            ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400' 
+            : 'bg-muted/50 border-muted-foreground/30 text-muted-foreground'
+        }`}
+      >
+        <div className={`w-3 h-3 rounded-sm ${visibleSeries.contributions ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
+        <span className="font-medium">Contributions</span>
+        {visibleSeries.contributions && <Check className="h-3 w-3" />}
+      </button>
+      
+      <button
+        onClick={() => setVisibleSeries(prev => ({ ...prev, sp500Comparison: !prev.sp500Comparison }))}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-sm ${
+          visibleSeries.sp500Comparison 
+            ? 'bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400' 
+            : 'bg-muted/50 border-muted-foreground/30 text-muted-foreground'
+        }`}
+      >
+        <div className={`w-3 h-3 rounded-sm border-2 border-dashed ${visibleSeries.sp500Comparison ? 'border-orange-500' : 'border-muted-foreground/30'}`} />
+        <span className="font-medium">S&P 500 (7%)</span>
+        {visibleSeries.sp500Comparison && <Check className="h-3 w-3" />}
+      </button>
+    </div>
+  );
+
+  // Scroll to chart and set year range
+  const handleMilestoneClick = (years: 5 | 10 | 15 | 30) => {
+    setYearRange(years);
+    setChartZoomRange({}); // Reset zoom when changing year range
+    document.querySelector('[data-chart-container]')?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'center' 
+    });
   };
 
   const fireCalculations = useMemo(() => {
@@ -792,7 +913,7 @@ export const FutureIncomeProjects = () => {
         </Card>
 
         {/* Main Chart - Full Width */}
-        <Card className="card-elevated gradient-card mb-8">
+        <Card className="card-elevated gradient-card mb-8" data-chart-container>
           <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
@@ -812,7 +933,7 @@ export const FutureIncomeProjects = () => {
                 <CardDescription className="text-sm text-muted-foreground">
                   {chartMode === "dividend" 
                     ? "Monthly dividend income and growth over time"
-                    : "Portfolio value and annual dividend income over 15 years"
+                    : "Portfolio value and annual dividend income over time"
                   }
                 </CardDescription>
               </div>
@@ -825,18 +946,25 @@ export const FutureIncomeProjects = () => {
             </div>
           </CardHeader>
           <CardContent className="pb-4 relative">
-            <div className="h-[280px] md:h-[360px]">
+            {/* Interactive Legend */}
+            <ChartLegendToggle />
+            
+            <div className="h-[320px] md:h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                   {chartMode === "dividend" ? (
                    <AreaChart 
                      key={chartKey}
                      data={chartData}
-                     margin={{ top: 24, right: 16, left: 20, bottom: 24 }}
+                     margin={{ top: 24, right: 16, left: 20, bottom: 60 }}
                    >
                      <defs>
                        <linearGradient id="monthlyIncomeGradient" x1="0" y1="0" x2="0" y2="1">
                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05}/>
+                       </linearGradient>
+                       <linearGradient id="contributionsGradient" x1="0" y1="0" x2="0" y2="1">
+                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                         <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
                        </linearGradient>
                      </defs>
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -878,21 +1006,47 @@ export const FutureIncomeProjects = () => {
                      )}
                      
                      <Tooltip content={<CustomChartTooltip />} />
-                     <Area 
-                       type="monotone" 
-                       dataKey="monthlyIncome" 
+                     
+                     {/* Monthly Income - Primary data */}
+                     {visibleSeries.monthlyIncome && (
+                       <Area 
+                         type="monotone" 
+                         dataKey="monthlyIncome" 
+                         stroke="hsl(var(--primary))"
+                         strokeWidth={2}
+                         fill="url(#monthlyIncomeGradient)"
+                         dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 3 }}
+                         activeDot={{ r: 6, strokeWidth: 2 }}
+                       />
+                     )}
+                     
+                     {/* S&P 500 Comparison - Dashed orange line */}
+                     {visibleSeries.sp500Comparison && (
+                       <Line 
+                         type="monotone" 
+                         dataKey="sp500Value" 
+                         stroke="#f97316"
+                         strokeWidth={2}
+                         strokeDasharray="5 5"
+                         dot={false}
+                         name="S&P 500"
+                       />
+                     )}
+                     
+                     {/* Brush for zoom capability */}
+                     <Brush 
+                       dataKey="year" 
+                       height={30} 
                        stroke="hsl(var(--primary))"
-                       strokeWidth={2}
-                       fill="url(#monthlyIncomeGradient)"
-                       dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 3 }}
-                       activeDot={{ r: 6, strokeWidth: 2 }}
+                       fill="hsl(var(--secondary))"
+                       tickFormatter={(value) => `Y${value}`}
                      />
                   </AreaChart>
                 ) : (
                    <LineChart 
                      key={chartKey}
                      data={chartData}
-                     margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
+                     margin={{ top: 8, right: 16, left: 20, bottom: 60 }}
                    >
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
@@ -903,48 +1057,84 @@ export const FutureIncomeProjects = () => {
                         axisLine={{ stroke: 'hsl(var(--primary))' }}
                         label={{ value: 'Years', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'hsl(var(--primary))' } }}
                       />
-        <YAxis 
-          width={72}
-          tickMargin={4}
-          tick={{ fontSize: 10, fill: 'hsl(var(--primary))' }}
-          stroke="hsl(var(--primary))"
-          tickLine={{ stroke: 'hsl(var(--primary))' }}
-          axisLine={{ stroke: 'hsl(var(--primary))' }}
-          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-        />
-                     <Tooltip 
-                       contentStyle={{
-                         backgroundColor: 'hsl(var(--card))',
-                         border: '1px solid hsl(var(--primary))',
-                         borderRadius: '8px',
-                         boxShadow: 'var(--shadow-card)',
-                         fontSize: 12
-                       }}
-                       formatter={(value: number, name: string) => [
-                         `$${value.toLocaleString()}`, 
-                         name === 'portfolioValue' ? 'Portfolio Value' : 'Annual Dividends'
-                       ]}
-                       labelFormatter={(label) => `Year ${label}`}
-                       labelStyle={{ fontSize: 12, color: 'hsl(var(--primary))' }}
+                     <YAxis 
+                       width={72}
+                       tickMargin={4}
+                       tick={{ fontSize: 10, fill: 'hsl(var(--primary))' }}
+                       stroke="hsl(var(--primary))"
+                       tickLine={{ stroke: 'hsl(var(--primary))' }}
+                       axisLine={{ stroke: 'hsl(var(--primary))' }}
+                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                      />
-                     <Line 
-                       type="monotone" 
-                       dataKey="portfolioValue" 
-                       stroke="hsl(var(--primary))" 
-                       strokeWidth={3}
-                       dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                     />
-                     <Line 
-                       type="monotone" 
-                       dataKey="annualDividends" 
-                       stroke="#2563eb" 
-                       strokeWidth={2}
-                       strokeDasharray="5 5"
-                       dot={{ fill: '#2563eb', strokeWidth: 2, r: 3 }}
+                     <Tooltip content={<CustomChartTooltip />} />
+                     
+                     {/* Portfolio Value - Primary line */}
+                     {visibleSeries.portfolioValue && (
+                       <Line 
+                         type="monotone" 
+                         dataKey="portfolioValue" 
+                         stroke="#3b82f6" 
+                         strokeWidth={3}
+                         dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                         name="Portfolio Value"
+                       />
+                     )}
+                     
+                     {/* Contributions Line */}
+                     {visibleSeries.contributions && (
+                       <Line 
+                         type="monotone" 
+                         dataKey="cumulativeContributions" 
+                         stroke="#10b981"
+                         strokeWidth={2}
+                         dot={false}
+                         name="Contributions"
+                       />
+                     )}
+                     
+                     {/* S&P 500 Comparison - Dashed orange line */}
+                     {visibleSeries.sp500Comparison && (
+                       <Line 
+                         type="monotone" 
+                         dataKey="sp500Value" 
+                         stroke="#f97316"
+                         strokeWidth={2}
+                         strokeDasharray="5 5"
+                         dot={false}
+                         name="S&P 500"
+                       />
+                     )}
+                     
+                     {/* Monthly Income overlay */}
+                     {visibleSeries.monthlyIncome && (
+                       <Line 
+                         type="monotone" 
+                         dataKey="annualDividends" 
+                         stroke="hsl(var(--primary))" 
+                         strokeWidth={2}
+                         strokeDasharray="3 3"
+                         dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 3 }}
+                         name="Annual Dividends"
+                       />
+                     )}
+                     
+                     {/* Brush for zoom capability */}
+                     <Brush 
+                       dataKey="year" 
+                       height={30} 
+                       stroke="hsl(var(--primary))"
+                       fill="hsl(var(--secondary))"
+                       tickFormatter={(value) => `Y${value}`}
                      />
                   </LineChart>
                 )}
               </ResponsiveContainer>
+            </div>
+            
+            {/* Zoom hint */}
+            <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
+              <ZoomIn className="h-3 w-3" />
+              <span>Drag the slider below the chart to zoom into a specific time range</span>
             </div>
           </CardContent>
           
@@ -954,11 +1144,11 @@ export const FutureIncomeProjects = () => {
               {([5, 10, 15, 30] as const).map((years) => (
                 <button 
                   key={years}
-                  onClick={() => setYearRange(years)}
-                  className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                  onClick={() => handleMilestoneClick(years)}
+                  className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md cursor-pointer ${
                     yearRange === years 
                       ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
-                      : 'bg-card border-border hover:bg-secondary/50'
+                      : 'bg-card border-border hover:bg-secondary/50 hover:border-primary/20'
                   }`}
                 >
                   <div className="text-sm font-medium text-muted-foreground mb-1">{years} Years</div>
