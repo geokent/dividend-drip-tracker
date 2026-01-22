@@ -350,6 +350,7 @@ const StockScreener = () => {
                   min={0}
                   max={15}
                   step={0.5}
+                  minStepsBetweenThumbs={1}
                   className="w-full"
                 />
               </div>
@@ -363,6 +364,7 @@ const StockScreener = () => {
                   min={0}
                   max={100}
                   step={5}
+                  minStepsBetweenThumbs={1}
                   className="w-full"
                 />
               </div>
