@@ -561,19 +561,29 @@ const fetchSectorForSymbol = async (symbol: string, companyName?: string): Promi
       });
 
       if (!error && data?.data) {
-        // For ETFs, use etf_type or sector_focus
         const etfData = data.data;
-        let sector = etfData.sector_focus || etfData.etf_type || 'ETF';
+        const etfType = etfData.etf_type || 'ETF';
+        const sectorFocus = etfData.sector_focus;
         
-        // If it's just a generic type, show as ETF
-        if (['Index', 'Growth', 'Value', 'International', 'Dividend', 'Bond'].includes(sector)) {
-          sector = `ETF - ${sector}`;
-        } else if (sector.startsWith('Sector - ')) {
-          sector = sector.replace('Sector - ', '');
-        } else if (sector === 'Covered Call') {
-          sector = 'ETF - Covered Call';
-        } else if (sector === 'REIT') {
+        let sector: string;
+        
+        // Build descriptive sector label combining type and sector focus
+        if (etfType === 'Covered Call') {
+          sector = sectorFocus ? `Covered Call (${sectorFocus})` : 'Covered Call';
+        } else if (etfType === 'Dividend') {
+          sector = sectorFocus ? `Dividend ETF (${sectorFocus})` : 'Dividend ETF';
+        } else if (etfType.startsWith('Sector - ')) {
+          sector = etfType.replace('Sector - ', '');
+        } else if (etfType === 'REIT') {
           sector = 'Real Estate';
+        } else if (['Index', 'Growth', 'Value', 'International', 'Bond'].includes(etfType)) {
+          sector = sectorFocus ? `${etfType} (${sectorFocus})` : etfType;
+        } else if (sectorFocus) {
+          sector = sectorFocus;
+        } else if (etfType !== 'ETF') {
+          sector = etfType;
+        } else {
+          sector = 'ETF'; // Fallback - will trigger re-enrichment
         }
         
         console.log(`ETF metadata for ${symbol}: ${sector}`);
@@ -604,7 +614,8 @@ const fetchSectorForSymbol = async (symbol: string, companyName?: string): Promi
 
 // Fetch sectors for entries missing them
 const fetchMissingSectors = async (entries: DividendEntry[]): Promise<DividendEntry[]> => {
-  const entriesNeedingSector = entries.filter(e => !e.sector || e.sector === 'Unknown');
+  // Also consider 'ETF' as needing enrichment since it's a stale placeholder
+  const entriesNeedingSector = entries.filter(e => !e.sector || e.sector === 'Unknown' || e.sector === 'ETF');
 
   if (entriesNeedingSector.length === 0) {
     return entries;
@@ -634,13 +645,43 @@ const fetchMissingSectors = async (entries: DividendEntry[]): Promise<DividendEn
     if (sector) sectorMap.set(symbol, sector);
   });
 
-  // Update entries with fetched sectors
-  return entries.map(entry => ({
-    ...entry,
-    sector: entry.sector && entry.sector !== 'Unknown' 
-      ? entry.sector 
-      : sectorMap.get(entry.symbol) || 'Unknown'
-  }));
+  // Update entries with fetched sectors - always prefer enriched sector over stale values
+  return entries.map(entry => {
+    const enrichedSector = sectorMap.get(entry.symbol);
+    // Always use enriched sector if available and meaningful
+    if (enrichedSector && enrichedSector !== 'Unknown' && enrichedSector !== 'ETF') {
+      return { ...entry, sector: enrichedSector };
+    }
+    return entry;
+  });
+};
+
+// Deduplicate entries by symbol + exDividendDate, merging shares and payouts
+const deduplicateEntries = (entries: DividendEntry[]): DividendEntry[] => {
+  const entryMap = new Map<string, DividendEntry>();
+  
+  entries.forEach(entry => {
+    const key = `${entry.symbol}-${entry.exDividendDate}`;
+    const existing = entryMap.get(key);
+    
+    if (existing) {
+      // Merge: sum shares and payout, keep better sector
+      const betterSector = (entry.sector && entry.sector !== 'Unknown' && entry.sector !== 'ETF')
+        ? entry.sector
+        : existing.sector;
+      
+      entryMap.set(key, {
+        ...existing,
+        shares: (existing.shares || 0) + (entry.shares || 0),
+        yourPayout: (existing.yourPayout || 0) + (entry.yourPayout || 0),
+        sector: betterSector,
+      });
+    } else {
+      entryMap.set(key, { ...entry });
+    }
+  });
+  
+  return Array.from(entryMap.values());
 };
 
 const DividendCalendar = () => {
@@ -706,7 +747,7 @@ const DividendCalendar = () => {
           return {
             symbol: stock.symbol,
             companyName: stock.company_name || stock.symbol,
-            sector: stock.sector || 'Unknown',
+            sector: (stock.sector && stock.sector !== 'ETF') ? stock.sector : 'Unknown',
             frequency: normalizeFrequency(stock.dividend_frequency),
             yield: Number(stock.dividend_yield) || 0,
             dividendAmount: dividendAmount,
@@ -733,7 +774,7 @@ const DividendCalendar = () => {
             return {
               symbol: div.ticker,
               companyName: div.company_name,
-              sector: div.sector || 'Unknown',
+              sector: (div.sector && div.sector !== 'ETF') ? div.sector : 'Unknown',
               frequency: div.frequency as "Monthly" | "Quarterly",
               yield: Number(div.dividend_yield),
               dividendAmount: Number(div.dividend_amount),
@@ -747,12 +788,17 @@ const DividendCalendar = () => {
 
         // Combine Plaid data with fallback data
         const combinedEntries = [...plaidDividendEntries, ...fallbackEntries];
-        setDividendData(combinedEntries);
+        
+        // Deduplicate entries (merge same symbol on same ex-date)
+        const deduplicatedEntries = deduplicateEntries(combinedEntries);
+        setDividendData(deduplicatedEntries);
         
         // Fetch missing sectors in background
         setIsFetchingSectors(true);
-        fetchMissingSectors(combinedEntries).then(enrichedEntries => {
-          setDividendData(enrichedEntries);
+        fetchMissingSectors(deduplicatedEntries).then(enrichedEntries => {
+          // Apply deduplication again after enrichment to ensure merged sectors
+          const finalEntries = deduplicateEntries(enrichedEntries);
+          setDividendData(finalEntries);
           setIsFetchingSectors(false);
         }).catch(err => {
           console.error('Error fetching sectors:', err);
