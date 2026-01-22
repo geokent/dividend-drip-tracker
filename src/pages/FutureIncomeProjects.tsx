@@ -564,11 +564,11 @@ export const FutureIncomeProjects = () => {
           <CardContent className="pb-4 relative">
             <div className="h-[280px] md:h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
-                 {chartMode === "dividend" ? (
+                  {chartMode === "dividend" ? (
                    <AreaChart 
                      key={chartKey}
                      data={chartData}
-                     margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
+                     margin={{ top: 24, right: 16, left: 20, bottom: 24 }}
                    >
                      <defs>
                        <linearGradient id="monthlyIncomeGradient" x1="0" y1="0" x2="0" y2="1">
@@ -603,13 +603,14 @@ export const FutureIncomeProjects = () => {
                          stroke="#22c55e" 
                          strokeWidth={2}
                          strokeDasharray="4 4"
-                         label={{ 
-                           value: `FIRE (Year ${fireCalculations.yearsToFire})`, 
-                           position: 'top',
-                           fill: '#22c55e',
-                           fontSize: 11,
-                           fontWeight: 600
-                         }}
+                          label={{ 
+                            value: `FIRE (Year ${fireCalculations.yearsToFire})`, 
+                            position: 'insideTopRight',
+                            fill: '#22c55e',
+                            fontSize: 11,
+                            fontWeight: 600,
+                            offset: 10
+                          }}
                        />
                      )}
                      
