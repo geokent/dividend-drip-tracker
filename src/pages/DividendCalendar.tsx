@@ -903,7 +903,7 @@ const DividendCalendar = () => {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <PageHeader
           title="2026 Dividend Calendar"
-          description="Track upcoming ex-dividend dates and payment schedules for dividend-paying stocks"
+          description="Track ex-dividend dates and payment schedules"
           icon={Calendar}
         />
 
