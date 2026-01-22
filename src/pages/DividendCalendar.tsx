@@ -543,7 +543,8 @@ const sectorCache = new Map<string, string>();
 // Uses fetch-etf-metadata for ETFs (with DB cache), get-dividend-data for stocks
 const fetchSectorForSymbol = async (symbol: string, companyName?: string): Promise<string | null> => {
   const cached = sectorCache.get(symbol);
-  if (cached) return cached;
+  // Only use cache if it has a meaningful sector (not generic ETF or Unknown)
+  if (cached && cached !== 'ETF' && cached !== 'Unknown') return cached;
 
   try {
     // Check if this might be an ETF (name contains ETF or common ETF indicators)
@@ -576,7 +577,10 @@ const fetchSectorForSymbol = async (symbol: string, companyName?: string): Promi
         }
         
         console.log(`ETF metadata for ${symbol}: ${sector}`);
-        sectorCache.set(symbol, sector);
+        // Only cache meaningful classifications
+        if (sector !== 'ETF' && sector !== 'Unknown') {
+          sectorCache.set(symbol, sector);
+        }
         return sector;
       }
     }
