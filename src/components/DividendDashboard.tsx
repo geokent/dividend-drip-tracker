@@ -7,7 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Plus } from "lucide-react";
+import { TrendingUp, Plus, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { PlaidDisconnectDialog } from "./PlaidDisconnectDialog";
 import { StaleDataCleanupDialog } from "./StaleDataCleanupDialog";
@@ -1101,6 +1103,26 @@ export const DividendDashboard = () => {
 
       {/* Dashboard Content */}
       <div className="space-y-6">
+        {/* Dividend Calendar Feature Card */}
+        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20 shadow-card">
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-lg bg-primary/10">
+                <Calendar className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg mb-1">📅 View Dividend Calendar</CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">
+                  See all upcoming ex-dividend and payment dates for your portfolio
+                </CardDescription>
+              </div>
+            </div>
+            <Button asChild className="w-full sm:w-auto">
+              <Link to="/dividend-calendar">Open Calendar</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Main Content */}
         <PortfolioTable
           stocks={trackedStocks}

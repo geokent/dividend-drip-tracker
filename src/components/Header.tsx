@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X, Calendar } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
@@ -11,6 +11,7 @@ export const Header = () => {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", requireAuth: true },
+    { name: "Dividend Calendar", href: "/dividend-calendar", requireAuth: true },
     { name: "Income Projections", href: "/future-income-projects", requireAuth: true },
   ];
 
