@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,8 +22,6 @@ import {
   Target, 
   Brain, 
   BarChart3,
-  Zap,
-  Star,
   LogOut,
   Flame,
   Trophy,
@@ -1103,152 +1101,6 @@ export const FutureIncomeProjects = () => {
           </CardContent>
         </Card>
 
-        {/* Projection Assumptions & Recommendations */}
-        <Tabs defaultValue="assumptions" className="mb-12">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="assumptions">Projection Assumptions</TabsTrigger>
-            <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="assumptions" className="space-y-6">
-            <Card className="shadow-elegant">
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
-                  Key Assumptions Used in Projections
-                </CardTitle>
-                <CardDescription>
-                  Understanding the mathematical foundations of your projections
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Market & Growth Assumptions</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm">Average Annual Market Growth</span>
-                        <Badge>{(portfolioGrowthRate * 100).toFixed(1)}%</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm">Dividend Growth Rate</span>
-                        <Badge>{dividendGrowthRate}%</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm">Initial Portfolio Yield</span>
-                        <Badge>{currentMetrics.portfolioYield > 0 ? `${currentMetrics.portfolioYield.toFixed(2)}%` : '4% (Default)'}</Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Investment Strategy Assumptions</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm">Monthly Contributions</span>
-                        <Badge>${monthlyInvestment.toLocaleString()}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm">Annual Bonus Investments</span>
-                        <Badge>${additionalYearlyContribution.toLocaleString()}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm">Dividend Reinvestment</span>
-                        <Badge variant={reinvestDividends ? "default" : "secondary"}>
-                          {reinvestDividends ? "Enabled" : "Disabled"}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Data Sources & Methodology</h5>
-                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>• Market growth: Based on historical S&P 500 performance (1957-2023)</li>
-                    <li>• Dividend yields: Real-time data from financial APIs for your holdings</li>
-                    <li>• Growth rates: Conservative estimates based on dividend aristocrats</li>
-                    <li>• Reinvestment: Assumes immediate reinvestment at current market price</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="recommendations" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="h-5 w-5 text-primary" />
-                    Portfolio Optimization
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <h5 className="font-medium text-green-900 dark:text-green-100">✓ Diversification</h5>
-                      <p className="text-sm text-green-800 dark:text-green-200 mt-1">
-                        Spread investments across sectors and company sizes to reduce risk
-                      </p>
-                    </div>
-                    
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <h5 className="font-medium text-green-900 dark:text-green-100">✓ Dollar-Cost Averaging</h5>
-                      <p className="text-sm text-green-800 dark:text-green-200 mt-1">
-                        Invest consistently regardless of market conditions to smooth out volatility
-                      </p>
-                    </div>
-                    
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <h5 className="font-medium text-green-900 dark:text-green-100">✓ Dividend Growth Focus</h5>
-                      <p className="text-sm text-green-800 dark:text-green-200 mt-1">
-                        Prioritize companies with a history of growing dividends over time
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    Action Items
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    {trackedStocks.length === 0 && (
-                      <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                        <h5 className="font-medium text-yellow-900 dark:text-yellow-100">📈 Add Your First Stock</h5>
-                        <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
-                          Start tracking dividend-paying stocks to get personalized projections
-                        </p>
-                      </div>
-                    )}
-                    
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <h5 className="font-medium text-blue-900 dark:text-blue-100">🔄 Review Regularly</h5>
-                      <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                        Update your projections monthly as your portfolio grows
-                      </p>
-                    </div>
-                    
-                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                      <h5 className="font-medium text-purple-900 dark:text-purple-100">💰 Increase Contributions</h5>
-                      <p className="text-sm text-purple-800 dark:text-purple-200 mt-1">
-                        Every $100 increase in monthly investment significantly impacts long-term results
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
 
       </div>
 
