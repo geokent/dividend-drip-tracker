@@ -4,7 +4,7 @@ export const Footer = () => {
   return (
     <footer className="py-12 border-t border-border/10 bg-gradient-subtle mt-16">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Logo Section */}
           <div className="flex flex-col">
             <Link to="/" className="mb-4">
@@ -24,35 +24,18 @@ export const Footer = () => {
             <h3 className="font-semibold text-foreground mb-3">Resources</h3>
             <ul className="space-y-2">
               <li>
+                <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
+                  Dashboard
+                </Link>
+              </li>
+              <li>
                 <Link to="/dividend-calendar" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
                   Dividend Calendar
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/learning-academy" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
-                  Learning Academy
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Product Column */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-3">Product</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
-                  Dashboard
+                <Link to="/stock-screener" className="text-sm text-muted-foreground hover:text-primary transition-smooth">
+                  Stock Screener
                 </Link>
               </li>
               <li>
