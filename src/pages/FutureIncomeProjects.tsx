@@ -31,7 +31,7 @@ import {
   PartyPopper
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, ReferenceLine } from 'recharts';
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -63,7 +63,7 @@ export const FutureIncomeProjects = () => {
   const [additionalYearlyContribution, setAdditionalYearlyContribution] = useState(0);
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
-  const [yearRange, setYearRange] = useState<5 | 10 | 15>(5);
+  const [yearRange, setYearRange] = useState<5 | 10 | 15 | 30>(15);
   const [monthlyExpensesInRetirement, setMonthlyExpensesInRetirement] = useState(4000);
   
 
@@ -160,7 +160,7 @@ export const FutureIncomeProjects = () => {
     // Use current portfolio yield or default to 4% if no stocks
     const assumedYield = currentMetrics.portfolioYield > 0 ? currentMetrics.portfolioYield / 100 : 0.04;
     
-    for (let year = 0; year <= 15; year++) {
+    for (let year = 0; year <= 30; year++) {
       // For year 0, use current values
       if (year === 0) {
         const annualDividends = currentMetrics.totalAnnualDividends;
@@ -219,6 +219,33 @@ export const FutureIncomeProjects = () => {
   const currentMetrics = calculateCurrentMetrics();
 
   // FIRE calculations
+  // Custom tooltip for the income chart
+  const CustomChartTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-card border-2 border-primary rounded-lg p-3 shadow-lg">
+          <p className="font-semibold text-primary mb-2">Year {label}</p>
+          <div className="space-y-1 text-sm">
+            <p className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Monthly Income:</span>
+              <span className="font-medium text-financial-green">${data.monthlyIncome?.toLocaleString()}</span>
+            </p>
+            <p className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Annual Income:</span>
+              <span className="font-medium">${data.annualDividends?.toLocaleString()}</span>
+            </p>
+            <p className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Portfolio Value:</span>
+              <span className="font-medium">${data.portfolioValue?.toLocaleString()}</span>
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const fireCalculations = useMemo(() => {
     const annualExpenses = monthlyExpensesInRetirement * 12;
     
@@ -538,49 +565,65 @@ export const FutureIncomeProjects = () => {
             <div className="h-[280px] md:h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
                  {chartMode === "dividend" ? (
-                   <BarChart 
+                   <AreaChart 
                      key={chartKey}
                      data={chartData}
                      margin={{ top: 8, right: 16, left: 20, bottom: 24 }}
                    >
+                     <defs>
+                       <linearGradient id="monthlyIncomeGradient" x1="0" y1="0" x2="0" y2="1">
+                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
+                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05}/>
+                       </linearGradient>
+                     </defs>
                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis 
-                        dataKey="year" 
-                        stroke="hsl(var(--primary))"
-                        tick={{ fontSize: 12 }}
-                        tickLine={{ stroke: 'hsl(var(--primary))' }}
-                        axisLine={{ stroke: 'hsl(var(--primary))' }}
-                        label={{ value: 'Years', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'hsl(var(--primary))' } }}
-                        interval="preserveStartEnd"
-                      />
-        <YAxis 
-          width={72}
-          tickMargin={4}
-          tick={{ fontSize: 10, fill: 'hsl(var(--primary))' }}
-          stroke="hsl(var(--primary))"
-          tickLine={{ stroke: 'hsl(var(--primary))' }}
-          axisLine={{ stroke: 'hsl(var(--primary))' }}
-          tickFormatter={(value) => `$${value.toLocaleString()}`}
-        />
-                     <Tooltip 
-                       contentStyle={{
-                         backgroundColor: 'hsl(var(--card))',
-                         border: '1px solid hsl(var(--primary))',
-                         borderRadius: '8px',
-                         boxShadow: 'var(--shadow-card)',
-                         fontSize: 12
-                       }}
-                       formatter={(value: number) => [`$${value.toLocaleString()}`, 'Monthly Income']}
-                       labelFormatter={(label) => `Year ${label}`}
-                       labelStyle={{ fontSize: 12, color: 'hsl(var(--primary))' }}
+                     <XAxis 
+                       dataKey="year" 
+                       stroke="hsl(var(--primary))"
+                       tick={{ fontSize: 12 }}
+                       tickLine={{ stroke: 'hsl(var(--primary))' }}
+                       axisLine={{ stroke: 'hsl(var(--primary))' }}
+                       label={{ value: 'Years', position: 'insideBottom', offset: -5, style: { fontSize: 12, fill: 'hsl(var(--primary))' } }}
+                       interval="preserveStartEnd"
                      />
-                    <Bar 
-                      dataKey="monthlyIncome" 
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={12}
-                    />
-                  </BarChart>
+                     <YAxis 
+                       width={72}
+                       tickMargin={4}
+                       tick={{ fontSize: 10, fill: 'hsl(var(--primary))' }}
+                       stroke="hsl(var(--primary))"
+                       tickLine={{ stroke: 'hsl(var(--primary))' }}
+                       axisLine={{ stroke: 'hsl(var(--primary))' }}
+                       tickFormatter={(value) => `$${value.toLocaleString()}`}
+                     />
+                     
+                     {/* FIRE Milestone Reference Line */}
+                     {fireCalculations.yearsToFire !== null && fireCalculations.yearsToFire <= yearRange && (
+                       <ReferenceLine 
+                         x={fireCalculations.yearsToFire} 
+                         stroke="#22c55e" 
+                         strokeWidth={2}
+                         strokeDasharray="4 4"
+                         label={{ 
+                           value: `FIRE (Year ${fireCalculations.yearsToFire})`, 
+                           position: 'top',
+                           fill: '#22c55e',
+                           fontSize: 11,
+                           fontWeight: 600
+                         }}
+                       />
+                     )}
+                     
+                     <Tooltip content={<CustomChartTooltip />} />
+                     <Area 
+                       type="monotone" 
+                       dataKey="monthlyIncome" 
+                       stroke="hsl(var(--primary))"
+                       strokeWidth={2}
+                       fill="url(#monthlyIncomeGradient)"
+                       dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 3 }}
+                       activeDot={{ r: 6, strokeWidth: 2 }}
+                     />
+                  </AreaChart>
                 ) : (
                    <LineChart 
                      key={chartKey}
@@ -643,57 +686,26 @@ export const FutureIncomeProjects = () => {
           
           {/* Year Range Selector integrated into chart footer */}
           <CardFooter className="pt-4 border-t border-border bg-secondary/20">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-              <button 
-                onClick={() => setYearRange(5)}
-                className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
-                  yearRange === 5 
-                    ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
-                    : 'bg-card border-border hover:bg-secondary/50'
-                }`}
-              >
-                <div className="text-sm font-medium text-muted-foreground mb-1">5 Years</div>
-                <div className={`text-lg font-bold ${yearRange === 5 ? 'text-primary' : 'text-foreground'}`}>
-                  ${projectionData[5]?.portfolioValue?.toLocaleString() || '0'}
-                </div>
-                <div className="text-xs text-financial-green font-medium">
-                  ${projectionData[5]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                </div>
-              </button>
-              
-              <button 
-                onClick={() => setYearRange(10)}
-                className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
-                  yearRange === 10 
-                    ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
-                    : 'bg-card border-border hover:bg-secondary/50'
-                }`}
-              >
-                <div className="text-sm font-medium text-muted-foreground mb-1">10 Years</div>
-                <div className={`text-lg font-bold ${yearRange === 10 ? 'text-primary' : 'text-foreground'}`}>
-                  ${projectionData[10]?.portfolioValue?.toLocaleString() || '0'}
-                </div>
-                <div className="text-xs text-financial-green font-medium">
-                  ${projectionData[10]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                </div>
-              </button>
-              
-              <button 
-                onClick={() => setYearRange(15)}
-                className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
-                  yearRange === 15 
-                    ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
-                    : 'bg-card border-border hover:bg-secondary/50'
-                }`}
-              >
-                <div className="text-sm font-medium text-muted-foreground mb-1">15 Years</div>
-                <div className={`text-lg font-bold ${yearRange === 15 ? 'text-primary' : 'text-foreground'}`}>
-                  ${projectionData[15]?.portfolioValue?.toLocaleString() || '0'}
-                </div>
-                <div className="text-xs text-financial-green font-medium">
-                  ${projectionData[15]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                </div>
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+              {([5, 10, 15, 30] as const).map((years) => (
+                <button 
+                  key={years}
+                  onClick={() => setYearRange(years)}
+                  className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md ${
+                    yearRange === years 
+                      ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
+                      : 'bg-card border-border hover:bg-secondary/50'
+                  }`}
+                >
+                  <div className="text-sm font-medium text-muted-foreground mb-1">{years} Years</div>
+                  <div className={`text-lg font-bold ${yearRange === years ? 'text-primary' : 'text-foreground'}`}>
+                    ${projectionData[years]?.portfolioValue?.toLocaleString() || '0'}
+                  </div>
+                  <div className="text-xs text-financial-green font-medium">
+                    ${projectionData[years]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                  </div>
+                </button>
+              ))}
             </div>
           </CardFooter>
         </Card>
