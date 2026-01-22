@@ -23,7 +23,6 @@ import {
   BarChart3,
   Zap,
   Star,
-  Home,
   LogOut,
   Flame,
   Trophy,
@@ -869,23 +868,6 @@ export const FutureIncomeProjects = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Next Steps Strip */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center p-4 bg-card/50 border border-border rounded-lg">
-          <div className="text-sm font-medium text-muted-foreground">Next steps:</div>
-          <div className="flex gap-3">
-            <Button asChild className="h-8 px-4 text-sm">
-              <Link to="/" className="flex items-center gap-2">
-                <Home className="h-3 w-3" />
-                {currentMetrics.uniqueStocks === 0 ? "Add your first stock" : "Go to Dashboard"}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-8 px-4 text-sm">
-              <Link to="/learn-dividend-snowball">
-                Learn Dividend Snowball
-              </Link>
-            </Button>
-          </div>
-        </div>
       </div>
 
       <Footer />
