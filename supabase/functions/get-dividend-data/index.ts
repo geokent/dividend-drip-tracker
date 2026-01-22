@@ -323,15 +323,23 @@ Deno.serve(async (req) => {
     console.log('FMP Price data:', JSON.stringify(priceResult.data, null, 2));
     console.log('FMP Dividends data:', JSON.stringify(dividendsResult.data, null, 2));
 
-    // Check if FMP requires premium for this symbol (402 status or premium-related messages)
+    // Check for FMP errors that require fallback
+    const fmpPriceError = priceResult.data?.['Error Message'];
+    const fmpDividendsError = dividendsResult.data?.['Error Message'];
+
+    // Check if FMP requires premium OR has hit rate limits
     const needsFallback = 
       priceResult.status === 402 || 
+      priceResult.status === 429 ||
       dividendsResult.status === 402 ||
+      dividendsResult.status === 429 ||
       (priceResult.text && priceResult.text.toLowerCase().includes('premium')) ||
-      (dividendsResult.text && dividendsResult.text.toLowerCase().includes('premium'));
+      (dividendsResult.text && dividendsResult.text.toLowerCase().includes('premium')) ||
+      (fmpPriceError?.toLowerCase().includes('limit')) ||
+      (fmpDividendsError?.toLowerCase().includes('limit'));
 
     if (needsFallback) {
-      console.log('FMP returned premium-required, attempting Yahoo Finance fallback...');
+      console.log('FMP requires premium or rate limited, attempting Yahoo Finance fallback...');
       
       const yahooResult = await fetchFromYahoo(symbol);
       
@@ -349,19 +357,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Check for API errors in the FMP response
-    if (priceResult.data?.['Error Message']) {
-      console.log('API Error:', priceResult.data['Error Message']);
+    // Check for other API errors in the FMP response (non-limit related)
+    if (fmpPriceError) {
+      console.log('API Error:', fmpPriceError);
       return new Response(
-        JSON.stringify({ error: `FMP API Error: ${priceResult.data['Error Message']}` }),
+        JSON.stringify({ error: `FMP API Error: ${fmpPriceError}` }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (dividendsResult.data?.['Error Message']) {
-      console.log('API Error:', dividendsResult.data['Error Message']);
+    if (fmpDividendsError) {
+      console.log('API Error:', fmpDividendsError);
       return new Response(
-        JSON.stringify({ error: `FMP API Error: ${dividendsResult.data['Error Message']}` }),
+        JSON.stringify({ error: `FMP API Error: ${fmpDividendsError}` }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
