@@ -28,7 +28,8 @@ import {
   Trophy,
   Coffee,
   Rocket,
-  PartyPopper
+  PartyPopper,
+  RefreshCw
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, ReferenceLine } from 'recharts';
@@ -65,6 +66,8 @@ export const FutureIncomeProjects = () => {
   const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
   const [yearRange, setYearRange] = useState<5 | 10 | 15 | 30>(15);
   const [monthlyExpensesInRetirement, setMonthlyExpensesInRetirement] = useState(4000);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
 
   // Load tracked stocks and connected accounts from Supabase database
@@ -82,6 +85,15 @@ export const FutureIncomeProjects = () => {
         if (stocksError) {
           console.error('Error loading tracked stocks:', stocksError);
         } else if (stocksData) {
+          // Find the most recent updated_at timestamp
+          if (stocksData.length > 0) {
+            const mostRecent = stocksData.reduce((latest, stock) => {
+              const stockDate = new Date(stock.updated_at || stock.created_at);
+              return stockDate > latest ? stockDate : latest;
+            }, new Date(0));
+            setLastUpdated(mostRecent);
+          }
+          
           const formattedStocks = stocksData.map(stock => ({
             symbol: stock.symbol,
             companyName: stock.company_name || '',
@@ -294,6 +306,84 @@ export const FutureIncomeProjects = () => {
     };
   }, [monthlyExpensesInRetirement, currentMetrics, projectionData]);
 
+  // Handle portfolio refresh
+  const handleRefreshPortfolio = async () => {
+    if (isRefreshing || !user) return;
+    
+    setIsRefreshing(true);
+    try {
+      const { error } = await supabase.functions.invoke('refresh-stock-prices', {
+        body: { userId: user.id }
+      });
+      
+      if (error) throw error;
+      
+      // Reload stock data
+      const { data: stocksData, error: stocksError } = await supabase
+        .from('user_stocks')
+        .select('*')
+        .eq('user_id', user.id);
+        
+      if (stocksError) throw stocksError;
+      
+      if (stocksData) {
+        if (stocksData.length > 0) {
+          const mostRecent = stocksData.reduce((latest, stock) => {
+            const stockDate = new Date(stock.updated_at || stock.created_at);
+            return stockDate > latest ? stockDate : latest;
+          }, new Date(0));
+          setLastUpdated(mostRecent);
+        }
+        
+        const formattedStocks = stocksData.map(stock => ({
+          symbol: stock.symbol,
+          companyName: stock.company_name || '',
+          currentPrice: stock.current_price,
+          dividendYield: stock.dividend_yield,
+          dividendPerShare: stock.dividend_per_share,
+          annualDividend: stock.annual_dividend,
+          exDividendDate: stock.ex_dividend_date,
+          dividendDate: stock.dividend_date,
+          sector: stock.sector,
+          industry: stock.industry,
+          marketCap: stock.market_cap?.toString(),
+          peRatio: stock.pe_ratio?.toString(),
+          shares: Number(stock.shares)
+        }));
+        setTrackedStocks(formattedStocks);
+      }
+      
+      toast({
+        title: "Portfolio Refreshed",
+        description: "Your stock prices and dividend data have been updated.",
+      });
+    } catch (error) {
+      console.error('Refresh failed:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Could not refresh portfolio data. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Helper to format "X minutes ago"
+  const formatTimeAgo = (date: Date | null): string => {
+    if (!date) return 'Never';
+    
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  };
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -346,6 +436,76 @@ export const FutureIncomeProjects = () => {
             Future Dividend Income Projections
           </h1>
         </div>
+
+        {/* Current Portfolio Summary Card */}
+        <Card className="card-elevated border-2 border-primary/30 bg-gradient-to-r from-primary/5 via-background to-primary/5 mb-8">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <CardTitle className="card-title flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Your Current Portfolio
+                </CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">
+                  Where you are now — the starting point for your projections
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefreshPortfolio}
+                disabled={isRefreshing}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {/* Starting Portfolio Value */}
+              <div className="p-4 bg-card rounded-lg border border-border shadow-sm">
+                <div className="text-xs text-muted-foreground mb-1">Starting Portfolio Value</div>
+                <div className="text-xl md:text-2xl font-bold text-primary">
+                  ${currentMetrics.totalPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
+              </div>
+              
+              {/* Current Monthly Income */}
+              <div className="p-4 bg-card rounded-lg border border-border shadow-sm">
+                <div className="text-xs text-muted-foreground mb-1">Monthly Dividend Income</div>
+                <div className="text-xl md:text-2xl font-bold text-financial-green">
+                  ${(currentMetrics.totalAnnualDividends / 12).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
+              </div>
+              
+              {/* Current Annual Yield */}
+              <div className="p-4 bg-card rounded-lg border border-border shadow-sm">
+                <div className="text-xs text-muted-foreground mb-1">Annual Yield</div>
+                <div className="text-xl md:text-2xl font-bold text-foreground">
+                  {currentMetrics.portfolioYield.toFixed(2)}%
+                </div>
+              </div>
+              
+              {/* Total Holdings */}
+              <div className="p-4 bg-card rounded-lg border border-border shadow-sm">
+                <div className="text-xs text-muted-foreground mb-1">Total Holdings</div>
+                <div className="text-xl md:text-2xl font-bold text-foreground">
+                  {currentMetrics.uniqueStocks} stock{currentMetrics.uniqueStocks !== 1 ? 's' : ''}
+                </div>
+              </div>
+              
+              {/* Last Updated */}
+              <div className="p-4 bg-card rounded-lg border border-border shadow-sm col-span-2 md:col-span-1">
+                <div className="text-xs text-muted-foreground mb-1">Last Updated</div>
+                <div className="text-lg font-medium text-muted-foreground">
+                  {formatTimeAgo(lastUpdated)}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* FIRE Calculator Section */}
         <Card className="card-elevated gradient-card mb-8 border-2 border-primary/20">
