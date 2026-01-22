@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProjectionParametersStrip } from "@/components/ProjectionParametersStrip";
@@ -68,12 +69,42 @@ export const FutureIncomeProjects = () => {
   const [monthlyExpensesInRetirement, setMonthlyExpensesInRetirement] = useState(4000);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Scenario configurations
+  const scenarios = [
+    {
+      id: 'conservative',
+      name: 'Conservative',
+      portfolioGrowth: 0.05,  // 5%
+      dividendGrowth: 3,       // 3%
+      description: 'Lower risk, steady growth'
+    },
+    {
+      id: 'moderate',
+      name: 'Moderate',
+      portfolioGrowth: 0.07,  // 7%
+      dividendGrowth: 5,       // 5%
+      description: 'Balanced approach'
+    },
+    {
+      id: 'aggressive',
+      name: 'Aggressive',
+      portfolioGrowth: 0.10,  // 10%
+      dividendGrowth: 7,       // 7%
+      description: 'Higher risk, higher potential'
+    }
+  ];
   
 
   // Load tracked stocks and connected accounts from Supabase database
   useEffect(() => {
     const loadData = async () => {
-      if (!user) return;
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
 
       try {
         // Load tracked stocks
@@ -114,6 +145,8 @@ export const FutureIncomeProjects = () => {
 
       } catch (error) {
         console.error('Failed to load data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -305,6 +338,78 @@ export const FutureIncomeProjects = () => {
       annualExpenses
     };
   }, [monthlyExpensesInRetirement, currentMetrics, projectionData]);
+
+  // Calculate projections for each scenario
+  const scenarioCalculations = useMemo(() => {
+    return scenarios.map(scenario => {
+      const metrics = calculateCurrentMetrics();
+      let portfolioValue = metrics.totalPortfolioValue;
+      const assumedYield = metrics.portfolioYield > 0 ? metrics.portfolioYield / 100 : 0.04;
+      
+      // Calculate 10-year projection for this scenario
+      for (let year = 1; year <= 10; year++) {
+        const yearlyInvestment = monthlyInvestment * 12 + additionalYearlyContribution;
+        portfolioValue += yearlyInvestment;
+        portfolioValue *= (1 + scenario.portfolioGrowth);
+        
+        let annualDividends = portfolioValue * assumedYield;
+        annualDividends *= Math.pow(1 + scenario.dividendGrowth / 100, year);
+        
+        if (reinvestDividends) {
+          portfolioValue += annualDividends;
+        }
+      }
+      
+      // Calculate 10-year monthly income
+      const finalAnnualDividends = portfolioValue * assumedYield * Math.pow(1 + scenario.dividendGrowth / 100, 10);
+      const tenYearMonthlyIncome = Math.round(finalAnnualDividends / 12);
+      
+      // Calculate years to FIRE for this scenario
+      let yearsToFire: number | null = null;
+      let tempPortfolio = metrics.totalPortfolioValue;
+      
+      for (let year = 1; year <= 30; year++) {
+        const yearlyInvestment = monthlyInvestment * 12 + additionalYearlyContribution;
+        tempPortfolio += yearlyInvestment;
+        tempPortfolio *= (1 + scenario.portfolioGrowth);
+        
+        let annualDividends = tempPortfolio * assumedYield;
+        annualDividends *= Math.pow(1 + scenario.dividendGrowth / 100, year);
+        
+        if (reinvestDividends) {
+          tempPortfolio += annualDividends;
+        }
+        
+        if (annualDividends / 12 >= monthlyExpensesInRetirement && yearsToFire === null) {
+          yearsToFire = year;
+          break;
+        }
+      }
+      
+      // Check if this matches current user settings
+      const isCurrentSettings = 
+        Math.abs(scenario.portfolioGrowth - portfolioGrowthRate) < 0.001 &&
+        scenario.dividendGrowth === dividendGrowthRate;
+      
+      return {
+        ...scenario,
+        tenYearMonthlyIncome,
+        yearsToFire,
+        isCurrentSettings
+      };
+    });
+  }, [trackedStocks, monthlyInvestment, additionalYearlyContribution, reinvestDividends, portfolioGrowthRate, dividendGrowthRate, monthlyExpensesInRetirement]);
+
+  // Apply scenario settings
+  const applyScenario = (scenario: typeof scenarios[0]) => {
+    setPortfolioGrowthRate(scenario.portfolioGrowth);
+    setDividendGrowthRate(scenario.dividendGrowth);
+    
+    toast({
+      title: `${scenario.name} Scenario Applied`,
+      description: `Portfolio growth set to ${(scenario.portfolioGrowth * 100).toFixed(0)}% and dividend growth to ${scenario.dividendGrowth}%`,
+    });
+  };
 
   // Handle portfolio refresh
   const handleRefreshPortfolio = async () => {
@@ -893,6 +998,110 @@ export const FutureIncomeProjects = () => {
           setReinvestDividends={setReinvestDividends}
         />
 
+        {/* Compare Scenarios Section */}
+        <Card className="card-elevated mb-8">
+          <CardHeader>
+            <CardTitle className="card-title flex items-center gap-2">
+              <Target className="h-5 w-5 text-primary" />
+              Compare Scenarios
+            </CardTitle>
+            <CardDescription>
+              See how different growth assumptions affect your long-term income
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="border border-border">
+                    <CardHeader className="pb-2 pt-4">
+                      <Skeleton className="h-6 w-24 mx-auto" />
+                      <Skeleton className="h-4 w-32 mx-auto mt-1" />
+                    </CardHeader>
+                    <CardContent className="space-y-3 pb-4">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-px w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-8 w-full mt-3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {scenarioCalculations.map((scenario) => (
+                  <Card 
+                    key={scenario.id}
+                    className={`relative transition-all ${
+                      scenario.isCurrentSettings 
+                        ? 'border-2 border-primary ring-2 ring-primary/20 bg-primary/5' 
+                        : 'border border-border hover:border-primary/50'
+                    }`}
+                  >
+                    {scenario.isCurrentSettings && (
+                      <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs">
+                        Your Current Settings
+                      </Badge>
+                    )}
+                    <CardHeader className="pb-2 pt-4">
+                      <CardTitle className="text-lg text-center">
+                        {scenario.name}
+                      </CardTitle>
+                      <CardDescription className="text-center text-xs">
+                        {scenario.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pb-4">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Portfolio Growth:</span>
+                          <span className="font-medium">{(scenario.portfolioGrowth * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Dividend Growth:</span>
+                          <span className="font-medium">{scenario.dividendGrowth}%</span>
+                        </div>
+                        <Separator className="my-2" />
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">10 Year Income:</span>
+                          <span className="font-bold text-financial-green">
+                            ${scenario.tenYearMonthlyIncome.toLocaleString()}/mo
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Years to FIRE:</span>
+                          <span className="font-bold text-primary">
+                            {scenario.yearsToFire !== null ? `${scenario.yearsToFire} years` : '30+ years'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        variant={scenario.isCurrentSettings ? "secondary" : "outline"}
+                        size="sm"
+                        className="w-full mt-3"
+                        onClick={() => applyScenario(scenario)}
+                        disabled={scenario.isCurrentSettings}
+                      >
+                        {scenario.isCurrentSettings ? 'Currently Active' : 'Use This Scenario'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+            
+            {/* Range explanation */}
+            <div className="bg-secondary/30 rounded-lg p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Based on historical data</span>, your actual results will likely fall between the Conservative and Aggressive scenarios. 
+                The Moderate scenario reflects typical long-term market averages.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Projection Assumptions & Recommendations */}
         <Tabs defaultValue="assumptions" className="mb-12">
