@@ -24,7 +24,12 @@ import {
   Zap,
   Star,
   Home,
-  LogOut
+  LogOut,
+  Flame,
+  Trophy,
+  Coffee,
+  Rocket,
+  PartyPopper
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
@@ -60,6 +65,7 @@ export const FutureIncomeProjects = () => {
   const [reinvestDividends, setReinvestDividends] = useState(true);
   const [chartMode, setChartMode] = useState<"dividend" | "growth">("dividend");
   const [yearRange, setYearRange] = useState<5 | 10 | 15>(5);
+  const [monthlyExpensesInRetirement, setMonthlyExpensesInRetirement] = useState(4000);
   
 
   // Load tracked stocks and connected accounts from Supabase database
@@ -213,6 +219,55 @@ export const FutureIncomeProjects = () => {
   
   const currentMetrics = calculateCurrentMetrics();
 
+  // FIRE calculations
+  const fireCalculations = useMemo(() => {
+    const annualExpenses = monthlyExpensesInRetirement * 12;
+    
+    // Traditional FIRE Number (4% rule = 25x annual expenses)
+    const fireNumber = annualExpenses / 0.04;
+    
+    // Dividend FIRE Number (based on current portfolio yield)
+    const currentYield = currentMetrics.portfolioYield > 0 ? currentMetrics.portfolioYield / 100 : 0.04;
+    const dividendFireNumber = annualExpenses / currentYield;
+    
+    // Current monthly dividend income
+    const currentMonthlyDividends = currentMetrics.totalAnnualDividends / 12;
+    
+    // Progress percentage
+    const progressPercentage = Math.min((currentMonthlyDividends / monthlyExpensesInRetirement) * 100, 100);
+    
+    // Find year when FIRE is reached (monthly dividends >= monthly expenses)
+    let yearsToFire: number | null = null;
+    for (let i = 0; i < projectionData.length; i++) {
+      if (projectionData[i].monthlyIncome >= monthlyExpensesInRetirement) {
+        yearsToFire = projectionData[i].year;
+        break;
+      }
+    }
+    
+    // Determine milestone badge
+    let milestone: { label: string; emoji: string; color: string } | null = null;
+    if (progressPercentage >= 100) {
+      milestone = { label: "FIRE Achieved!", emoji: "🎉", color: "bg-yellow-500" };
+    } else if (progressPercentage >= 75) {
+      milestone = { label: "Almost There!", emoji: "🚀", color: "bg-purple-500" };
+    } else if (progressPercentage >= 50) {
+      milestone = { label: "Barista FIRE", emoji: "☕", color: "bg-orange-500" };
+    } else if (progressPercentage >= 25) {
+      milestone = { label: "Coast FIRE", emoji: "🏖️", color: "bg-blue-500" };
+    }
+    
+    return {
+      fireNumber,
+      dividendFireNumber,
+      currentMonthlyDividends,
+      progressPercentage,
+      yearsToFire,
+      milestone,
+      annualExpenses
+    };
+  }, [monthlyExpensesInRetirement, currentMetrics, projectionData]);
+
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -265,6 +320,187 @@ export const FutureIncomeProjects = () => {
             Future Dividend Income Projections
           </h1>
         </div>
+
+        {/* FIRE Calculator Section */}
+        <Card className="card-elevated gradient-card mb-8 border-2 border-primary/20">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <CardTitle className="card-title flex items-center gap-2">
+                  <Flame className="h-5 w-5 text-orange-500" />
+                  Your Path to Financial Independence
+                </CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">
+                  Calculate when your dividends will cover your expenses
+                </CardDescription>
+              </div>
+              {fireCalculations.milestone && (
+                <Badge 
+                  className={`${fireCalculations.milestone.color} text-white px-3 py-1 text-sm font-semibold`}
+                >
+                  {fireCalculations.milestone.emoji} {fireCalculations.milestone.label}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Monthly Expenses Input */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-secondary/30 rounded-lg">
+              <Label htmlFor="monthly-expenses" className="text-sm font-medium whitespace-nowrap">
+                Monthly Expenses in Retirement:
+              </Label>
+              <div className="relative flex-1 max-w-xs">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="monthly-expenses"
+                  type="number"
+                  value={monthlyExpensesInRetirement}
+                  onChange={(e) => setMonthlyExpensesInRetirement(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="pl-8"
+                  min="0"
+                  step="100"
+                />
+              </div>
+            </div>
+
+            {/* FIRE Numbers Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 rounded-lg border border-orange-200 dark:border-orange-800">
+                <div className="text-xs text-muted-foreground mb-1">FIRE Number (4% Rule)</div>
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  ${fireCalculations.fireNumber.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">25× annual expenses</div>
+              </div>
+              
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+                <div className="text-xs text-muted-foreground mb-1">Dividend FIRE Number</div>
+                <div className="text-2xl font-bold text-primary">
+                  ${fireCalculations.dividendFireNumber.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Based on {currentMetrics.portfolioYield > 0 ? `${currentMetrics.portfolioYield.toFixed(1)}%` : '4%'} yield
+                </div>
+              </div>
+              
+              <div className="p-4 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="text-xs text-muted-foreground mb-1">Years to FIRE</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {fireCalculations.yearsToFire !== null 
+                    ? fireCalculations.yearsToFire === 0 
+                      ? "Now! 🎉" 
+                      : `${fireCalculations.yearsToFire} years`
+                    : "15+ years"
+                  }
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Based on current projections</div>
+              </div>
+              
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="text-xs text-muted-foreground mb-1">Monthly Dividends Needed</div>
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  ${monthlyExpensesInRetirement.toLocaleString()}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">To cover all expenses</div>
+              </div>
+            </div>
+
+            {/* Progress Visualization */}
+            <div className="space-y-4 p-4 bg-card rounded-lg border border-border">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Progress to FIRE</span>
+                <span className="text-sm font-bold text-primary">
+                  {fireCalculations.progressPercentage.toFixed(1)}%
+                </span>
+              </div>
+              
+              {/* Progress Bar with milestones */}
+              <div className="relative">
+                <Progress value={fireCalculations.progressPercentage} className="h-4" />
+                {/* Milestone markers */}
+                <div className="absolute top-0 left-0 w-full h-4 pointer-events-none">
+                  <div className="absolute left-[25%] top-0 h-full w-0.5 bg-blue-400/50" title="25% - Coast FIRE" />
+                  <div className="absolute left-[50%] top-0 h-full w-0.5 bg-orange-400/50" title="50% - Barista FIRE" />
+                  <div className="absolute left-[75%] top-0 h-full w-0.5 bg-purple-400/50" title="75% - Almost There" />
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Current:</span>
+                  <span className="font-semibold text-primary">
+                    ${fireCalculations.currentMonthlyDividends.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Goal:</span>
+                  <span className="font-semibold text-foreground">
+                    ${monthlyExpensesInRetirement.toLocaleString()}/mo
+                  </span>
+                </div>
+              </div>
+
+              {/* Milestone Badges */}
+              <div className="grid grid-cols-4 gap-2 mt-4">
+                <div className={`p-2 rounded-lg text-center transition-all ${
+                  fireCalculations.progressPercentage >= 25 
+                    ? 'bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-400' 
+                    : 'bg-muted/50 border border-border opacity-50'
+                }`}>
+                  <div className="text-lg">🏖️</div>
+                  <div className="text-xs font-medium">Coast FIRE</div>
+                  <div className="text-xs text-muted-foreground">25%</div>
+                </div>
+                <div className={`p-2 rounded-lg text-center transition-all ${
+                  fireCalculations.progressPercentage >= 50 
+                    ? 'bg-orange-100 dark:bg-orange-900/30 border-2 border-orange-400' 
+                    : 'bg-muted/50 border border-border opacity-50'
+                }`}>
+                  <div className="text-lg">☕</div>
+                  <div className="text-xs font-medium">Barista FIRE</div>
+                  <div className="text-xs text-muted-foreground">50%</div>
+                </div>
+                <div className={`p-2 rounded-lg text-center transition-all ${
+                  fireCalculations.progressPercentage >= 75 
+                    ? 'bg-purple-100 dark:bg-purple-900/30 border-2 border-purple-400' 
+                    : 'bg-muted/50 border border-border opacity-50'
+                }`}>
+                  <div className="text-lg">🚀</div>
+                  <div className="text-xs font-medium">Almost There!</div>
+                  <div className="text-xs text-muted-foreground">75%</div>
+                </div>
+                <div className={`p-2 rounded-lg text-center transition-all ${
+                  fireCalculations.progressPercentage >= 100 
+                    ? 'bg-yellow-100 dark:bg-yellow-900/30 border-2 border-yellow-400' 
+                    : 'bg-muted/50 border border-border opacity-50'
+                }`}>
+                  <div className="text-lg">🎉</div>
+                  <div className="text-xs font-medium">FIRE Achieved!</div>
+                  <div className="text-xs text-muted-foreground">100%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* FIRE Year Highlight */}
+            {fireCalculations.yearsToFire !== null && fireCalculations.yearsToFire > 0 && (
+              <div className="p-4 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500 rounded-full">
+                    <Trophy className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-green-800 dark:text-green-200">
+                      🎯 You'll reach FIRE in Year {fireCalculations.yearsToFire}!
+                    </div>
+                    <div className="text-sm text-green-700 dark:text-green-300">
+                      Your projected monthly dividends will cover ${monthlyExpensesInRetirement.toLocaleString()} in expenses
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Main Chart - Full Width */}
         <Card className="card-elevated gradient-card mb-8">
