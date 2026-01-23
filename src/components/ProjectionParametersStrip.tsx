@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DollarSign, TrendingUp, BarChart3, Wallet, RefreshCw } from "lucide-react";
+import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 
 interface ProjectionParametersStripProps {
   monthlyInvestment: number;
@@ -27,15 +29,22 @@ export const ProjectionParametersStrip = ({
   reinvestDividends,
   setReinvestDividends
 }: ProjectionParametersStripProps) => {
+  // Animated number values
+  const animatedMonthly = useAnimatedNumber(monthlyInvestment, 250);
+  const animatedGrowth = useAnimatedNumber(portfolioGrowthRate * 100, 250);
+  const animatedDividend = useAnimatedNumber(dividendGrowthRate, 250);
+  const animatedYearly = useAnimatedNumber(additionalYearlyContribution, 250);
+
   return (
     <Card className="shadow-card p-6 mb-8 gradient-secondary">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 divide-y md:divide-y-0 md:divide-x divide-border/30">
         <div className="p-0 text-center space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
+          <label className="text-sm font-medium text-muted-foreground flex items-center justify-center gap-1.5">
+            <DollarSign className="h-4 w-4 text-primary" />
             Monthly Investment
           </label>
-          <p className="text-lg font-bold text-foreground">
-            ${monthlyInvestment.toLocaleString()}
+          <p className="text-lg font-bold text-foreground tabular-nums animate-count-up">
+            ${Math.round(animatedMonthly).toLocaleString()}
           </p>
           <Slider
             min={0}
@@ -48,11 +57,12 @@ export const ProjectionParametersStrip = ({
         </div>
         
         <div className="p-0 text-center pt-6 md:pt-0 space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
+          <label className="text-sm font-medium text-muted-foreground flex items-center justify-center gap-1.5">
+            <TrendingUp className="h-4 w-4 text-blue-500" />
             Portfolio Growth
           </label>
-          <p className="text-lg font-bold text-foreground">
-            {(portfolioGrowthRate * 100).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 })}%
+          <p className="text-lg font-bold text-foreground tabular-nums animate-count-up">
+            {animatedGrowth.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 })}%
           </p>
           <Slider
             min={0}
@@ -68,11 +78,12 @@ export const ProjectionParametersStrip = ({
         </div>
         
         <div className="p-0 text-center pt-6 md:pt-0 space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
+          <label className="text-sm font-medium text-muted-foreground flex items-center justify-center gap-1.5">
+            <BarChart3 className="h-4 w-4 text-green-500" />
             Dividend Growth
           </label>
-          <p className="text-lg font-bold text-foreground">
-            {dividendGrowthRate}%
+          <p className="text-lg font-bold text-foreground tabular-nums animate-count-up">
+            {animatedDividend.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 })}%
           </p>
           <Slider
             min={0}
@@ -85,11 +96,12 @@ export const ProjectionParametersStrip = ({
         </div>
         
         <div className="p-0 text-center pt-6 md:pt-0 space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
+          <label className="text-sm font-medium text-muted-foreground flex items-center justify-center gap-1.5">
+            <Wallet className="h-4 w-4 text-purple-500" />
             Additional Yearly
           </label>
-          <p className="text-lg font-bold text-foreground">
-            ${additionalYearlyContribution.toLocaleString()}
+          <p className="text-lg font-bold text-foreground tabular-nums animate-count-up">
+            ${Math.round(animatedYearly).toLocaleString()}
           </p>
           <Slider
             min={0}
@@ -102,7 +114,8 @@ export const ProjectionParametersStrip = ({
         </div>
         
         <div className="p-0 text-center pt-6 md:pt-0">
-          <label className="text-sm font-medium text-muted-foreground block mb-4">
+          <label className="text-sm font-medium text-muted-foreground flex items-center justify-center gap-1.5 mb-4">
+            <RefreshCw className="h-4 w-4 text-orange-500" />
             Reinvest Dividends
           </label>
           <div className="flex items-center justify-center space-x-2">

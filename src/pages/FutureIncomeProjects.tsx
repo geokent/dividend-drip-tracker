@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import { Footer } from "@/components/Footer";
 import { ProjectionParametersStrip } from "@/components/ProjectionParametersStrip";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
+import { ConfettiCelebration } from "@/components/ConfettiCelebration";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -23,7 +25,8 @@ import {
   Trophy,
   RefreshCw,
   Check,
-  ZoomIn
+  ZoomIn,
+  Sparkles
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ReferenceLine, Brush } from 'recharts';
@@ -72,6 +75,10 @@ export const FutureIncomeProjects = () => {
     sp500Comparison: false
   });
   const [chartZoomRange, setChartZoomRange] = useState<{ startIndex?: number; endIndex?: number }>({});
+  
+  // Confetti celebration state
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [hasShownConfetti, setHasShownConfetti] = useState(false);
 
   // Scenario configurations
   const scenarios = [
@@ -458,6 +465,14 @@ export const FutureIncomeProjects = () => {
     };
   }, [monthlyExpensesInRetirement, currentMetrics, projectionData]);
 
+  // Trigger confetti when FIRE is first calculated
+  useEffect(() => {
+    if (fireCalculations.yearsToFire !== null && !hasShownConfetti && !isLoading) {
+      setShowConfetti(true);
+      setHasShownConfetti(true);
+    }
+  }, [fireCalculations.yearsToFire, hasShownConfetti, isLoading]);
+
   // Calculate projections for each scenario
   const scenarioCalculations = useMemo(() => {
     return scenarios.map(scenario => {
@@ -650,12 +665,33 @@ export const FutureIncomeProjects = () => {
       <Header />
 
       <div className="container section-y space-y-8">
+        {/* Confetti Celebration */}
+        <ConfettiCelebration show={showConfetti} onComplete={() => setShowConfetti(false)} />
+        
         {/* Page Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-sm">
-            <Brain className="h-4 w-4" />
-            <span>AI-Powered Analysis</span>
-          </div>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary/20 via-purple-500/15 to-primary/20 text-primary px-5 py-2.5 rounded-full text-sm font-semibold mb-6 shadow-md border border-primary/20 cursor-help hover:shadow-lg transition-all duration-300 group">
+                  <div className="relative">
+                    <Brain className="h-5 w-5" />
+                    <Sparkles className="h-3 w-3 absolute -top-1 -right-1 text-yellow-500 animate-pulse" />
+                  </div>
+                  <span>AI-Powered Analysis</span>
+                  <Badge variant="outline" className="text-xs bg-primary/10 border-primary/30 ml-1">
+                    BETA
+                  </Badge>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-center p-3">
+                <p className="font-medium mb-1">Intelligent Projections</p>
+                <p className="text-sm text-muted-foreground">
+                  Calculated using your actual portfolio holdings and historical dividend growth rates from your tracked stocks.
+                </p>
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
           <h1 className="page-title mb-4">
             Future Dividend Income Projections
           </h1>
@@ -891,16 +927,19 @@ export const FutureIncomeProjects = () => {
               </div>
             </div>
 
-            {/* FIRE Year Highlight */}
+            {/* FIRE Year Highlight with Celebration */}
             {fireCalculations.yearsToFire !== null && fireCalculations.yearsToFire > 0 && (
-              <div className="p-4 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 rounded-lg border border-green-200 dark:border-green-700">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-green-500/20 via-emerald-500/15 to-teal-500/20 border-2 border-green-500/30 animate-pulse-gentle">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500 rounded-full">
-                    <Trophy className="h-5 w-5 text-white" />
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg animate-bounce-gentle">
+                    <span className="text-2xl">🎉</span>
                   </div>
-                  <div>
-                    <div className="font-semibold text-green-800 dark:text-green-200">
-                      🎯 You'll reach FIRE in Year {fireCalculations.yearsToFire}!
+                  <div className="flex-1">
+                    <div className="font-bold text-lg text-green-800 dark:text-green-200 flex items-center gap-2 flex-wrap">
+                      You'll reach FIRE in Year {fireCalculations.yearsToFire}!
+                      <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-sm">
+                        Milestone
+                      </Badge>
                     </div>
                     <div className="text-sm text-green-700 dark:text-green-300">
                       Your projected monthly dividends will cover ${monthlyExpensesInRetirement.toLocaleString()} in expenses
@@ -1141,34 +1180,63 @@ export const FutureIncomeProjects = () => {
           {/* Year Range Selector integrated into chart footer */}
           <CardFooter className="pt-4 border-t border-border bg-secondary/20">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
-              {([5, 10, 15, 30] as const).map((years) => (
-                <button 
-                  key={years}
-                  onClick={() => handleMilestoneClick(years)}
-                  className={`text-center p-3 rounded-lg border shadow-sm transition-all hover:shadow-md cursor-pointer ${
-                    yearRange === years 
-                      ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
-                      : 'bg-card border-border hover:bg-secondary/50 hover:border-primary/20'
-                  }`}
-                >
-                  <div className="text-sm font-medium text-muted-foreground mb-1">{years} Years</div>
-                  <div className={`text-lg font-bold ${yearRange === years ? 'text-primary' : 'text-foreground'}`}>
-                    ${projectionData[years]?.portfolioValue?.toLocaleString() || '0'}
-                  </div>
-                  <div className="text-xs text-financial-green font-medium">
-                    ${projectionData[years]?.monthlyIncome?.toLocaleString() || '0'}/mo
-                  </div>
-                </button>
-              ))}
+              {([5, 10, 15, 30] as const).map((years) => {
+                const getGradient = () => {
+                  switch (years) {
+                    case 5: return 'from-blue-500/15 via-blue-400/5 to-cyan-500/15 border-blue-300/50 dark:border-blue-600/50';
+                    case 10: return 'from-green-500/15 via-emerald-400/5 to-teal-500/15 border-green-300/50 dark:border-green-600/50';
+                    case 15: return 'from-purple-500/15 via-violet-400/5 to-indigo-500/15 border-purple-300/50 dark:border-purple-600/50';
+                    case 30: return 'from-amber-500/15 via-orange-400/5 to-yellow-500/15 border-amber-300/50 dark:border-amber-600/50';
+                    default: return '';
+                  }
+                };
+                const getEmoji = () => {
+                  switch (years) {
+                    case 5: return '🎯';
+                    case 10: return '📈';
+                    case 15: return '🚀';
+                    case 30: return '🏆';
+                    default: return '';
+                  }
+                };
+                return (
+                  <button 
+                    key={years}
+                    onClick={() => handleMilestoneClick(years)}
+                    className={`text-center p-4 rounded-xl border-2 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer bg-gradient-to-br ${getGradient()} ${
+                      yearRange === years 
+                        ? 'ring-2 ring-primary/30 shadow-primary/20' 
+                        : 'hover:border-opacity-80'
+                    }`}
+                  >
+                    <div className="text-sm font-medium text-muted-foreground mb-1 flex items-center justify-center gap-1">
+                      <span>{getEmoji()}</span>
+                      <span>{years} Years</span>
+                    </div>
+                    <div className={`text-lg font-bold ${yearRange === years ? 'text-primary' : 'text-foreground'}`}>
+                      ${projectionData[years]?.portfolioValue?.toLocaleString() || '0'}
+                    </div>
+                    <div className="text-xs text-financial-green font-medium">
+                      ${projectionData[years]?.monthlyIncome?.toLocaleString() || '0'}/mo
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </CardFooter>
         </Card>
 
         {/* Explanatory Text - moved from header */}
         <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 px-4 py-2 rounded-lg mb-3">
+            <div className="flex items-center gap-1.5">
+              <Brain className="h-4 w-4 text-primary" />
+              <Sparkles className="h-3 w-3 text-yellow-500" />
+            </div>
+            <span className="text-sm font-medium text-primary">Powered by your real portfolio data</span>
+          </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            <span className="block">AI-powered projections based on your current portfolio.</span>
-            <span className="block">Customize parameters below to see how different strategies affect your long-term income.</span>
+            Customize the parameters below to explore different investment strategies and see their impact on your long-term dividend income.
           </p>
         </div>
 
