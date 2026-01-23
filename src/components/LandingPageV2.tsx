@@ -383,9 +383,9 @@ const LandingPageV2 = () => {
               </div>
 
               {/* Powered by Plaid */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t border-border/50">
-                <img src={plaidLogo} alt="Plaid" className="h-5 w-auto" />
-                <span>Trusted by millions</span>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground pt-3 border-t border-border/50">
+                <img src={plaidLogo} alt="Plaid" className="h-8 w-auto" />
+                <span>Powered by Plaid · Trusted by millions</span>
               </div>
             </div>
 
