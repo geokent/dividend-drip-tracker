@@ -44,6 +44,7 @@ import {
   Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import plaidLogo from "@/assets/plaid-logo.png";
 
 const cleanupAuthState = () => {
   localStorage.removeItem("supabase.auth.token");
@@ -53,18 +54,6 @@ const cleanupAuthState = () => {
     }
   });
 };
-
-// Plaid Logo SVG Component
-const PlaidLogo = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M20.067 8.478L15.589 4H8.41l-4.478 4.478v7.044L8.41 20h7.18l4.477-4.478V8.478zM14.286 5.304l3.41 3.41-3.41 3.41V5.304zm-4.572 0v6.82l-3.41-3.41 3.41-3.41zm0 13.392v-6.82l3.41 3.41-3.41 3.41zm4.572 0V11.876l3.41 3.41-3.41 3.41z" />
-  </svg>
-);
 
 const LandingPageV2 = () => {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -395,8 +384,8 @@ const LandingPageV2 = () => {
 
               {/* Powered by Plaid */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t border-border/50">
-                <PlaidLogo className="h-5 w-5" />
-                <span>Powered by Plaid - Trusted by millions</span>
+                <img src={plaidLogo} alt="Plaid" className="h-5 w-auto" />
+                <span>Trusted by millions</span>
               </div>
             </div>
 
