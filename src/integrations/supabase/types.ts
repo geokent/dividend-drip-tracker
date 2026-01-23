@@ -443,6 +443,51 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_scenarios: {
+        Row: {
+          additional_yearly_contribution: number | null
+          created_at: string | null
+          dividend_growth_rate: number
+          id: string
+          monthly_expenses: number
+          monthly_investment: number
+          name: string
+          notes: string | null
+          portfolio_growth_rate: number
+          reinvest_dividends: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          additional_yearly_contribution?: number | null
+          created_at?: string | null
+          dividend_growth_rate: number
+          id?: string
+          monthly_expenses: number
+          monthly_investment: number
+          name: string
+          notes?: string | null
+          portfolio_growth_rate: number
+          reinvest_dividends?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          additional_yearly_contribution?: number | null
+          created_at?: string | null
+          dividend_growth_rate?: number
+          id?: string
+          monthly_expenses?: number
+          monthly_investment?: number
+          name?: string
+          notes?: string | null
+          portfolio_growth_rate?: number
+          reinvest_dividends?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_stocks: {
         Row: {
           annual_dividend: number | null

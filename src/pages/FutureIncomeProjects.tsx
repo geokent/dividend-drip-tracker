@@ -14,6 +14,8 @@ import { ProjectionParametersStrip } from "@/components/ProjectionParametersStri
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
 import { ConfettiCelebration } from "@/components/ConfettiCelebration";
+import { ExportShareActions } from "@/components/ExportShareActions";
+import { SaveScenarioDialog } from "@/components/SaveScenarioDialog";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   TrendingUp, 
@@ -79,7 +81,9 @@ export const FutureIncomeProjects = () => {
   // Confetti celebration state
   const [showConfetti, setShowConfetti] = useState(false);
   const [hasShownConfetti, setHasShownConfetti] = useState(false);
-
+  
+  // Save scenario dialog state
+  const [showSaveScenarioDialog, setShowSaveScenarioDialog] = useState(false);
   // Scenario configurations
   const scenarios = [
     {
@@ -1254,6 +1258,22 @@ export const FutureIncomeProjects = () => {
           setReinvestDividends={setReinvestDividends}
         />
 
+        {/* Export & Share Actions */}
+        <ExportShareActions
+          fireCalculations={fireCalculations}
+          currentMetrics={currentMetrics}
+          projectionData={projectionData}
+          monthlyExpensesInRetirement={monthlyExpensesInRetirement}
+          monthlyInvestment={monthlyInvestment}
+          portfolioGrowthRate={portfolioGrowthRate}
+          dividendGrowthRate={dividendGrowthRate}
+          reinvestDividends={reinvestDividends}
+          scenarioCalculations={scenarioCalculations}
+          yearRange={yearRange}
+          onSaveScenario={() => setShowSaveScenarioDialog(true)}
+          user={user}
+        />
+
         {/* Compare Scenarios Section */}
         <Card className="card-elevated mb-8">
           <CardHeader>
@@ -1359,8 +1379,30 @@ export const FutureIncomeProjects = () => {
           </CardContent>
         </Card>
 
-
       </div>
+
+      {/* Save Scenario Dialog */}
+      {user && (
+        <SaveScenarioDialog
+          open={showSaveScenarioDialog}
+          onOpenChange={setShowSaveScenarioDialog}
+          monthlyInvestment={monthlyInvestment}
+          portfolioGrowthRate={portfolioGrowthRate}
+          dividendGrowthRate={dividendGrowthRate}
+          additionalYearlyContribution={additionalYearlyContribution}
+          reinvestDividends={reinvestDividends}
+          monthlyExpensesInRetirement={monthlyExpensesInRetirement}
+          userId={user.id}
+          onLoadScenario={(scenario) => {
+            setMonthlyInvestment(scenario.monthly_investment);
+            setPortfolioGrowthRate(scenario.portfolio_growth_rate);
+            setDividendGrowthRate(scenario.dividend_growth_rate);
+            setAdditionalYearlyContribution(scenario.additional_yearly_contribution);
+            setReinvestDividends(scenario.reinvest_dividends);
+            setMonthlyExpensesInRetirement(scenario.monthly_expenses);
+          }}
+        />
+      )}
 
       <Footer />
     </div>
