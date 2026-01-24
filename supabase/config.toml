@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.fetch-etf-metadata]
 verify_jwt = false
+
+[functions.bulk-import-stocks]
+verify_jwt = false
