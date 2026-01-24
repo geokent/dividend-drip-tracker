@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -763,30 +764,7 @@ const LandingPageV2 = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-border/10">
-        <div className="container">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} DivTrkr. All rights reserved.
-            </p>
-            <div className="flex gap-6">
-              <Link
-                to="/privacy"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Privacy
-              </Link>
-              <Link
-                to="/terms"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Terms
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
