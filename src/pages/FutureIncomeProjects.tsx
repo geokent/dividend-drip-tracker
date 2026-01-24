@@ -13,7 +13,7 @@ import { Footer } from "@/components/Footer";
 import { ProjectionParametersStrip } from "@/components/ProjectionParametersStrip";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
-import { ConfettiCelebration } from "@/components/ConfettiCelebration";
+
 import { ExportShareActions } from "@/components/ExportShareActions";
 import { SaveScenarioDialog } from "@/components/SaveScenarioDialog";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -78,9 +78,6 @@ export const FutureIncomeProjects = () => {
   });
   const [chartZoomRange, setChartZoomRange] = useState<{ startIndex?: number; endIndex?: number }>({});
   
-  // Confetti celebration state
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [hasShownConfetti, setHasShownConfetti] = useState(false);
   
   // Save scenario dialog state
   const [showSaveScenarioDialog, setShowSaveScenarioDialog] = useState(false);
@@ -469,13 +466,6 @@ export const FutureIncomeProjects = () => {
     };
   }, [monthlyExpensesInRetirement, currentMetrics, projectionData]);
 
-  // Trigger confetti when FIRE is first calculated
-  useEffect(() => {
-    if (fireCalculations.yearsToFire !== null && !hasShownConfetti && !isLoading) {
-      setShowConfetti(true);
-      setHasShownConfetti(true);
-    }
-  }, [fireCalculations.yearsToFire, hasShownConfetti, isLoading]);
 
   // Calculate projections for each scenario
   const scenarioCalculations = useMemo(() => {
@@ -669,8 +659,6 @@ export const FutureIncomeProjects = () => {
       <Header />
 
       <div className="container section-y space-y-8">
-        {/* Confetti Celebration */}
-        <ConfettiCelebration show={showConfetti} onComplete={() => setShowConfetti(false)} />
         
         {/* Page Title */}
         <div className="text-center mb-8">
