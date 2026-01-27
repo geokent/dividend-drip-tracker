@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,104 +59,264 @@ export const ExportShareActions: React.FC<ExportShareActionsProps> = ({
     setExportType('pdf');
     
     try {
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([595, 842]); // A4 size in points
+      const { width, height } = page.getSize();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       
-      // Header with gradient effect simulation
-      pdf.setFillColor(34, 197, 94);
-      pdf.rect(0, 0, pageWidth, 35, 'F');
+      // Colors
+      const greenColor = rgb(34/255, 197/255, 94/255);
+      const blackColor = rgb(0, 0, 0);
+      const grayColor = rgb(128/255, 128/255, 128/255);
+      const whiteColor = rgb(1, 1, 1);
       
-      pdf.setFontSize(24);
-      pdf.setTextColor(255, 255, 255);
-      pdf.text('DivTrkr - FIRE Projections', pageWidth / 2, 18, { align: 'center' });
+      // Header with green background
+      page.drawRectangle({
+        x: 0,
+        y: height - 100,
+        width: width,
+        height: 100,
+        color: greenColor,
+      });
       
-      pdf.setFontSize(11);
-      pdf.text(`Generated: ${new Date().toLocaleDateString('en-US', { 
+      // Header text
+      page.drawText('DivTrkr - FIRE Projections', {
+        x: width / 2 - 100,
+        y: height - 50,
+        size: 20,
+        font: boldFont,
+        color: whiteColor,
+      });
+      
+      const dateStr = new Date().toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
-      })}`, pageWidth / 2, 28, { align: 'center' });
+      });
+      page.drawText(`Generated: ${dateStr}`, {
+        x: width / 2 - 80,
+        y: height - 75,
+        size: 10,
+        font: font,
+        color: whiteColor,
+      });
       
-      // Current Portfolio Summary
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('📊 Portfolio Summary', 14, 50);
+      let yPos = height - 140;
       
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Current Portfolio Value: $${currentMetrics.totalPortfolioValue.toLocaleString()}`, 14, 60);
-      pdf.text(`Annual Dividend Income: $${currentMetrics.totalAnnualDividends.toLocaleString()}`, 14, 68);
-      pdf.text(`Portfolio Yield: ${currentMetrics.portfolioYield.toFixed(2)}%`, 14, 76);
+      // Portfolio Summary Section
+      page.drawText('Portfolio Summary', {
+        x: 40,
+        y: yPos,
+        size: 14,
+        font: boldFont,
+        color: blackColor,
+      });
+      yPos -= 25;
+      
+      page.drawText(`Current Portfolio Value: $${currentMetrics.totalPortfolioValue.toLocaleString()}`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`Annual Dividend Income: $${currentMetrics.totalAnnualDividends.toLocaleString()}`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`Portfolio Yield: ${currentMetrics.portfolioYield.toFixed(2)}%`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 35;
       
       // FIRE Progress Section
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('🔥 FIRE Progress', 14, 92);
+      page.drawText('FIRE Progress', {
+        x: 40,
+        y: yPos,
+        size: 14,
+        font: boldFont,
+        color: blackColor,
+      });
+      yPos -= 25;
       
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Monthly Expenses Target: $${monthlyExpensesInRetirement.toLocaleString()}`, 14, 102);
-      pdf.text(`FIRE Number (4% Rule): $${fireCalculations.fireNumber.toLocaleString()}`, 14, 110);
-      pdf.text(`Dividend FIRE Number: $${fireCalculations.dividendFireNumber.toLocaleString()}`, 14, 118);
-      pdf.text(`Progress: ${fireCalculations.progressPercentage.toFixed(1)}%`, 14, 126);
+      page.drawText(`Monthly Expenses Target: $${monthlyExpensesInRetirement.toLocaleString()}`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`FIRE Number (4% Rule): $${fireCalculations.fireNumber.toLocaleString()}`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`Dividend FIRE Number: $${fireCalculations.dividendFireNumber.toLocaleString()}`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`Progress: ${fireCalculations.progressPercentage.toFixed(1)}%`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 25;
       
       if (fireCalculations.yearsToFire !== null) {
-        pdf.setTextColor(34, 197, 94);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`🎉 Projected FIRE Year: ${new Date().getFullYear() + fireCalculations.yearsToFire} (${fireCalculations.yearsToFire} years)`, 14, 138);
+        page.drawText(`Projected FIRE Year: ${new Date().getFullYear() + fireCalculations.yearsToFire} (${fireCalculations.yearsToFire} years)`, {
+          x: 40,
+          y: yPos,
+          size: 11,
+          font: boldFont,
+          color: greenColor,
+        });
+        yPos -= 35;
       }
       
-      // Projection Parameters
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('⚙️ Projection Parameters', 14, 154);
+      // Projection Parameters Section
+      page.drawText('Projection Parameters', {
+        x: 40,
+        y: yPos,
+        size: 14,
+        font: boldFont,
+        color: blackColor,
+      });
+      yPos -= 25;
       
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Monthly Investment: $${monthlyInvestment.toLocaleString()}`, 14, 164);
-      pdf.text(`Portfolio Growth Rate: ${(portfolioGrowthRate * 100).toFixed(0)}%`, 14, 172);
-      pdf.text(`Dividend Growth Rate: ${dividendGrowthRate}%`, 14, 180);
-      pdf.text(`Reinvest Dividends: ${reinvestDividends ? 'Yes' : 'No'}`, 14, 188);
+      page.drawText(`Monthly Investment: $${monthlyInvestment.toLocaleString()}`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`Portfolio Growth Rate: ${(portfolioGrowthRate * 100).toFixed(0)}%`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`Dividend Growth Rate: ${dividendGrowthRate}%`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 18;
+      
+      page.drawText(`Reinvest Dividends: ${reinvestDividends ? 'Yes' : 'No'}`, {
+        x: 40,
+        y: yPos,
+        size: 10,
+        font: font,
+        color: blackColor,
+      });
+      yPos -= 35;
       
       // Milestone Projections
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('📈 Milestone Projections', 14, 204);
+      page.drawText('Milestone Projections', {
+        x: 40,
+        y: yPos,
+        size: 14,
+        font: boldFont,
+        color: blackColor,
+      });
+      yPos -= 25;
       
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      let yPos = 214;
       [5, 10, 15, 30].forEach(years => {
         const data = projectionData[years];
         if (data) {
-          pdf.text(`${years} Years: $${data.portfolioValue?.toLocaleString()} portfolio | $${data.monthlyIncome?.toLocaleString()}/mo dividends`, 14, yPos);
-          yPos += 8;
+          page.drawText(`${years} Years: $${data.portfolioValue?.toLocaleString()} portfolio | $${data.monthlyIncome?.toLocaleString()}/mo dividends`, {
+            x: 40,
+            y: yPos,
+            size: 10,
+            font: font,
+            color: blackColor,
+          });
+          yPos -= 18;
         }
       });
+      yPos -= 15;
       
       // Scenario Comparison
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('📊 Scenario Comparison', 14, yPos + 10);
+      page.drawText('Scenario Comparison', {
+        x: 40,
+        y: yPos,
+        size: 14,
+        font: boldFont,
+        color: blackColor,
+      });
+      yPos -= 25;
       
-      yPos += 20;
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
       scenarioCalculations.forEach(scenario => {
-        pdf.text(`${scenario.name}: $${scenario.tenYearMonthlyIncome.toLocaleString()}/mo at 10yr | FIRE in ${scenario.yearsToFire !== null ? `${scenario.yearsToFire} years` : '30+ years'}`, 14, yPos);
-        yPos += 7;
+        const fireText = scenario.yearsToFire !== null ? `${scenario.yearsToFire} years` : '30+ years';
+        page.drawText(`${scenario.name}: $${scenario.tenYearMonthlyIncome.toLocaleString()}/mo at 10yr | FIRE in ${fireText}`, {
+          x: 40,
+          y: yPos,
+          size: 9,
+          font: font,
+          color: blackColor,
+        });
+        yPos -= 15;
       });
       
       // Footer
-      pdf.setFontSize(8);
-      pdf.setTextColor(128, 128, 128);
-      pdf.text('Projections are estimates based on historical data and may not reflect future performance.', pageWidth / 2, 285, { align: 'center' });
-      pdf.text('Generated by DivTrkr.com', pageWidth / 2, 290, { align: 'center' });
+      page.drawText('Projections are estimates based on historical data and may not reflect future performance.', {
+        x: width / 2 - 180,
+        y: 40,
+        size: 7,
+        font: font,
+        color: grayColor,
+      });
       
-      pdf.save(`fire-projections-${new Date().toISOString().split('T')[0]}.pdf`);
+      page.drawText('Generated by DivTrkr.com', {
+        x: width / 2 - 45,
+        y: 25,
+        size: 7,
+        font: font,
+        color: grayColor,
+      });
+      
+      // Save the PDF
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `fire-projections-${new Date().toISOString().split('T')[0]}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
       
       toast({
         title: "PDF Exported Successfully! 📄",
