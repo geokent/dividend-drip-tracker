@@ -1,6 +1,19 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|crawler|spider|googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|linkedinbot).*"
+        }
+      ],
+      "destination": "https://service.prerender.io/https://www.divtrkr.com/:path*"
+    }
+  ],
   "routes": [
     {
       "src": "/sitemap.xml",
