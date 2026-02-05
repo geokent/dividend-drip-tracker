@@ -82,37 +82,40 @@ Deno.serve(async (req) => {
       encrypted_data: account.access_token_encrypted
     })
 
-    if (decryptError || !decryptedToken) {
-      console.error('Token decryption error:', decryptError)
-      return new Response(
-        JSON.stringify({ error: 'Failed to decrypt access token' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
     // Use production environment
     const plaidApiHost = 'https://production.plaid.com'
+    let plaidRemoveSuccess = false
 
-    // Call Plaid's item/remove endpoint to disconnect the item
-    const removeResponse = await fetch(`${plaidApiHost}/item/remove`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'PLAID-CLIENT-ID': Deno.env.get('PLAID_CLIENT_ID') ?? '',
-        'PLAID-SECRET': Deno.env.get('PLAID_SECRET') ?? '',
-      },
-      body: JSON.stringify({
-        access_token: decryptedToken,
-      }),
-    })
-
-    const removeData = await removeResponse.json()
-
-    if (!removeResponse.ok) {
-      console.error('Plaid item removal error:', removeData)
-      // Continue with database cleanup even if Plaid call fails
+    if (decryptError || !decryptedToken) {
+      console.warn('Token decryption failed, skipping Plaid API call. Will still deactivate in database.', decryptError)
+      // Continue to database cleanup without calling Plaid API
     } else {
-      console.log('Successfully removed item from Plaid')
+      // Call Plaid's item/remove endpoint only if we have the token
+      try {
+        const removeResponse = await fetch(`${plaidApiHost}/item/remove`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'PLAID-CLIENT-ID': Deno.env.get('PLAID_CLIENT_ID') ?? '',
+            'PLAID-SECRET': Deno.env.get('PLAID_SECRET') ?? '',
+          },
+          body: JSON.stringify({
+            access_token: decryptedToken,
+          }),
+        })
+
+        if (removeResponse.ok) {
+          plaidRemoveSuccess = true
+          console.log('Successfully removed item from Plaid')
+        } else {
+          const removeData = await removeResponse.json()
+          console.error('Plaid item removal error:', removeData)
+          // Continue with database cleanup even if Plaid call fails
+        }
+      } catch (plaidError) {
+        console.error('Plaid API call failed:', plaidError)
+        // Continue with database cleanup even if Plaid call fails
+      }
     }
 
     // Deactivate all accounts for this item in our database
