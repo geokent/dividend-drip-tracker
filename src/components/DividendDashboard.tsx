@@ -145,15 +145,16 @@ export const DividendDashboard = () => {
       .eq('user_id', user.id);
 
     if (!accountsError && accounts) {
-      // Filter to accounts that are active AND have stocks with sync data
+      // Get synced stocks for stale data detection
       const { data: syncedStocks } = await supabase
         .from('user_stocks')
         .select('plaid_item_id, symbol, last_synced')
         .eq('user_id', user.id)
         .not('plaid_item_id', 'is', null);
 
-      const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
-      const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
+      // Consider accounts "connected" if they have is_active = true
+      // regardless of whether stocks were synced (sync may have returned no positions)
+      const activeAccounts = accounts.filter(account => account.is_active);
       
       setConnectedAccounts(activeAccounts.length);
       
@@ -275,15 +276,9 @@ export const DividendDashboard = () => {
         .eq('user_id', user.id);
 
       if (!accountsError && accounts) {
-        // Filter to accounts that are active AND have stocks with sync data
-        const { data: syncedStocks } = await supabase
-          .from('user_stocks')
-          .select('plaid_item_id')
-          .eq('user_id', user.id)
-          .not('plaid_item_id', 'is', null);
-
-        const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
-        const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
+        // Consider accounts "connected" if they have is_active = true
+        // regardless of whether stocks were synced (sync may have returned no positions)
+        const activeAccounts = accounts.filter(account => account.is_active);
         
         setConnectedAccounts(activeAccounts.length);
         
