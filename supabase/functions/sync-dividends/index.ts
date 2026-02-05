@@ -328,16 +328,19 @@ Deno.serve(async (req) => {
           }
           
           try {
-            // Check if this stock is already tracked by the user
-            const { data: existingStock, error: selectError } = await supabase
+            // Check if this stock already exists as a Plaid entry from this same institution
+            // This allows manual entries to coexist with Plaid entries for the same symbol
+            const { data: existingPlaidStock, error: selectError } = await supabase
               .from('user_stocks')
               .select('*')
               .eq('user_id', user_id)
               .eq('symbol', symbol)
+              .eq('source', 'plaid_sync')
+              .eq('plaid_item_id', account.item_id)
               .maybeSingle()
 
             if (selectError) {
-              console.error(`Error checking existing stock ${symbol}:`, selectError)
+              console.error(`Error checking existing Plaid stock ${symbol}:`, selectError)
               continue
             }
 
@@ -356,41 +359,22 @@ Deno.serve(async (req) => {
 
             let stockUpdated = false
             
-            if (existingStock) {
-              const previousSource = existingStock.source
-              
-              // Only update stocks that are Plaid-synced from this same item_id
-              // This prevents overwriting manual entries
-              if (existingStock.source === 'plaid_sync' && existingStock.plaid_item_id === account.item_id) {
-                const { error: updateError } = await supabase
-                  .from('user_stocks')
-                  .update(stockData)
-                  .eq('id', existingStock.id)
+            if (existingPlaidStock) {
+              // Update existing Plaid entry from this institution
+              const { error: updateError } = await supabase
+                .from('user_stocks')
+                .update(stockData)
+                .eq('id', existingPlaidStock.id)
 
-                if (updateError) {
-                  console.error(`Error updating stock ${symbol}:`, updateError)
-                } else {
-                  console.log(`Updated Plaid stock ${symbol} with ${aggregatedHolding.quantity} total shares (was ${existingStock.shares})`)
-                  stockUpdated = true
-                  totalNewDividends++
-                }
-              } else if (previousSource === 'manual') {
-                // Update reconciliation metadata for manual entries
-                const { error: metadataError } = await supabase.rpc('update_reconciliation_metadata', {
-                  p_user_id: user_id,
-                  p_symbol: symbol,
-                  p_reconciliation_type: 'manual_to_plaid',
-                  p_previous_source: previousSource
-                })
-                
-                if (metadataError) {
-                  console.error(`Error updating reconciliation metadata for ${symbol}:`, metadataError)
-                } else {
-                  console.log(`Found manual entry for ${symbol} - not overwriting (${existingStock.shares} shares)`)
-                }
+              if (updateError) {
+                console.error(`Error updating stock ${symbol}:`, updateError)
+              } else {
+                console.log(`Updated Plaid stock ${symbol} with ${aggregatedHolding.quantity} total shares (was ${existingPlaidStock.shares})`)
+                stockUpdated = true
+                totalNewDividends++
               }
             } else {
-              // Insert new stock
+              // Insert new Plaid stock (even if manual entry exists - they coexist)
               const { error: insertError } = await supabase
                 .from('user_stocks')
                 .insert(stockData)
@@ -398,7 +382,7 @@ Deno.serve(async (req) => {
               if (insertError) {
                 console.error(`Error inserting stock ${symbol}:`, insertError)
               } else {
-                console.log(`Inserted new stock ${symbol} with ${aggregatedHolding.quantity} shares`)
+                console.log(`Inserted new Plaid stock ${symbol} with ${aggregatedHolding.quantity} shares`)
                 stockUpdated = true
                 newStocks++
                 totalNewDividends++
