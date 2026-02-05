@@ -122,20 +122,46 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
 
       if (error) {
         console.error('Link token creation error:', error);
-        if (error.message?.includes('Free tier limit reached')) {
-          toast.error('Free tier allows only one connected institution. Please disconnect your current institution first.', { id: 'plaid-init' });
-        } else {
-          toast.error('Failed to initialize bank connection. Please try again.', { id: 'plaid-init' });
+        
+        // Try to extract the actual error message from the edge function response
+        let errorMessage = 'Failed to initialize bank connection. Please try again.';
+        
+        try {
+          // For FunctionsHttpError, check the context for response body
+          if (error.context?.response) {
+            const responseBody = await error.context.response.json();
+            if (responseBody?.error === 'Free tier limit reached' || 
+                responseBody?.message?.includes('one institution') ||
+                responseBody?.error?.includes('Free tier')) {
+              errorMessage = 'Free tier allows only one connected institution. Please disconnect your current institution first.';
+            }
+          }
+        } catch (parseError) {
+          // Fallback to checking error message string or status code
+          if (error.message?.includes('Free tier limit reached') || 
+              error.message?.includes('403') ||
+              error.message?.includes('one institution')) {
+            errorMessage = 'Free tier allows only one connected institution. Please disconnect your current institution first.';
+          }
         }
+        
+        toast.error(errorMessage, { id: 'plaid-init' });
         return;
       }
 
       console.log('Link token created successfully');
       toast.success('Ready to connect! Opening bank selection...', { id: 'plaid-init' });
       setLinkToken(data.link_token);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating link token:', error);
-      toast.error('Connection setup failed. Please check your internet and try again.', { id: 'plaid-init' });
+      
+      // Check if this is a tier limit error
+      const errorStr = error?.message || error?.toString() || '';
+      if (errorStr.includes('Free tier') || errorStr.includes('one institution')) {
+        toast.error('Free tier allows only one connected institution. Please disconnect your current institution first.', { id: 'plaid-init' });
+      } else {
+        toast.error('Connection setup failed. Please check your internet and try again.', { id: 'plaid-init' });
+      }
     } finally {
       setIsLoading(false);
     }
