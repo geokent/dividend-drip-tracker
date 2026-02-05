@@ -1,15 +1,20 @@
 
-# Fix: Deploy Missing Plaid Edge Function
+# Fix: Deploy plaid-exchange-token Function
 
 ## Problem
-The `plaid-create-link-token` edge function exists in your codebase but is not deployed to Supabase. This is why clicking "Connect Account" fails with "failed to initialize bank connection" - the function returns a 404 Not Found error.
+The `plaid-exchange-token` edge function exists in your codebase and is properly configured in `supabase/config.toml`, but it's **not deployed** to Supabase. When you complete the Plaid Link flow, the app tries to call this function and gets a 404 Not Found error.
+
+## Evidence
+- Direct test of the function returns: `404 NOT_FOUND - Requested function was not found`
+- The function code exists at `supabase/functions/plaid-exchange-token/index.ts`
+- The function is configured in `supabase/config.toml` (line 72-73)
 
 ## Solution
-Deploy the `plaid-create-link-token` edge function. This is a simple deployment - no code changes needed.
+Deploy the `plaid-exchange-token` edge function. No code changes needed.
 
-## Action Required
-Deploy the following edge function:
-- `plaid-create-link-token`
+## Action
+Deploy:
+- `plaid-exchange-token`
 
 ## Expected Result
-After deployment, clicking "Connect Account" will successfully open the Plaid Link modal where you can authenticate with your bank.
+After deployment, completing the Plaid Link authentication will successfully exchange the token and store your investment accounts.
