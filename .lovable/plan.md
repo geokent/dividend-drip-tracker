@@ -1,93 +1,82 @@
 
 
-# Plaid Integration Fix Plan
+# Fix Plaid Disconnect When Token Decryption Fails
 
-## Problem Summary
-The Plaid integration appears broken because of a state synchronization bug. The user has an active Plaid account in the database (Charles Schwab), but the UI shows "Connect Account" instead of "Unlink Account" because no stocks were synced from that account.
+## Problem
+When you try to unlink your Plaid account, the edge function fails with "Failed to decrypt access token" (500 error). This happens because:
 
-## Root Causes
+1. Your access token was encrypted with a key that no longer matches
+2. The disconnect function **requires** decryption to succeed before proceeding
+3. This blocks you from unlinking the account, even though unlinking doesn't actually require the token
 
-### 1. Connection Detection Logic Too Strict
-**File:** `src/components/DividendDashboard.tsx` (lines 155-156)
-
-The code requires both an active `plaid_accounts` record AND matching stocks in `user_stocks` with that `plaid_item_id`. If the sync failed or returned no investment positions, the account appears disconnected even though it's still linked.
-
-**Current logic:**
-```typescript
-const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
-const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
-```
-
-### 2. Error Message Not Properly Parsed  
-**File:** `src/components/PlaidLinkButton.tsx` (line 125)
-
-The error check `error.message?.includes('Free tier limit reached')` fails because Supabase wraps the response as `FunctionsHttpError` without exposing the JSON body in the message.
+## Solution
+Make the disconnect operation **resilient to decryption failures**. If we can't decrypt the token, we simply skip calling Plaid's API and proceed with deactivating the account in our database.
 
 ---
 
-## Solution
+## Code Change
 
-### Fix 1: Update Connection Detection Logic
-Change the filter to consider accounts as "connected" if they have `is_active = true`, regardless of whether stocks exist:
+**File:** `supabase/functions/plaid-disconnect-item/index.ts`
 
+**Current behavior (lines 85-91):**
 ```typescript
-// Before: Required both active account AND synced stocks
-const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
-
-// After: Active account is sufficient to show as connected
-const activeAccounts = accounts.filter(account => account.is_active);
-```
-
-This needs to be applied in multiple places in `DividendDashboard.tsx`:
-- Line 156 (loadConnectedAccounts function)
-- Line 302 (Plaid success handler)
-- Line 699 (handlePlaidSuccess)
-- Line 799 (handleStaleAccountsCleanup)
-
-### Fix 2: Improve Error Handling for Edge Function Responses
-Update `PlaidLinkButton.tsx` to properly extract the error message from the edge function response:
-
-```typescript
-// In createLinkToken function, after the invoke call:
-if (error) {
-  console.error('Link token creation error:', error);
-  
-  // Try to get the actual response body from the error context
-  let errorMessage = 'Failed to initialize bank connection. Please try again.';
-  
-  try {
-    // For FunctionsHttpError, check the context for response body
-    if (error.context?.response) {
-      const responseBody = await error.context.response.json();
-      if (responseBody?.error === 'Free tier limit reached' || responseBody?.message?.includes('one institution')) {
-        errorMessage = 'Free tier allows only one connected institution. Please disconnect your current institution first.';
-      }
-    }
-  } catch (parseError) {
-    // Fallback to checking error message string
-    if (error.message?.includes('403')) {
-      errorMessage = 'Free tier allows only one connected institution. Please disconnect your current institution first.';
-    }
-  }
-  
-  toast.error(errorMessage, { id: 'plaid-init' });
-  return;
+if (decryptError || !decryptedToken) {
+  console.error('Token decryption error:', decryptError)
+  return new Response(  // <-- BLOCKS the entire operation
+    JSON.stringify({ error: 'Failed to decrypt access token' }),
+    { status: 500, ... }
+  )
 }
 ```
 
+**New behavior:**
+```typescript
+let plaidRemoveSuccess = false;
+
+if (decryptError || !decryptedToken) {
+  console.warn('Token decryption failed, skipping Plaid API call. Will still deactivate in database.', decryptError);
+  // Continue to database cleanup without calling Plaid API
+} else {
+  // Call Plaid's item/remove endpoint only if we have the token
+  const removeResponse = await fetch(`${plaidApiHost}/item/remove`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'PLAID-CLIENT-ID': Deno.env.get('PLAID_CLIENT_ID') ?? '',
+      'PLAID-SECRET': Deno.env.get('PLAID_SECRET') ?? '',
+    },
+    body: JSON.stringify({ access_token: decryptedToken }),
+  });
+  
+  if (removeResponse.ok) {
+    plaidRemoveSuccess = true;
+    console.log('Successfully removed item from Plaid');
+  } else {
+    console.error('Plaid item removal error:', await removeResponse.json());
+    // Continue with database cleanup even if Plaid call fails
+  }
+}
+
+// Always proceed to deactivate the account in our database
+```
+
 ---
 
-## Files to Change
+## Why This is Safe
 
-| File | Change |
-|------|--------|
-| `src/components/DividendDashboard.tsx` | Update 4 locations to remove the `activeItemIds.has()` requirement from the filter |
-| `src/components/PlaidLinkButton.tsx` | Improve error handling to parse 403 responses and show the correct "free tier limit" message |
+| Scenario | What Happens |
+|----------|--------------|
+| Token decrypts successfully | Calls Plaid API to revoke, then deactivates in DB |
+| Token decryption fails | Skips Plaid API, still deactivates in DB |
+| Plaid API call fails | Logs error, still deactivates in DB |
+
+In all cases, the account gets deactivated in your database, which is what matters for the UI. The Plaid API call is a "nice to have" for security (revokes the token on Plaid's side), but not required for the disconnect to work.
 
 ---
 
-## Expected Outcome
-1. Users with an active `plaid_accounts` record will see "Unlink Account" button instead of "Connect Account"
-2. If a user tries to connect when already connected, they'll see a clear message about the free tier limit
-3. The UI state will match the database state
+## Expected Result
+After this fix:
+1. You'll be able to click "Unlink Account" and it will succeed
+2. The account will be deactivated in the database
+3. You can then reconnect with a fresh token that will encrypt/decrypt properly
 
