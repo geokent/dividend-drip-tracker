@@ -1,120 +1,93 @@
 
 
-# SEO Files Update Plan
+# Plaid Integration Fix Plan
 
-## Overview
-Update the `public/sitemap.xml` and `public/robots.txt` files with a consistent SEO strategy: only index public pages that work without authentication.
+## Problem Summary
+The Plaid integration appears broken because of a state synchronization bug. The user has an active Plaid account in the database (Charles Schwab), but the UI shows "Connect Account" instead of "Unlink Account" because no stocks were synced from that account.
 
----
+## Root Causes
 
-## File 1: public/sitemap.xml
+### 1. Connection Detection Logic Too Strict
+**File:** `src/components/DividendDashboard.tsx` (lines 155-156)
 
-**Complete updated file:**
+The code requires both an active `plaid_accounts` record AND matching stocks in `user_stocks` with that `plaid_item_id`. If the sync failed or returned no investment positions, the account appears disconnected even though it's still linked.
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Homepage -->
-  <url>
-    <loc>https://www.divtrkr.com/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <!-- Dividend Calendar -->
-  <url>
-    <loc>https://www.divtrkr.com/dividend-calendar</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Stock Screener -->
-  <url>
-    <loc>https://www.divtrkr.com/stock-screener</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Future Income Projections -->
-  <url>
-    <loc>https://www.divtrkr.com/future-income-projects</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-</urlset>
+**Current logic:**
+```typescript
+const activeItemIds = new Set(syncedStocks?.map(s => s.plaid_item_id) || []);
+const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
 ```
 
-**Changes:**
-- Updated all lastmod dates to 2026-01-30
-- Added /stock-screener and /future-income-projects
-- Removed /terms, /privacy (low SEO value)
-- Removed /dashboard and /auth (require authentication)
-- Changed /dividend-calendar to daily updates
+### 2. Error Message Not Properly Parsed  
+**File:** `src/components/PlaidLinkButton.tsx` (line 125)
+
+The error check `error.message?.includes('Free tier limit reached')` fails because Supabase wraps the response as `FunctionsHttpError` without exposing the JSON body in the message.
 
 ---
 
-## File 2: public/robots.txt
+## Solution
 
-**Complete updated file:**
+### Fix 1: Update Connection Detection Logic
+Change the filter to consider accounts as "connected" if they have `is_active = true`, regardless of whether stocks exist:
 
-```text
-# DivTrkr Robots.txt
-# Last updated: 2026-01-30
+```typescript
+// Before: Required both active account AND synced stocks
+const activeAccounts = accounts.filter(account => account.is_active && activeItemIds.has(account.item_id));
 
-# Allow all legitimate bots to crawl public pages
-User-agent: *
-Allow: /
-Allow: /dividend-calendar
-Allow: /stock-screener
-Allow: /future-income-projects
-Disallow: /auth
-Disallow: /api/
-Disallow: /dashboard
-
-# Social media bots - full access for rich previews
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-# Block aggressive SEO crawlers
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-# Sitemap location
-Sitemap: https://www.divtrkr.com/sitemap.xml
+// After: Active account is sufficient to show as connected
+const activeAccounts = accounts.filter(account => account.is_active);
 ```
 
-**Changes:**
-- Consolidated bot rules with single wildcard section
-- Added explicit Allow for public tool pages
-- Added Disallow for /api/ endpoints
-- Added AhrefsBot and SemrushBot blocking
-- Added LinkedInBot for social preview support
-- Removed duplicate Googlebot/Bingbot sections
+This needs to be applied in multiple places in `DividendDashboard.tsx`:
+- Line 156 (loadConnectedAccounts function)
+- Line 302 (Plaid success handler)
+- Line 699 (handlePlaidSuccess)
+- Line 799 (handleStaleAccountsCleanup)
+
+### Fix 2: Improve Error Handling for Edge Function Responses
+Update `PlaidLinkButton.tsx` to properly extract the error message from the edge function response:
+
+```typescript
+// In createLinkToken function, after the invoke call:
+if (error) {
+  console.error('Link token creation error:', error);
+  
+  // Try to get the actual response body from the error context
+  let errorMessage = 'Failed to initialize bank connection. Please try again.';
+  
+  try {
+    // For FunctionsHttpError, check the context for response body
+    if (error.context?.response) {
+      const responseBody = await error.context.response.json();
+      if (responseBody?.error === 'Free tier limit reached' || responseBody?.message?.includes('one institution')) {
+        errorMessage = 'Free tier allows only one connected institution. Please disconnect your current institution first.';
+      }
+    }
+  } catch (parseError) {
+    // Fallback to checking error message string
+    if (error.message?.includes('403')) {
+      errorMessage = 'Free tier allows only one connected institution. Please disconnect your current institution first.';
+    }
+  }
+  
+  toast.error(errorMessage, { id: 'plaid-init' });
+  return;
+}
+```
 
 ---
 
-## Indexing Strategy Summary
+## Files to Change
 
-| Page | Sitemap | Robots | Status |
-|------|---------|--------|--------|
-| / | Yes (1.0) | Allow | Public homepage |
-| /dividend-calendar | Yes (0.9) | Allow | Public tool |
-| /stock-screener | Yes (0.9) | Allow | Public tool |
-| /future-income-projects | Yes (0.8) | Allow | Public tool |
-| /dashboard | No | Disallow | Requires login |
-| /auth | No | Disallow | Login page |
-| /api/ | No | Disallow | API endpoints |
+| File | Change |
+|------|--------|
+| `src/components/DividendDashboard.tsx` | Update 4 locations to remove the `activeItemIds.has()` requirement from the filter |
+| `src/components/PlaidLinkButton.tsx` | Improve error handling to parse 403 responses and show the correct "free tier limit" message |
+
+---
+
+## Expected Outcome
+1. Users with an active `plaid_accounts` record will see "Unlink Account" button instead of "Connect Account"
+2. If a user tries to connect when already connected, they'll see a clear message about the free tier limit
+3. The UI state will match the database state
 
