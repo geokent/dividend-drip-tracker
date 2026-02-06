@@ -104,8 +104,13 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
   useEffect(() => {
     if (error) {
       console.error('Plaid Link initialization error:', error);
-      toast.error(`Plaid Link error: ${error.message}`);
+      // Only show error toast if it has a meaningful message
+      // Suppress generic errors when token creation already failed
+      if (error.message && !error.message.includes('undefined')) {
+        toast.error(`Connection issue: ${error.message}`);
+      }
       setIsLoading(false);
+      setLinkToken(null); // Clear invalid token
     }
   }, [error]);
 
@@ -146,6 +151,7 @@ export const PlaidLinkButton = ({ userId, onSuccess, disabled = false, limitMess
         }
         
         toast.error(errorMessage, { id: 'plaid-init' });
+        setIsLoading(false); // Ensure loading stops
         return;
       }
 
