@@ -1,70 +1,59 @@
 
-# Keep Separate Entries for Manual and Plaid Stocks
+# Fix: Improve Plaid Link Error Handling
 
-## Overview
-Allow the same stock symbol to exist twice in your portfolio - once from manual entry and once from connected brokerage. This supports users who have the same stock in multiple brokerages.
+## Problem
+When the user is already connected to an institution, clicking "Connect Account" shows a confusing "Plaid Link error: undefined" toast because:
+1. The edge function returns 403 (free tier limit reached)
+2. The component handles the 403 gracefully but doesn't set `isLoading` back to false in all cases
+3. The `usePlaidLink` hook receives an invalid token and throws an error with no `message` property
+4. The error `useEffect` shows `error.message` which is `undefined`
 
-## Changes Required
+## Solution
+Two small changes to `PlaidLinkButton.tsx`:
 
-### 1. Update sync-dividends Edge Function
-**File:** `supabase/functions/sync-dividends/index.ts`
+### Change 1: Suppress Plaid SDK initialization errors (lines 103-110)
+The Plaid SDK error is redundant when we've already shown a user-friendly error from `createLinkToken`. Only show Plaid SDK errors if they're meaningful.
 
-Currently, the function checks if a symbol exists for the user regardless of source:
 ```typescript
-const { data: existingStock } = await supabase
-  .from('user_stocks')
-  .select('*')
-  .eq('user_id', user_id)
-  .eq('symbol', symbol)
-  .maybeSingle()  // Only expects one row
+// Before:
+useEffect(() => {
+  if (error) {
+    console.error('Plaid Link initialization error:', error);
+    toast.error(`Plaid Link error: ${error.message}`);
+    setIsLoading(false);
+  }
+}, [error]);
+
+// After:
+useEffect(() => {
+  if (error) {
+    console.error('Plaid Link initialization error:', error);
+    // Only show error toast if it has a meaningful message
+    // Suppress generic errors when token creation already failed
+    if (error.message && !error.message.includes('undefined')) {
+      toast.error(`Connection issue: ${error.message}`);
+    }
+    setIsLoading(false);
+    setLinkToken(null); // Clear invalid token
+  }
+}, [error]);
 ```
 
-**Change to:** Look for existing Plaid entries from the same institution only:
+### Change 2: Ensure loading state is reset after 403 error (line 148-149)
+Add explicit loading state reset after showing the free tier error message.
+
 ```typescript
-const { data: existingPlaidStock } = await supabase
-  .from('user_stocks')
-  .select('*')
-  .eq('user_id', user_id)
-  .eq('symbol', symbol)
-  .eq('source', 'plaid_sync')
-  .eq('plaid_item_id', account.item_id)
-  .maybeSingle()
+// After line 148 (toast.error for free tier limit):
+toast.error(errorMessage, { id: 'plaid-init' });
+setIsLoading(false); // Ensure loading stops
+return;
 ```
 
-This means:
-- If no Plaid entry exists for this symbol/institution combo, INSERT a new row (even if manual entry exists)
-- If a Plaid entry exists for this symbol/institution, UPDATE it
-- Manual entries are completely untouched
+## Files Changed
+- `src/components/PlaidLinkButton.tsx` - 2 small edits
 
-### 2. Update PortfolioTable Display
-**File:** `src/components/PortfolioTable.tsx`
-
-Add visual distinction for duplicate symbols:
-- Show the source clearly (already partially implemented with institution name)
-- Consider grouping or showing subtotals for same symbols
-- Add a badge or indicator when the same symbol appears from multiple sources
-
-### 3. Remove or Update Reconciliation Logic
-The current reconciliation metadata update (lines 377-391) can be removed since we're keeping entries separate rather than merging.
-
-## Technical Details
-
-### Database Impact
-- No schema changes needed - `user_stocks` already supports multiple rows per symbol
-- The current unique constraint is on `id` (UUID), not on `(user_id, symbol)`, so duplicates are allowed
-
-### Edge Cases Handled
-- Same stock in Schwab (Plaid) + manual entry = 2 rows
-- Same stock in Schwab + Fidelity (future Plaid connections) = 2 Plaid rows (different item_ids)
-- Re-syncing updates existing Plaid entry, doesn't create duplicates
-
-## Expected Result After Fix
-| Symbol | Source | Shares | Institution |
-|--------|--------|--------|-------------|
-| DIVO   | Manual | 460.1  | (user added) |
-| DIVO   | Plaid  | 46.5   | Schwab |
-| JEPQ   | Manual | 732.7  | (user added) |
-| JEPQ   | Plaid  | 880.5  | Schwab |
-| O      | Plaid  | 150.0  | Schwab |
-
-All 8 Schwab stocks will appear, plus your manual entries remain unchanged.
+## Result
+- No more confusing "undefined" error toasts
+- User sees clear "Free tier allows only one connected institution" message
+- Loading spinner stops properly
+- Clean, professional user experience
