@@ -834,7 +834,7 @@ const DividendCalendar = () => {
   }, [dataSource]);
 
   const filteredData = useMemo(() => {
-    const now = new Date("2026-01-21");
+    const now = new Date();
     const timeRange = timeRanges.find((t) => t.value === selectedTimeRange);
     const endDate = new Date(now);
     endDate.setDate(endDate.getDate() + (timeRange?.days || 365));
@@ -873,7 +873,7 @@ const DividendCalendar = () => {
           filteredData.length
         : 0;
 
-    const now = new Date("2026-01-21");
+    const now = new Date();
     const weekEnd = new Date(now);
     weekEnd.setDate(weekEnd.getDate() + 7);
     const thisWeekCount = filteredData.filter((entry) => {
@@ -1023,7 +1023,7 @@ const DividendCalendar = () => {
             </div>
 
             {/* Summary Cards */}
-            <div className={`grid gap-4 mb-6 ${user && hasPortfolio ? 'grid-cols-1 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
+            <div className={`grid gap-4 mb-6 ${user && hasPortfolio ? 'grid-cols-1 md:grid-cols-5' : 'grid-cols-1 md:grid-cols-3'}`}>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -1069,11 +1069,11 @@ const DividendCalendar = () => {
                 </CardContent>
               </Card>
 
-              {/* Your Expected Income - only for authenticated users */}
+              {/* Income in Range - only for authenticated users */}
               {user && hasPortfolio && (
                 <Card className="border-green-500/50">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Your Expected Income</CardTitle>
+                    <CardTitle className="text-sm font-medium">Income in Range</CardTitle>
                     <DollarSign className="h-4 w-4 text-green-500" />
                   </CardHeader>
                   <CardContent>
@@ -1081,7 +1081,25 @@ const DividendCalendar = () => {
                       {formatCurrency(stats.totalExpectedIncome)}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      From your portfolio
+                      From filtered payments
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Annual Portfolio Income - only for authenticated users */}
+              {user && hasPortfolio && (
+                <Card className="border-primary/50">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Annual Portfolio Income</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-primary">
+                      {formatCurrency(userStocks.reduce((sum, s) => sum + (Number(s.annual_dividend || 0) * Number(s.shares || 0)), 0))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Total yearly dividends
                     </p>
                   </CardContent>
                 </Card>
