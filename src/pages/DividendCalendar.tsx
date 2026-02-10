@@ -747,7 +747,7 @@ const DividendCalendar = () => {
           return {
             symbol: stock.symbol,
             companyName: stock.company_name || stock.symbol,
-            sector: (stock.sector && stock.sector !== 'ETF') ? stock.sector : 'Unknown',
+            sector: stock.sector || '-',
             frequency: normalizeFrequency(stock.dividend_frequency),
             yield: Number(stock.dividend_yield) || 0,
             dividendAmount: dividendAmount,
@@ -774,7 +774,7 @@ const DividendCalendar = () => {
             return {
               symbol: div.ticker,
               companyName: div.company_name,
-              sector: (div.sector && div.sector !== 'ETF') ? div.sector : 'Unknown',
+              sector: div.sector || '-',
               frequency: div.frequency as "Monthly" | "Quarterly",
               yield: Number(div.dividend_yield),
               dividendAmount: Number(div.dividend_amount),
@@ -822,14 +822,10 @@ const DividendCalendar = () => {
   const dynamicSectors = useMemo(() => {
     const sectorSet = new Set<string>();
     dataSource.forEach(entry => {
-      if (entry.sector && entry.sector !== 'Unknown') {
+      if (entry.sector && entry.sector !== '-') {
         sectorSet.add(entry.sector);
       }
     });
-    // Always include "Unknown" if there are any unknown sectors
-    if (dataSource.some(entry => entry.sector === 'Unknown')) {
-      sectorSet.add('Unknown');
-    }
     return ['All Sectors', ...Array.from(sectorSet).sort()];
   }, [dataSource]);
 
@@ -1187,6 +1183,10 @@ const DividendCalendar = () => {
                 </Table>
               </CardContent>
             </Card>
+
+            <p className="text-xs text-muted-foreground text-center mt-2 mb-6">
+              💡 Tip: Diversify across sectors to reduce risk
+            </p>
 
             {/* Bottom CTA for unauthenticated users */}
             {!user && (
