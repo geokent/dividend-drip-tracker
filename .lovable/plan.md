@@ -1,39 +1,62 @@
 
+# Fix Sector Display Logic in Dividend Calendar
 
-# Fix Dividend Calendar: Correct Date and Add Annual Income
+## Problem
+The code on lines 750 and 777 converts valid "ETF" sector labels to "Unknown", making the Sector column useless for ETF-heavy portfolios. The fix preserves the column and makes it valuable for all users.
 
-## Findings Summary
+## Changes (all in `src/pages/DividendCalendar.tsx`)
 
-1. **Annual dividend data is accurate** -- the math checks out for all active stocks (monthly x12, quarterly x4). Stale entries with 0 shares are already filtered out.
-2. **Duplicate merging works correctly** -- manual + Plaid entries for the same symbol are combined into one calendar row with summed shares/payouts. This is the right behavior for a calendar view.
-3. **Date fix is safe** -- the hardcoded date only affects two filter locations. No other features are impacted.
+### 1. Stop converting "ETF" to "Unknown" (lines 750, 777)
 
----
+**Line 750** (Plaid data path):
+```
+Before: sector: (stock.sector && stock.sector !== 'ETF') ? stock.sector : 'Unknown',
+After:  sector: stock.sector || '-',
+```
 
-## Changes
+**Line 777** (fallback data path):
+```
+Before: sector: (div.sector && div.sector !== 'ETF') ? div.sector : 'Unknown',
+After:  sector: div.sector || '-',
+```
 
-### File: `src/pages/DividendCalendar.tsx`
+This keeps "ETF" as-is, keeps valid sectors like "Real Estate" as-is, and shows "-" for null/empty values.
 
-### 1. Fix Hardcoded Date (2 locations)
+### 2. Update dynamicSectors filter logic (lines 822-834)
 
-Replace `new Date("2026-01-21")` with `new Date()` on lines 837 and 876 so the calendar filters from today's actual date.
+Update to exclude "-" from the filter list (it's a display placeholder, not a filterable category), and stop special-casing "Unknown":
 
-### 2. Add Annual Portfolio Income Stat
+```typescript
+const dynamicSectors = useMemo(() => {
+  const sectorSet = new Set<string>();
+  dataSource.forEach(entry => {
+    if (entry.sector && entry.sector !== '-') {
+      sectorSet.add(entry.sector);
+    }
+  });
+  return ['All Sectors', ...Array.from(sectorSet).sort()];
+}, [dataSource]);
+```
 
-Add a calculation that sums `annual_dividend * shares` across all user stocks (the raw `userStocks` array, before filtering), giving the true yearly income figure. Display this as a new stat card labeled "Annual Portfolio Income."
+This means "ETF" will now appear as a filter option alongside any real sectors.
 
-This uses the already-fetched `userStocks` state, so no additional database queries are needed. The deduplication for the annual total will sum across manual + Plaid entries naturally since both contribute their `annual_dividend * shares`.
+### 3. Add diversification tip below the table (after line 1189)
 
-### 3. Clarify "Your Expected Income" Label
+Add a small tip note after the table card:
 
-Rename the existing "Your Expected Income" card to "Income in Range" so users understand it reflects only the currently filtered time window, not total annual income.
+```tsx
+<p className="text-xs text-muted-foreground text-center mt-2 mb-6">
+  Tip: Diversify across sectors to reduce risk
+</p>
+```
 
----
+## Result
+- ETFs show "ETF" instead of "Unknown"
+- Individual stocks show their real sector (e.g., "Real Estate", "Technology")
+- Null/empty sectors show "-" (clean, not misleading)
+- Sector filter includes "ETF" as a selectable option
+- Users can filter to see only ETFs or only specific sectors
+- Subtle diversification tip added
 
-## Technical Details
-
-- **No database changes** required
-- **No edge function changes** required  
-- Only `src/pages/DividendCalendar.tsx` is modified (3 small edits)
-- Annual income calculation: `userStocks.reduce((sum, s) => sum + (Number(s.annual_dividend || 0) * Number(s.shares || 0)), 0)`
-
+## Files Changed
+- `src/pages/DividendCalendar.tsx` -- 4 small edits
