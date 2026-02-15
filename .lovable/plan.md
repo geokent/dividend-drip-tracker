@@ -1,39 +1,19 @@
 
 
-# Fix: Missing Stock ID in Dashboard Mapping
+# Remove "Refresh Holdings" Button from Portfolio Table
 
 ## Problem
-Two stock mapping locations in `DividendDashboard.tsx` omit `id: stock.id`, causing the edit handler to receive `undefined` and show "Unable to edit stock. Please refresh the page."
+The "Refresh Holdings" button in the Portfolio Holdings card header adds visual clutter, making the top of the card feel too busy.
 
-## Changes (single file: `src/components/DividendDashboard.tsx`)
+## Change
 
-### Edit 1 -- Initial fetch mapping (~line 97)
-```
-Before:
-const formattedStocks = stocks.map(stock => ({
-  symbol: stock.symbol,
-  ...
+### File: `src/components/PortfolioTable.tsx`
 
-After:
-const formattedStocks = stocks.map(stock => ({
-  id: stock.id,
-  symbol: stock.symbol,
-  ...
-```
+Remove the "Refresh Holdings" button block (lines ~176-198) -- the entire `TooltipProvider` wrapper containing the refresh button that appears when `onSyncInvestments && isConnected`.
 
-### Edit 2 -- Sync investments reload mapping (~line 596)
-```
-Before:
-const formattedStocks = fetchedStocks.map(stock => ({
-  symbol: stock.symbol,
-  ...
+The button's props (`onSyncInvestments`, `isSyncing`, `lastSyncedAt`) can optionally be cleaned up from the component interface, but since they may be used elsewhere or re-added later, I will leave the props in place and only remove the rendered button.
 
-After:
-const formattedStocks = fetchedStocks.map(stock => ({
-  id: stock.id,
-  symbol: stock.symbol,
-  ...
-```
-
-No other files or database changes needed. Both edits are single-line additions.
-
+## Result
+- Cleaner, less busy card header
+- Brokerage data still syncs automatically via existing flows
+- No functional loss -- users can still trigger a sync by reconnecting or refreshing the page
