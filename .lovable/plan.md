@@ -1,19 +1,27 @@
 
 
-# Remove "Refresh Holdings" Button from Portfolio Table
+# Fix: "AI-Powered Analysis" Badge Misleading Cursor
 
 ## Problem
-The "Refresh Holdings" button in the Portfolio Holdings card header adds visual clutter, making the top of the card feel too busy.
+The "AI-Powered Analysis BETA" badge at the top of the Income Projections page uses `cursor-help` (the `?` cursor), which implies it is clickable. Users naturally try to click it, but nothing happens -- it is only a tooltip trigger that shows information on hover.
 
-## Change
+## Fix
 
-### File: `src/components/PortfolioTable.tsx`
+### File: `src/pages/FutureIncomeProjects.tsx` (line 668)
 
-Remove the "Refresh Holdings" button block (lines ~176-198) -- the entire `TooltipProvider` wrapper containing the refresh button that appears when `onSyncInvestments && isConnected`.
+Change `cursor-help` to `cursor-default` on the badge's wrapper `div`. This removes the misleading `?` cursor while keeping the hover tooltip fully functional.
 
-The button's props (`onSyncInvestments`, `isSyncing`, `lastSyncedAt`) can optionally be cleaned up from the component interface, but since they may be used elsewhere or re-added later, I will leave the props in place and only remove the rendered button.
+**Before:**
+```
+cursor-help hover:shadow-lg transition-all duration-300 group
+```
+
+**After:**
+```
+cursor-default hover:shadow-lg transition-all duration-300 group
+```
 
 ## Result
-- Cleaner, less busy card header
-- Brokerage data still syncs automatically via existing flows
-- No functional loss -- users can still trigger a sync by reconnecting or refreshing the page
+- The tooltip still appears on hover, explaining what "AI-Powered Analysis" means
+- The cursor no longer suggests the element is clickable
+- No functional changes -- purely a UX improvement
