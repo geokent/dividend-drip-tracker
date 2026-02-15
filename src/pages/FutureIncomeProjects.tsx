@@ -665,7 +665,7 @@ export const FutureIncomeProjects = () => {
           <TooltipProvider>
             <UITooltip>
               <TooltipTrigger asChild>
-                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary/20 via-purple-500/15 to-primary/20 text-primary px-5 py-2.5 rounded-full text-sm font-semibold mb-6 shadow-md border border-primary/20 cursor-help hover:shadow-lg transition-all duration-300 group">
+                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary/20 via-purple-500/15 to-primary/20 text-primary px-5 py-2.5 rounded-full text-sm font-semibold mb-6 shadow-md border border-primary/20 cursor-default hover:shadow-lg transition-all duration-300 group">
                   <div className="relative">
                     <Brain className="h-5 w-5" />
                     <Sparkles className="h-3 w-3 absolute -top-1 -right-1 text-yellow-500 animate-pulse" />
