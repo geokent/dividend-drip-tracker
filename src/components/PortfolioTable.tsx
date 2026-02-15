@@ -200,33 +200,6 @@ export const PortfolioTable = ({
                   size="sm"
                 />
                 
-                {/* Refresh Holdings Button */}
-                {onSyncInvestments && isConnected && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          onClick={onSyncInvestments}
-                          disabled={isSyncing}
-                          size="sm"
-                          variant="outline"
-                          className="gap-2"
-                        >
-                          <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                          Refresh Holdings
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Sync latest share counts from your brokerage</p>
-                        {lastSyncedAt && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Last synced: {formatDistanceToNow(lastSyncedAt, { addSuffix: true })}
-                          </p>
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
               </div>
             </div>
           )}
