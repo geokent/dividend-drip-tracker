@@ -95,6 +95,7 @@ export const DividendDashboard = () => {
 
     if (stocks) {
       const formattedStocks = stocks.map(stock => ({
+        id: stock.id,
         symbol: stock.symbol,
         companyName: stock.company_name || '',
         currentPrice: stock.current_price,
@@ -594,6 +595,7 @@ export const DividendDashboard = () => {
 
       if (stocks) {
         const formattedStocks = stocks.map(stock => ({
+          id: stock.id,
           symbol: stock.symbol,
           companyName: stock.company_name || '',
           currentPrice: stock.current_price,
