@@ -1,62 +1,39 @@
 
-# Fix Sector Display Logic in Dividend Calendar
+
+# Fix: Missing Stock ID in Dashboard Mapping
 
 ## Problem
-The code on lines 750 and 777 converts valid "ETF" sector labels to "Unknown", making the Sector column useless for ETF-heavy portfolios. The fix preserves the column and makes it valuable for all users.
+Two stock mapping locations in `DividendDashboard.tsx` omit `id: stock.id`, causing the edit handler to receive `undefined` and show "Unable to edit stock. Please refresh the page."
 
-## Changes (all in `src/pages/DividendCalendar.tsx`)
+## Changes (single file: `src/components/DividendDashboard.tsx`)
 
-### 1. Stop converting "ETF" to "Unknown" (lines 750, 777)
-
-**Line 750** (Plaid data path):
+### Edit 1 -- Initial fetch mapping (~line 97)
 ```
-Before: sector: (stock.sector && stock.sector !== 'ETF') ? stock.sector : 'Unknown',
-After:  sector: stock.sector || '-',
-```
+Before:
+const formattedStocks = stocks.map(stock => ({
+  symbol: stock.symbol,
+  ...
 
-**Line 777** (fallback data path):
-```
-Before: sector: (div.sector && div.sector !== 'ETF') ? div.sector : 'Unknown',
-After:  sector: div.sector || '-',
-```
-
-This keeps "ETF" as-is, keeps valid sectors like "Real Estate" as-is, and shows "-" for null/empty values.
-
-### 2. Update dynamicSectors filter logic (lines 822-834)
-
-Update to exclude "-" from the filter list (it's a display placeholder, not a filterable category), and stop special-casing "Unknown":
-
-```typescript
-const dynamicSectors = useMemo(() => {
-  const sectorSet = new Set<string>();
-  dataSource.forEach(entry => {
-    if (entry.sector && entry.sector !== '-') {
-      sectorSet.add(entry.sector);
-    }
-  });
-  return ['All Sectors', ...Array.from(sectorSet).sort()];
-}, [dataSource]);
+After:
+const formattedStocks = stocks.map(stock => ({
+  id: stock.id,
+  symbol: stock.symbol,
+  ...
 ```
 
-This means "ETF" will now appear as a filter option alongside any real sectors.
+### Edit 2 -- Sync investments reload mapping (~line 596)
+```
+Before:
+const formattedStocks = fetchedStocks.map(stock => ({
+  symbol: stock.symbol,
+  ...
 
-### 3. Add diversification tip below the table (after line 1189)
-
-Add a small tip note after the table card:
-
-```tsx
-<p className="text-xs text-muted-foreground text-center mt-2 mb-6">
-  Tip: Diversify across sectors to reduce risk
-</p>
+After:
+const formattedStocks = fetchedStocks.map(stock => ({
+  id: stock.id,
+  symbol: stock.symbol,
+  ...
 ```
 
-## Result
-- ETFs show "ETF" instead of "Unknown"
-- Individual stocks show their real sector (e.g., "Real Estate", "Technology")
-- Null/empty sectors show "-" (clean, not misleading)
-- Sector filter includes "ETF" as a selectable option
-- Users can filter to see only ETFs or only specific sectors
-- Subtle diversification tip added
+No other files or database changes needed. Both edits are single-line additions.
 
-## Files Changed
-- `src/pages/DividendCalendar.tsx` -- 4 small edits
