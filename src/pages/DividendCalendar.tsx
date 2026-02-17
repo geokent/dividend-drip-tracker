@@ -893,7 +893,7 @@ const DividendCalendar = () => {
         title="2026 Dividend Calendar - Track Ex-Dividend Dates | DivTrkr"
         description="Complete 2026 dividend calendar with ex-dividend dates, payment dates, and yields for popular dividend stocks. Track your portfolio's dividend income."
         keywords="dividend calendar 2026, ex-dividend dates, dividend payment schedule, dividend tracker, SCHD dividends, dividend income"
-        canonicalUrl="https://divtrkr.lovable.app/dividend-calendar"
+        canonicalUrl="https://www.divtrkr.com/dividend-calendar"
       />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">

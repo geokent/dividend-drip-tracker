@@ -283,7 +283,7 @@ const StockScreener = () => {
         title="Dividend Stock Screener - Find High Yield Dividend Stocks | DivTrkr"
         description="Screen and filter dividend stocks by yield, payout ratio, sector, and growth history. Discover Dividend Aristocrats and Kings."
         keywords="dividend stock screener, high yield stocks, dividend aristocrats, dividend kings, payout ratio, dividend investing"
-        canonicalUrl="https://divtrkr.lovable.app/stock-screener"
+        canonicalUrl="https://www.divtrkr.com/stock-screener"
       />
 
       <PageHeader

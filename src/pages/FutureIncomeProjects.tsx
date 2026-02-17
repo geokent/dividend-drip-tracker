@@ -654,7 +654,7 @@ export const FutureIncomeProjects = () => {
         title="Future Dividend Income Projections - Plan Your Financial Freedom | DivTrkr"
         description="Project your future dividend income with AI-powered analysis. Visualize portfolio growth, estimate passive income, and plan your path to financial independence."
         keywords="dividend projections, future income calculator, dividend growth forecast, passive income planning, portfolio projections, FIRE calculator"
-        canonicalUrl="https://www.divtrkr.com/future-income-projections"
+        canonicalUrl="https://www.divtrkr.com/future-income-projects"
       />
       <Header />
 
