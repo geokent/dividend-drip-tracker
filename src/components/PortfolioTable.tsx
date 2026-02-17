@@ -145,12 +145,52 @@ export const PortfolioTable = ({
   if (stocks.length === 0) {
     return (
       <Card className="shadow-card">
-        <CardContent className="p-8 text-center">
-          <div className="space-y-3">
-            <p className="text-muted-foreground">No dividend stocks in your portfolio yet</p>
-            <p className="text-sm text-muted-foreground">
-              Add stocks manually or connect your brokerage account to get started
-            </p>
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center space-y-6">
+            <div className="text-center space-y-2">
+              <p className="text-lg font-medium text-foreground">No dividend stocks in your portfolio yet</p>
+              <p className="text-sm text-muted-foreground">
+                Add stocks manually, upload a CSV, or connect your brokerage account to get started
+              </p>
+            </div>
+
+            {onStockFound && (
+              <div className="flex flex-col items-center gap-4 w-full max-w-md">
+                {/* Add Stock Form */}
+                <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
+                  <Input
+                    type="text"
+                    placeholder="Enter stock symbol (e.g. AAPL)"
+                    value={symbol}
+                    onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                    className="flex-1"
+                    disabled={isLoading}
+                  />
+                  <Button type="submit" size="sm" disabled={isLoading || !symbol.trim()}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Add Stock
+                  </Button>
+                </form>
+
+                {/* Bulk Upload & Connect Account */}
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <BulkUploadStocksDialog onSuccess={onBulkUploadSuccess} />
+                  <PlaidLinkButton
+                    userId={userId}
+                    onSuccess={onPlaidSuccess}
+                    onDisconnect={() => {
+                      if (connectedItemId && connectedInstitutions && connectedInstitutions.length > 0) {
+                        const institution = connectedInstitutions.find(inst => inst.item_id === connectedItemId);
+                        onPlaidDisconnect?.(connectedItemId, institution?.institution_name || 'Unknown Institution');
+                      }
+                    }}
+                    isConnected={isConnected}
+                    connectedItemId={connectedItemId}
+                    size="sm"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
