@@ -1,25 +1,26 @@
 
 
-# Fix: Empty Dashboard Has No Action Buttons for New Users
+# Fix Canonical URLs and Update Sitemap Dates
 
 ## Problem
-When a new user signs up and lands on the dashboard with zero stocks, the `PortfolioTable` component returns an early empty state that only shows a text message ("No dividend stocks in your portfolio yet"). The stock management controls (Add Stock form, Bulk Upload, Connect Account) are inside the card header that only renders when `stocks.length > 0`. This leaves new users with no way to take action.
-
-## Solution
-Update the empty state in `PortfolioTable` to include functional action buttons for all three ways to add stocks: manual entry, CSV upload, and brokerage connection.
+Google is treating the Lovable subdomain (`divtrkr.lovable.app`) as the canonical version of pages because the SEOHead component explicitly points canonical URLs there. This blocks all indexing on the custom domain `www.divtrkr.com`.
 
 ## Changes
 
-### File: `src/components/PortfolioTable.tsx`
+### 1. `src/pages/StockScreener.tsx` (line 286)
+Change canonical from `https://divtrkr.lovable.app/stock-screener` to `https://www.divtrkr.com/stock-screener`
 
-Replace the empty-state return block (~lines 148-158) with a version that includes the three stock management controls:
+### 2. `src/pages/DividendCalendar.tsx` (line 896)
+Change canonical from `https://divtrkr.lovable.app/dividend-calendar` to `https://www.divtrkr.com/dividend-calendar`
 
-1. **Add Stock form** -- input + button calling the existing `handleSubmit`
-2. **Bulk Upload** -- renders the existing `BulkUploadStocksDialog` component
-3. **Connect Account** -- renders the existing `PlaidLinkButton` component
+### 3. `src/pages/FutureIncomeProjects.tsx` (line 657)
+Fix path typo: change `https://www.divtrkr.com/future-income-projections` to `https://www.divtrkr.com/future-income-projects`
 
-The layout will mirror the controls already shown in the populated card header, presented in a centered, welcoming format so new users immediately see what to do.
+### 4. `public/sitemap.xml` (lines 6, 14, 22, 30)
+Update all four `lastmod` dates from `2026-01-30` to `2026-02-17`
 
-### No other files change
-All props are already passed from `DividendDashboard.tsx` to `PortfolioTable`. The empty state just needs to use them.
+### Not changing (per your instructions)
+- Dashboard stays `noIndex={true}` and disallowed in robots.txt
+- Dashboard stays excluded from sitemap
+- robots.txt stays as-is
 
