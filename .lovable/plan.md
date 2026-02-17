@@ -1,27 +1,25 @@
 
 
-# Fix: "AI-Powered Analysis" Badge Misleading Cursor
+# Fix: Empty Dashboard Has No Action Buttons for New Users
 
 ## Problem
-The "AI-Powered Analysis BETA" badge at the top of the Income Projections page uses `cursor-help` (the `?` cursor), which implies it is clickable. Users naturally try to click it, but nothing happens -- it is only a tooltip trigger that shows information on hover.
+When a new user signs up and lands on the dashboard with zero stocks, the `PortfolioTable` component returns an early empty state that only shows a text message ("No dividend stocks in your portfolio yet"). The stock management controls (Add Stock form, Bulk Upload, Connect Account) are inside the card header that only renders when `stocks.length > 0`. This leaves new users with no way to take action.
 
-## Fix
+## Solution
+Update the empty state in `PortfolioTable` to include functional action buttons for all three ways to add stocks: manual entry, CSV upload, and brokerage connection.
 
-### File: `src/pages/FutureIncomeProjects.tsx` (line 668)
+## Changes
 
-Change `cursor-help` to `cursor-default` on the badge's wrapper `div`. This removes the misleading `?` cursor while keeping the hover tooltip fully functional.
+### File: `src/components/PortfolioTable.tsx`
 
-**Before:**
-```
-cursor-help hover:shadow-lg transition-all duration-300 group
-```
+Replace the empty-state return block (~lines 148-158) with a version that includes the three stock management controls:
 
-**After:**
-```
-cursor-default hover:shadow-lg transition-all duration-300 group
-```
+1. **Add Stock form** -- input + button calling the existing `handleSubmit`
+2. **Bulk Upload** -- renders the existing `BulkUploadStocksDialog` component
+3. **Connect Account** -- renders the existing `PlaidLinkButton` component
 
-## Result
-- The tooltip still appears on hover, explaining what "AI-Powered Analysis" means
-- The cursor no longer suggests the element is clickable
-- No functional changes -- purely a UX improvement
+The layout will mirror the controls already shown in the populated card header, presented in a centered, welcoming format so new users immediately see what to do.
+
+### No other files change
+All props are already passed from `DividendDashboard.tsx` to `PortfolioTable`. The empty state just needs to use them.
+
