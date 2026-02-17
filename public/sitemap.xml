@@ -3,7 +3,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://www.divtrkr.com/</loc>
-    <lastmod>2026-01-30</lastmod>
+    <lastmod>2026-02-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -11,7 +11,7 @@
   <!-- Dividend Calendar -->
   <url>
     <loc>https://www.divtrkr.com/dividend-calendar</loc>
-    <lastmod>2026-01-30</lastmod>
+    <lastmod>2026-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -19,7 +19,7 @@
   <!-- Stock Screener -->
   <url>
     <loc>https://www.divtrkr.com/stock-screener</loc>
-    <lastmod>2026-01-30</lastmod>
+    <lastmod>2026-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -27,7 +27,7 @@
   <!-- Future Income Projections -->
   <url>
     <loc>https://www.divtrkr.com/future-income-projects</loc>
-    <lastmod>2026-01-30</lastmod>
+    <lastmod>2026-02-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
