@@ -1,30 +1,96 @@
 
 
-# Fix: Remove `noindex` Block for Unauthenticated Users on Future Income Projects
+# DividendCoach AI Chat - Full Implementation Plan
 
-## Problem
-When Googlebot (unauthenticated) visits `/future-income-projects`, lines 622-648 of `FutureIncomeProjects.tsx` render a "Sign In Required" card with `noIndex={true}` in the SEOHead. Google sees the `noindex` robots meta tag and refuses to index the page.
+## Overview
+Implement a floating AI chat assistant with server-side rate limiting (5/day), portfolio-aware context, and streaming responses via Lovable AI Gateway.
 
-## Solution
-Replace the current "block unauthenticated users entirely" pattern with a design that shows the full page to everyone, but prompts sign-in inline for personalized data -- similar to how other public pages work.
+## Step 1: Database Migration
 
-### Changes to `src/pages/FutureIncomeProjects.tsx`
+Create `ai_coach_usage` table with performance index and RLS policies:
 
-1. **Remove the early return block** (lines 621-648) that shows "Sign In Required" with `noIndex={true}`
-2. **Keep the main SEOHead** (lines 653-658) which already has the correct indexable metadata and canonical URL
-3. **Add a sign-in prompt inside the page content** (e.g., a banner or card within the existing layout) so unauthenticated visitors see the page structure, headings, and description -- making it indexable -- while being encouraged to sign in for personalized projections
+```sql
+CREATE TABLE public.ai_coach_usage (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  prompt_text text,
+  tokens_estimated integer DEFAULT 0,
+  model text DEFAULT 'google/gemini-3-flash-preview'
+);
 
-### What unauthenticated visitors (and Googlebot) will see
-- The full page layout with Header, page title, and descriptive content
-- The projection tools with default/zero values (since the data-fetching already handles `!user` gracefully by returning empty arrays)
-- A prominent sign-in prompt card encouraging them to log in for personalized results
+ALTER TABLE public.ai_coach_usage ENABLE ROW LEVEL SECURITY;
 
-### What stays the same
-- Authenticated users see their full portfolio data as before
-- The SEOHead with proper canonical URL, title, and description remains unchanged
-- No sensitive data is exposed (empty portfolio for guests)
+CREATE POLICY "Users can view their own usage"
+  ON public.ai_coach_usage FOR SELECT
+  USING (auth.uid() = user_id);
 
-## Technical Detail
+CREATE POLICY "Service role can insert usage"
+  ON public.ai_coach_usage FOR INSERT
+  WITH CHECK ((auth.jwt() ->> 'role') = 'service_role');
 
-The `!user` early return at line 622 will be removed. Instead, within the main render, we will add a conditional banner/card (visible only when `!user`) that says something like "Sign in to see your personalized projections" with a link to the home/auth page. The rest of the page renders normally with zeroed-out data.
+CREATE INDEX idx_ai_coach_usage_user_date
+  ON public.ai_coach_usage(user_id, created_at DESC);
+```
+
+## Step 2: Edge Function - `supabase/functions/dividend-coach/index.ts`
+
+- CORS headers
+- JWT validation via `getClaims()`
+- Create service_role Supabase client
+- Count today's usage for user; reject if >= 5 with `{ error: "limit_reached", remaining: 0 }`
+- Fetch user's `user_stocks` server-side for portfolio context
+- Insert usage row
+- Build system prompt with portfolio context injected
+- Stream SSE from Lovable AI Gateway (`google/gemini-3-flash-preview`)
+- Handle 429/402 errors from gateway
+
+## Step 3: Update `supabase/config.toml`
+
+Add:
+```toml
+[functions.dividend-coach]
+verify_jwt = false
+```
+
+## Step 4: Create `src/components/DividendCoach.tsx`
+
+Single-file component containing:
+
+**State**: messages array, isLoading, isOpen, remainingQuestions (default 5), portfolioSummary
+
+**On mount effects**:
+- Fetch today's usage count from `ai_coach_usage`
+- Fetch portfolio summary (stock count + avg yield) from `user_stocks`
+
+**Floating button**: Fixed bottom-6 right-6, z-50, Sparkles icon + "AI Coach", pulse animation, only shown when authenticated
+
+**Chat panel** (~400x520px, full-width on mobile):
+- Header: title, portfolio summary, remaining badge (X/5), close button
+- Welcome message with Bot icon, personalized greeting, portfolio stats
+- 4 quick action buttons (context-aware based on portfolio presence)
+- Message bubbles with avatars (User/Bot icons)
+- Typing indicator (animated dots)
+- SSE streaming with line-by-line parsing for token-by-token rendering
+- Input bar disabled while loading
+- Limit reached state replacing input with upgrade CTA to /pricing
+- Error handling with specific messages for 429, 401, generic errors
+
+**Quick action buttons**:
+- With portfolio: FIRE Timeline, Portfolio Analysis, Get Recommendations, Safety Check
+- Without portfolio: FIRE Number, SCHD vs JEPI, Growth vs Yield, Retire at 55
+
+## Step 5: Update `src/App.tsx`
+
+Import and render `<DividendCoach />` inside `AuthProvider` but outside `Routes`.
+
+## File Summary
+
+| File | Action |
+|------|--------|
+| Database migration (ai_coach_usage + index + RLS) | Create |
+| `supabase/functions/dividend-coach/index.ts` | Create |
+| `supabase/config.toml` | Edit (add function entry) |
+| `src/components/DividendCoach.tsx` | Create |
+| `src/App.tsx` | Edit (add DividendCoach) |
 
