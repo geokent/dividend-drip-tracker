@@ -1,26 +1,29 @@
 
 
-# Fix Canonical URLs and Update Sitemap Dates
+# Make Future Income Projects Page Publicly Accessible
 
-## Problem
-Google is treating the Lovable subdomain (`divtrkr.lovable.app`) as the canonical version of pages because the SEOHead component explicitly points canonical URLs there. This blocks all indexing on the custom domain `www.divtrkr.com`.
+## Change
 
-## Changes
+Remove the `<ProtectedRoute>` wrapper from the `/future-income-projects` route in `src/App.tsx` so Googlebot (and unauthenticated visitors) can access the page.
 
-### 1. `src/pages/StockScreener.tsx` (line 286)
-Change canonical from `https://divtrkr.lovable.app/stock-screener` to `https://www.divtrkr.com/stock-screener`
+### `src/App.tsx` (lines 44-46)
 
-### 2. `src/pages/DividendCalendar.tsx` (line 896)
-Change canonical from `https://divtrkr.lovable.app/dividend-calendar` to `https://www.divtrkr.com/dividend-calendar`
+**Before:**
+```tsx
+<Route path="/future-income-projects" element={
+  <ProtectedRoute>
+    <FutureIncomeProjects />
+  </ProtectedRoute>
+} />
+```
 
-### 3. `src/pages/FutureIncomeProjects.tsx` (line 657)
-Fix path typo: change `https://www.divtrkr.com/future-income-projections` to `https://www.divtrkr.com/future-income-projects`
+**After:**
+```tsx
+<Route path="/future-income-projects" element={<FutureIncomeProjects />} />
+```
 
-### 4. `public/sitemap.xml` (lines 6, 14, 22, 30)
-Update all four `lastmod` dates from `2026-01-30` to `2026-02-17`
-
-### Not changing (per your instructions)
-- Dashboard stays `noIndex={true}` and disallowed in robots.txt
-- Dashboard stays excluded from sitemap
-- robots.txt stays as-is
+## Why this is safe
+- The component already checks for `user` and gracefully handles `null` (skips DB queries, shows zeroed-out projection tools)
+- No sensitive data is exposed to unauthenticated visitors
+- Matches the pattern used by `/dividend-calendar` and `/stock-screener`
 
