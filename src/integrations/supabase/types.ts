@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_coach_usage: {
+        Row: {
+          created_at: string
+          id: string
+          model: string | null
+          prompt_text: string | null
+          tokens_estimated: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt_text?: string | null
+          tokens_estimated?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt_text?: string | null
+          tokens_estimated?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author_id: string

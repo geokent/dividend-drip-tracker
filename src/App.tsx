@@ -15,6 +15,7 @@ import { FutureIncomeProjects } from "./pages/FutureIncomeProjects";
 import { DividendDashboard } from "@/components/DividendDashboard";
 import DividendCalendar from "./pages/DividendCalendar";
 import StockScreener from "./pages/StockScreener";
+import { DividendCoach } from "@/components/DividendCoach";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => {
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <DividendCoach />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
