@@ -37,11 +37,7 @@ const App = () => {
                 } />
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/future-income-projects" element={
-                  <ProtectedRoute>
-                    <FutureIncomeProjects />
-                  </ProtectedRoute>
-                } />
+                <Route path="/future-income-projects" element={<FutureIncomeProjects />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/dividend-calendar" element={<DividendCalendar />} />
