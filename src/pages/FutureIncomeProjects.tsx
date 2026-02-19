@@ -618,36 +618,6 @@ export const FutureIncomeProjects = () => {
     return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
   };
 
-  // Redirect to login if not authenticated
-  if (!user) {
-    return (
-      <>
-        <SEOHead
-          title="Sign In Required | DivTrkr"
-          description="Please sign in to access your dividend projections"
-          noIndex={true}
-        />
-        <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <CardTitle>Sign In Required</CardTitle>
-              <CardDescription>
-                Please sign in to access your dividend projections
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild className="w-full">
-                <Link to="/">
-                  Go to Home Page
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -657,6 +627,22 @@ export const FutureIncomeProjects = () => {
         canonicalUrl="https://www.divtrkr.com/future-income-projects"
       />
       <Header />
+
+      {!user && (
+        <div className="container pt-8">
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
+              <div className="space-y-1 text-center sm:text-left">
+                <p className="font-semibold text-foreground">Sign in to see your personalized projections</p>
+                <p className="text-sm text-muted-foreground">Connect your portfolio to get accurate dividend income forecasts based on your holdings.</p>
+              </div>
+              <Button asChild className="shrink-0">
+                <Link to="/">Sign In</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="container section-y space-y-8">
         
