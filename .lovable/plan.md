@@ -1,22 +1,14 @@
 
 
-# Vercel Migration - Phase 1
+# Vercel Migration - Phase 1 Implementation
 
-## Current State
-- **`package.json`**: Already has the required `dev`, `build`, and `preview` scripts. No changes needed.
-- **`vercel.json`**: Already exists but contains a complex configuration with Prerender.io bot rewrites, legacy `routes` syntax, and custom headers. This needs to be **replaced** with your simplified version.
-
-## Important Note on Git Branches
-Lovable has **experimental, limited** support for Git branches. To use this feature, you need to enable it first:
-1. Go to **Account Settings > Labs**
-2. Enable **GitHub Branch Switching**
-
-If branch switching is not enabled, changes will go directly to your default branch. Alternatively, you could create the branch and make these changes directly in GitHub/your local IDE, which gives you full Git control.
+## Branch
+All changes will be made on the current branch: `feature/vercel-migration-phase1`
 
 ## Changes
 
 ### 1. Replace `vercel.json`
-The current file has Prerender.io rewrites, legacy Vercel `routes` array, and security headers. Replace the entire file with the minimal SPA config:
+Replace the entire file with the minimal Vite SPA config:
 
 ```text
 {
@@ -32,27 +24,22 @@ The current file has Prerender.io rewrites, legacy Vercel `routes` array, and se
 }
 ```
 
-Key differences from the current file:
-- Removes the Prerender.io bot-specific rewrite (will be revisited in Phase 2)
-- Removes legacy `routes` array in favor of the modern `rewrites` syntax
-- Removes custom security headers (can be re-added in Phase 2 using the `headers` key)
-- Adds `"framework": "vite"` to help Vercel auto-detect the project type
+This removes:
+- Prerender.io bot rewrites
+- Legacy `routes` array
+- Custom security headers
 
-### 2. `package.json` -- No Changes Needed
-The required scripts already exist:
-- `"dev": "vite"`
-- `"build": "vite build"`
-- `"preview": "vite preview"`
+These can be re-added in Phase 2 after confirming the basic deployment works.
 
-### 3. `vite.config.ts` -- No Changes (per your instructions)
-No pre-rendering plugins will be added in this phase.
+### 2. `package.json` -- No Changes
+The required Vite scripts (`dev`, `build`, `preview`) already exist.
+
+### 3. `vite.config.ts` -- No Changes
+No pre-rendering plugins in this phase.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
 | `vercel.json` | Replace with minimal Vite SPA config |
-
-## What You Lose Temporarily
-The current `vercel.json` includes Prerender.io bot rewrites and security headers. These are removed in Phase 1 for a clean baseline. Plan to re-add them in Phase 2 after confirming the basic Vercel deployment works.
 
