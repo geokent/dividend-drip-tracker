@@ -36,8 +36,26 @@ export const DividendCoach = () => {
   const [remainingQuestions, setRemainingQuestions] = useState(5);
   const [portfolioSummary, setPortfolioSummary] = useState<{ count: number; avgYield: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showNudge, setShowNudge] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-open on first visit, tooltip nudge on return visits
+  useEffect(() => {
+    if (!user) return;
+    if (!localStorage.getItem('dividendCoachSeen')) {
+      setIsOpen(true);
+      localStorage.setItem('dividendCoachSeen', 'true');
+      setTimeout(() => inputRef.current?.focus(), 100);
+    } else if (!sessionStorage.getItem('coachNudgeDismissed')) {
+      setShowNudge(true);
+      const timer = setTimeout(() => {
+        setShowNudge(false);
+        sessionStorage.setItem('coachNudgeDismissed', 'true');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   // Fetch usage + portfolio on mount
   useEffect(() => {
@@ -215,13 +233,30 @@ export const DividendCoach = () => {
     <>
       {/* Floating button */}
       {!isOpen && (
-        <button
-          onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 100); }}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-primary-foreground shadow-lg hover:bg-primary/90 transition-all animate-pulse hover:animate-none"
-        >
-          <Sparkles className="h-5 w-5" />
-          <span className="font-medium text-sm">AI Coach</span>
-        </button>
+        <div className="fixed bottom-6 right-6 z-50">
+          {/* Nudge tooltip */}
+          {showNudge && (
+            <button
+              onClick={() => {
+                setShowNudge(false);
+                sessionStorage.setItem('coachNudgeDismissed', 'true');
+                setIsOpen(true);
+                setTimeout(() => inputRef.current?.focus(), 100);
+              }}
+              className="absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-lg border border-border bg-card/95 backdrop-blur-sm px-4 py-2.5 text-sm text-foreground shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-300"
+            >
+              <span>💡 Need portfolio help? Ask me!</span>
+              <div className="absolute -bottom-1.5 right-6 h-3 w-3 rotate-45 border-b border-r border-border bg-card/95" />
+            </button>
+          )}
+          <button
+            onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 100); }}
+            className="flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.4)] ring-2 ring-primary/30 hover:bg-primary/90 transition-all animate-coach-glow hover:animate-none"
+          >
+            <Sparkles className="h-5 w-5" />
+            <span className="font-medium text-sm">AI Coach</span>
+          </button>
+        </div>
       )}
 
       {/* Chat panel */}
