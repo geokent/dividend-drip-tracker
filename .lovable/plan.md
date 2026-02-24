@@ -1,58 +1,67 @@
 
 
-# Vercel Migration - Phase 1
+# Cleanup: Remove Pre-rendering, Restore Static SEO
 
-## Current State
-- **`package.json`**: Already has the required `dev`, `build`, and `preview` scripts. No changes needed.
-- **`vercel.json`**: Already exists but contains a complex configuration with Prerender.io bot rewrites, legacy `routes` syntax, and custom headers. This needs to be **replaced** with your simplified version.
-
-## Important Note on Git Branches
-Lovable has **experimental, limited** support for Git branches. To use this feature, you need to enable it first:
-1. Go to **Account Settings > Labs**
-2. Enable **GitHub Branch Switching**
-
-If branch switching is not enabled, changes will go directly to your default branch. Alternatively, you could create the branch and make these changes directly in GitHub/your local IDE, which gives you full Git control.
+## Overview
+Remove all `vite-prerender-plugin` infrastructure and revert to a simple static meta tag approach in `index.html`. This eliminates build complexity while maintaining consistent SEO metadata.
 
 ## Changes
 
-### 1. Replace `vercel.json`
-The current file has Prerender.io rewrites, legacy Vercel `routes` array, and security headers. Replace the entire file with the minimal SPA config:
+### 1. Remove `vite-prerender-plugin` from `package.json`
+Remove `vite-prerender-plugin` from devDependencies.
 
+### 2. Restore clean `vite.config.ts`
+- Remove the `vitePrerenderPlugin` import and plugin config
+- Keep `componentTagger` for dev mode
+- Result: standard Vite + React config with no prerendering
+
+### 3. Delete `src/prerender.tsx` and `src/seoData.ts`
+These files were created for the prerender plugin and are no longer needed.
+
+### 4. Restore `src/main.tsx`
+Revert from the hydration logic back to simple `createRoot().render()`:
+```text
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
+```
+
+### 5. Update `vercel.json`
+Replace with clean config including SPA rewrites and security headers:
 ```text
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "headers": [{
+    "source": "/(.*)",
+    "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "X-Frame-Options", "value": "DENY" },
+      { "key": "X-XSS-Protection", "value": "1; mode=block" }
+    ]
+  }]
 }
 ```
 
-Key differences from the current file:
-- Removes the Prerender.io bot-specific rewrite (will be revisited in Phase 2)
-- Removes legacy `routes` array in favor of the modern `rewrites` syntax
-- Removes custom security headers (can be re-added in Phase 2 using the `headers` key)
-- Adds `"framework": "vite"` to help Vercel auto-detect the project type
+### 6. Update `index.html` meta tags
+Replace the existing SEO meta tags in `<head>` with the user-specified static tags. Key changes:
+- Description updated to FIRE-focused copy
+- Canonical set to `https://www.divtrkr.com`
+- OG and Twitter images point to `/og-image.png`
+- Existing title, favicon, fonts, PWA manifest, AdSense, structured data, and noscript block remain unchanged
 
-### 2. `package.json` -- No Changes Needed
-The required scripts already exist:
-- `"dev": "vite"`
-- `"build": "vite build"`
-- `"preview": "vite preview"`
-
-### 3. `vite.config.ts` -- No Changes (per your instructions)
-No pre-rendering plugins will be added in this phase.
+**Note:** The `og:image` and `twitter:image` reference `/og-image.png`. If this file doesn't exist in `public/`, those tags will point to a 404. The existing favicon PNG could be used as a fallback if needed.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `vercel.json` | Replace with minimal Vite SPA config |
-
-## What You Lose Temporarily
-The current `vercel.json` includes Prerender.io bot rewrites and security headers. These are removed in Phase 1 for a clean baseline. Plan to re-add them in Phase 2 after confirming the basic Vercel deployment works.
+| `package.json` | Remove `vite-prerender-plugin` |
+| `vite.config.ts` | Remove prerender plugin, restore clean config |
+| `src/prerender.tsx` | **Delete** |
+| `src/seoData.ts` | **Delete** |
+| `src/main.tsx` | Revert to simple `createRoot` |
+| `vercel.json` | Add security headers |
+| `index.html` | Update meta tags to static SEO values |
 
