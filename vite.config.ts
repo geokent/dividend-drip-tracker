@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     mode === 'production' && vitePrerenderPlugin({
       renderTarget: '#root',
+      prerenderScript: path.resolve(__dirname, 'src/prerender.tsx'),
       additionalPrerenderRoutes: [
         '/',
         '/dividend-calendar',
