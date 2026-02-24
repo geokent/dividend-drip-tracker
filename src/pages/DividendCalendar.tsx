@@ -890,8 +890,8 @@ const DividendCalendar = () => {
   return (
     <AppLayout>
       <SEOHead
-        title="2026 Dividend Calendar - Track Ex-Dividend Dates | DivTrkr"
-        description="Complete 2026 dividend calendar with ex-dividend dates, payment dates, and yields for popular dividend stocks. Track your portfolio's dividend income."
+        title="Free Dividend Calendar 2026 - Ex-Dividend Dates & Payment Schedule | DivTrkr"
+        description="Track upcoming ex-dividend dates and payment schedules for 150+ dividend stocks. Free dividend calendar for income investors. Never miss a dividend payment."
         keywords="dividend calendar 2026, ex-dividend dates, dividend payment schedule, dividend tracker, SCHD dividends, dividend income"
         canonicalUrl="https://www.divtrkr.com/dividend-calendar"
       />

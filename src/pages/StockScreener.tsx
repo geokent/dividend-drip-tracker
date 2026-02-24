@@ -280,8 +280,8 @@ const StockScreener = () => {
   return (
     <AppLayout>
       <SEOHead
-        title="Dividend Stock Screener - Find High Yield Dividend Stocks | DivTrkr"
-        description="Screen and filter dividend stocks by yield, payout ratio, sector, and growth history. Discover Dividend Aristocrats and Kings."
+        title="Free Dividend Stock Screener - Filter by Yield, Payout Ratio & Growth | DivTrkr"
+        description="Screen 150+ dividend stocks by yield, payout ratio, dividend growth rate, and more. Find your next income investment. Free stock screener for dividend investors."
         keywords="dividend stock screener, high yield stocks, dividend aristocrats, dividend kings, payout ratio, dividend investing"
         canonicalUrl="https://www.divtrkr.com/stock-screener"
       />
