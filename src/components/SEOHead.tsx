@@ -54,6 +54,12 @@ export const SEOHead = ({
     updateMetaTag('og:image', ogImage, true);
     updateMetaTag('og:type', 'website', true);
     
+    // Twitter Card tags
+    updateMetaTag('twitter:card', 'summary_large_image');
+    updateMetaTag('twitter:title', title);
+    updateMetaTag('twitter:description', description);
+    updateMetaTag('twitter:image', ogImage);
+    updateMetaTag('twitter:url', canonicalUrl);
     
     // Canonical URL
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -66,13 +72,14 @@ export const SEOHead = ({
     
     // Structured Data
     if (structuredData) {
+      const dataWithUrl = { ...structuredData, url: canonicalUrl };
       let script = document.querySelector('script[type="application/ld+json"]');
       if (!script) {
         script = document.createElement('script');
         script.setAttribute('type', 'application/ld+json');
         document.head.appendChild(script);
       }
-      script.textContent = JSON.stringify(structuredData);
+      script.textContent = JSON.stringify(dataWithUrl);
     }
     
   }, [title, description, keywords, canonicalUrl, ogImage, structuredData]);
