@@ -1,45 +1,42 @@
 
 
-# Vercel Migration - Phase 1 Implementation
+# Phase 2: Pre-rendering for SEO
 
 ## Branch
-All changes will be made on the current branch: `feature/vercel-migration-phase1`
+`feature/vercel-migration-phase1` (current branch)
 
 ## Changes
 
-### 1. Replace `vercel.json`
-Replace the entire file with the minimal Vite SPA config:
-
+### 1. Install `vite-plugin-prerender`
+Add as a dev dependency:
 ```text
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
-}
+npm install -D vite-plugin-prerender
 ```
 
-This removes:
-- Prerender.io bot rewrites
-- Legacy `routes` array
-- Custom security headers
+### 2. Update `vite.config.ts`
+Replace the entire file with the user-provided configuration that adds `PrerenderSPAPlugin` for production builds only.
 
-These can be re-added in Phase 2 after confirming the basic deployment works.
+Pre-rendered routes:
+- `/`
+- `/dividend-calendar`
+- `/stock-screener`
+- `/future-income-projects`
+- `/terms`
+- `/privacy`
 
-### 2. `package.json` -- No Changes
-The required Vite scripts (`dev`, `build`, `preview`) already exist.
+The plugin will wait 500ms (`renderAfterTime`) for the `SEOHead` component to update meta tags before capturing each page's static HTML.
 
-### 3. `vite.config.ts` -- No Changes
-No pre-rendering plugins in this phase.
+### 3. No other files modified
+- `vercel.json` -- no changes (already updated in Phase 1)
+- `package.json` -- only the new dev dependency added automatically
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `vercel.json` | Replace with minimal Vite SPA config |
+| `package.json` | Add `vite-plugin-prerender` as devDependency |
+| `vite.config.ts` | Add `PrerenderSPAPlugin` import and plugin config for production mode |
+
+## How It Works
+During `vite build`, the plugin spins up a headless browser, navigates to each listed route, waits 500ms for client-side meta tags to render, then saves the fully-rendered HTML as static files. Vercel serves these static HTML files to bots and crawlers, ensuring correct per-page SEO metadata.
 
