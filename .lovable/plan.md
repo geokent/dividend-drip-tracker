@@ -1,57 +1,58 @@
 
 
-# Add Static Prerendering with vite-plugin-prerender
+# Vercel Migration - Phase 1
 
-## What This Does
-During `npm run build`, the plugin launches a headless browser, visits each listed route, waits for your React app (including `SEOHead`) to render, then saves the fully-rendered HTML. Crawlers and social media scrapers will see the correct per-page title, description, canonical URL, and OG tags without needing to execute JavaScript.
+## Current State
+- **`package.json`**: Already has the required `dev`, `build`, and `preview` scripts. No changes needed.
+- **`vercel.json`**: Already exists but contains a complex configuration with Prerender.io bot rewrites, legacy `routes` syntax, and custom headers. This needs to be **replaced** with your simplified version.
 
-## Important Caveat
-**Lovable Cloud builds may not support this plugin** because prerendering requires launching a headless Chromium instance during `vite build`. If the Lovable build environment doesn't have Chromium available, the build will fail. This will work perfectly on your local machine or any CI/CD pipeline (GitHub Actions, Vercel, etc.) where a headless browser is available. If the Lovable Cloud build fails after this change, you'd need to build and deploy externally (which you already do via `deploy.sh` / Firebase).
+## Important Note on Git Branches
+Lovable has **experimental, limited** support for Git branches. To use this feature, you need to enable it first:
+1. Go to **Account Settings > Labs**
+2. Enable **GitHub Branch Switching**
+
+If branch switching is not enabled, changes will go directly to your default branch. Alternatively, you could create the branch and make these changes directly in GitHub/your local IDE, which gives you full Git control.
 
 ## Changes
 
-### 1. `package.json` -- Add devDependency
-Add `"vite-plugin-prerender": "^1.0.7"` to `devDependencies`. This is the latest stable release from the Rudeus3Greyrat package, which supports Vite 2+ and any framework.
-
-### 2. `vite.config.ts` -- Add prerender plugin for production builds
-Import and configure the plugin to prerender the 6 public routes only during production builds (`mode === 'production'`).
-
-**Routes to prerender:**
-- `/`
-- `/dividend-calendar`
-- `/stock-screener`
-- `/future-income-projects`
-- `/terms`
-- `/privacy`
-
-**Configuration:**
-- `staticDir`: points to `path.resolve(__dirname, 'dist')` (Vite's output directory)
-- `routes`: the 6 routes listed above
-- `renderer`: uses `PuppeteerRenderer` with `renderAfterTime: 500` to allow the `SEOHead` component's `useEffect` to fire before capturing HTML
+### 1. Replace `vercel.json`
+The current file has Prerender.io rewrites, legacy Vercel `routes` array, and security headers. Replace the entire file with the minimal SPA config:
 
 ```text
-import vitePrerender from 'vite-plugin-prerender';
-const Renderer = vitePrerender.PuppeteerRenderer;
-
-// Inside plugins array:
-mode === 'production' && vitePrerender({
-  staticDir: path.resolve(__dirname, 'dist'),
-  routes: ['/', '/dividend-calendar', '/stock-screener', '/future-income-projects', '/terms', '/privacy'],
-  renderer: new Renderer({
-    renderAfterTime: 500
-  })
-})
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
 ```
 
-The existing `.filter(Boolean)` already handles the conditional inclusion.
+Key differences from the current file:
+- Removes the Prerender.io bot-specific rewrite (will be revisited in Phase 2)
+- Removes legacy `routes` array in favor of the modern `rewrites` syntax
+- Removes custom security headers (can be re-added in Phase 2 using the `headers` key)
+- Adds `"framework": "vite"` to help Vercel auto-detect the project type
+
+### 2. `package.json` -- No Changes Needed
+The required scripts already exist:
+- `"dev": "vite"`
+- `"build": "vite build"`
+- `"preview": "vite preview"`
+
+### 3. `vite.config.ts` -- No Changes (per your instructions)
+No pre-rendering plugins will be added in this phase.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `package.json` | Add `vite-plugin-prerender: ^1.0.7` to devDependencies |
-| `vite.config.ts` | Import and configure prerender plugin for production builds |
+| `vercel.json` | Replace with minimal Vite SPA config |
 
-## No Other Files Changed
-The existing `SEOHead` component already injects the correct per-page meta tags at runtime. The prerender plugin simply captures that rendered state into static HTML files, so no changes are needed to any page components.
+## What You Lose Temporarily
+The current `vercel.json` includes Prerender.io bot rewrites and security headers. These are removed in Phase 1 for a clean baseline. Plan to re-add them in Phase 2 after confirming the basic Vercel deployment works.
 
