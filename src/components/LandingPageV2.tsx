@@ -274,6 +274,9 @@ const LandingPageV2 = () => {
                   portfolio, project future income, and see your path to financial
                   independence.
                 </p>
+                <p className="text-sm text-muted-foreground max-w-lg border-l-2 border-primary/30 pl-3">
+                  <strong>FIRE</strong> (Financial Independence, Retire Early) is a movement dedicated to extreme saving and investment to enable early retirement.
+                </p>
               </div>
 
               {/* 4 Key Features */}
@@ -327,7 +330,7 @@ const LandingPageV2 = () => {
                   <CardDescription>Find out when you can retire</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label htmlFor="annual-income">Current Annual Income ($)</Label>
                     <Input
                       id="annual-income"
@@ -337,8 +340,9 @@ const LandingPageV2 = () => {
                       onChange={(e) => setAnnualIncome(e.target.value)}
                       min="0"
                     />
+                    <p className="text-xs text-muted-foreground">Enter your total annual income from all sources.</p>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label htmlFor="passive-income">Desired Annual Passive Income ($)</Label>
                     <Input
                       id="passive-income"
@@ -348,6 +352,7 @@ const LandingPageV2 = () => {
                       onChange={(e) => setDesiredPassiveIncome(e.target.value)}
                       min="0"
                     />
+                    <p className="text-xs text-muted-foreground">The annual passive income you'd need to cover expenses.</p>
                   </div>
                   <Button size="lg" className="w-full" onClick={handleCalculate}>
                     Calculate Your FIRE Date — Free
@@ -363,6 +368,9 @@ const LandingPageV2 = () => {
                         <p className="text-3xl font-bold gradient-text">
                           ${fireResult.targetPortfolio.toLocaleString()}
                         </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          (${Math.round(fireResult.targetPortfolio / 12).toLocaleString()}/month in withdrawals)
+                        </p>
                       </div>
                       <div className="bg-accent/10 rounded-lg p-4">
                         <p className="text-sm text-muted-foreground mb-1">Estimated Timeline</p>
@@ -371,9 +379,14 @@ const LandingPageV2 = () => {
                             100+ years — consider increasing your savings rate.
                           </p>
                         ) : (
-                          <p className="text-2xl font-bold text-primary">
-                            ~{fireResult.years} years <span className="text-base font-normal text-muted-foreground">(by {fireResult.fireYear})</span>
-                          </p>
+                          <>
+                            <p className="text-2xl font-bold text-primary">
+                              ~{fireResult.years} years <span className="text-base font-normal text-muted-foreground">(by {fireResult.fireYear})</span>
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Equivalent to ${Math.round(parseFloat(desiredPassiveIncome) / 12).toLocaleString()}/month passive income
+                            </p>
+                          </>
                         )}
                       </div>
                       <Button
