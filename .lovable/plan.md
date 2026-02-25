@@ -1,67 +1,93 @@
 
-
-# Cleanup: Remove Pre-rendering, Restore Static SEO
+# Redesign Homepage Hero: Replace Auth Form with FIRE Calculator
 
 ## Overview
-Remove all `vite-prerender-plugin` infrastructure and revert to a simple static meta tag approach in `index.html`. This eliminates build complexity while maintaining consistent SEO metadata.
+Replace the authentication form in the hero section's right column (`lg:col-span-2`) with an inline FIRE calculator. Includes robust input validation and displays the target portfolio size alongside years-to-FIRE.
 
-## Changes
+## Changes to `src/components/LandingPageV2.tsx`
 
-### 1. Remove `vite-prerender-plugin` from `package.json`
-Remove `vite-prerender-plugin` from devDependencies.
+### 1. Remove auth-related state and handlers
+**Remove** these state variables and functions:
+- `isSignUp`, `email`, `password`, `displayName`, `showPassword`, `isLoading`, `showEmailVerification`
+- `handleSignUp`, `handleSignIn` functions
+- `cleanupAuthState` helper (top-level function)
 
-### 2. Restore clean `vite.config.ts`
-- Remove the `vitePrerenderPlugin` import and plugin config
-- Keep `componentTagger` for dev mode
-- Result: standard Vite + React config with no prerendering
+**Remove** unused imports: `Eye`, `EyeOff`, `Loader2`, `supabase` client import
 
-### 3. Delete `src/prerender.tsx` and `src/seoData.ts`
-These files were created for the prerender plugin and are no longer needed.
+**Keep**: `useAuth` (for redirect-to-dashboard logic), `useNavigate`, `useToast`
 
-### 4. Restore `src/main.tsx`
-Revert from the hydration logic back to simple `createRoot().render()`:
+### 2. Add FIRE calculator state
 ```text
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
+const [annualIncome, setAnnualIncome] = useState("");
+const [desiredPassiveIncome, setDesiredPassiveIncome] = useState("");
+const [fireResult, setFireResult] = useState<{
+  years: number;
+  targetPortfolio: number;
+  fireYear: number;
+} | null>(null);
 ```
 
-### 5. Update `vercel.json`
-Replace with clean config including SPA rewrites and security headers:
+### 3. Calculation logic with input validation
+The `handleCalculate` function will:
+- Parse both inputs as numbers
+- **Validate**: both must be positive numbers (> 0)
+- **Validate**: desired passive income must be reasonable (cap at some upper bound isn't needed, but guard against zero/negative)
+- Calculate target portfolio using the 4% rule: `targetPortfolio = desiredPassiveIncome * 25`
+- Assume 20% savings rate and 7% annual return
+- Use compound growth: `years = ln((target * r / annualSavings) + 1) / ln(1 + r)` where `r = 0.07` and `annualSavings = annualIncome * 0.20`
+- **Guard against edge cases**:
+  - If annual savings is 0 or negative: show toast error "Please enter a positive income"
+  - If the formula produces NaN, Infinity, or negative: show a fallback message like "With these inputs, you may need to increase your savings rate"
+  - Cap displayed years at 100 ("100+ years")
+- Store `{ years, targetPortfolio, fireYear: currentYear + years }`
+
+### 4. Replace the right-column auth Card (lines ~394-513)
+Delete the entire `lg:col-span-2` div with the auth Card. Replace with:
+
 ```text
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "headers": [{
-    "source": "/(.*)",
-    "headers": [
-      { "key": "X-Content-Type-Options", "value": "nosniff" },
-      { "key": "X-Frame-Options", "value": "DENY" },
-      { "key": "X-XSS-Protection", "value": "1; mode=block" }
-    ]
-  }]
-}
+Card with shadow-xl:
+  Header: "See Your FIRE Date" / "Find out when you can retire"
+  Content:
+    - Label + Input: "Current Annual Income ($)" placeholder "80,000"
+    - Label + Input: "Desired Annual Passive Income ($)" placeholder "50,000"
+    - Button size="lg" full-width: "Calculate Your FIRE Date -- Free"
+    - Disclaimer text: "No credit card required. Always free."
+
+  When fireResult is set, show below the button:
+    - Highlighted box (bg-primary/5): 
+      "Your FIRE Number: $X" (targetPortfolio formatted with commas)
+    - Second highlighted box (bg-accent/10):
+      "You could reach FIRE in ~X years (by [year])!"
+    - If years > 100: "At current rates, FIRE is 100+ years away. Consider increasing your savings rate."
+    - CTA Button linking to /auth: "Save Your Plan -- Create Free Account" with ArrowRight icon
 ```
 
-### 6. Update `index.html` meta tags
-Replace the existing SEO meta tags in `<head>` with the user-specified static tags. Key changes:
-- Description updated to FIRE-focused copy
-- Canonical set to `https://www.divtrkr.com`
-- OG and Twitter images point to `/og-image.png`
-- Existing title, favicon, fonts, PWA manifest, AdSense, structured data, and noscript block remain unchanged
+### 5. Header Sign In button
+Change the header `Button` `onClick` from `() => setIsSignUp(false)` to `() => navigate("/auth")`.
 
-**Note:** The `og:image` and `twitter:image` reference `/og-image.png`. If this file doesn't exist in `public/`, those tags will point to a 404. The existing favicon PNG could be used as a fallback if needed.
+### 6. Remove other auth toggle references
+The bottom of the auth card has "Already have an account? Sign in" / "Don't have an account? Sign up" toggle buttons -- these will be removed along with the auth card.
+
+## Input Validation Summary
+
+| Edge Case | Handling |
+|-----------|----------|
+| Empty fields | Show toast: "Please fill in both fields" |
+| Zero or negative income | Show toast: "Please enter a positive income" |
+| Zero or negative desired income | Show toast: "Please enter a positive amount" |
+| Result is NaN or Infinity | Show message: "Unable to calculate. Try adjusting your inputs." |
+| Years > 100 | Display "100+ years" with suggestion to increase savings rate |
+| Non-numeric input | HTML `type="number"` prevents this; `parseFloat` fallback returns NaN which is caught |
+
+## Result Display
+The result section will show **two key numbers** for maximum impact:
+1. **Target Portfolio**: "You need **$1,250,000** invested" (makes it tangible)
+2. **Years to FIRE**: "You could reach FIRE in **~15 years** (by 2041)!"
+
+This creates urgency and motivation to sign up and track progress.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `package.json` | Remove `vite-prerender-plugin` |
-| `vite.config.ts` | Remove prerender plugin, restore clean config |
-| `src/prerender.tsx` | **Delete** |
-| `src/seoData.ts` | **Delete** |
-| `src/main.tsx` | Revert to simple `createRoot` |
-| `vercel.json` | Add security headers |
-| `index.html` | Update meta tags to static SEO values |
-
+| `src/components/LandingPageV2.tsx` | Replace auth form with FIRE calculator, add validation, show target portfolio + years |
