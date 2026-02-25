@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
 import FIREDemo from "@/components/landing/FIREDemo";
 import {
   Accordion,
@@ -24,8 +24,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Eye,
-  EyeOff,
   Target,
   RefreshCw,
   Calendar,
@@ -41,29 +39,19 @@ import {
   Clock,
   Building,
   ArrowRight,
-  Loader2,
   Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import plaidLogo from "@/assets/plaid-logo.png";
 
-const cleanupAuthState = () => {
-  localStorage.removeItem("supabase.auth.token");
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith("sb-") || key.includes("supabase")) {
-      localStorage.removeItem(key);
-    }
-  });
-};
-
 const LandingPageV2 = () => {
-  const [isSignUp, setIsSignUp] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [annualIncome, setAnnualIncome] = useState("");
+  const [desiredPassiveIncome, setDesiredPassiveIncome] = useState("");
+  const [fireResult, setFireResult] = useState<{
+    years: number;
+    targetPortfolio: number;
+    fireYear: number;
+  } | null>(null);
 
   const { user } = useAuth();
   const { toast } = useToast();
@@ -83,98 +71,39 @@ const LandingPageV2 = () => {
     );
   }
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password || !displayName) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
+  const handleCalculate = () => {
+    const income = parseFloat(annualIncome);
+    const desired = parseFloat(desiredPassiveIncome);
+
+    if (!annualIncome || !desiredPassiveIncome) {
+      toast({ title: "Missing fields", description: "Please fill in both fields", variant: "destructive" });
+      return;
+    }
+    if (isNaN(income) || income <= 0) {
+      toast({ title: "Invalid input", description: "Please enter a positive income", variant: "destructive" });
+      return;
+    }
+    if (isNaN(desired) || desired <= 0) {
+      toast({ title: "Invalid input", description: "Please enter a positive amount for desired passive income", variant: "destructive" });
       return;
     }
 
-    setIsLoading(true);
-    try {
-      cleanupAuthState();
+    const targetPortfolio = desired * 25; // 4% rule
+    const annualSavings = income * 0.20; // assume 20% savings rate
+    const r = 0.07; // 7% annual return
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            display_name: displayName,
-          },
-        },
-      });
+    // Compound growth: years = ln((target * r / annualSavings) + 1) / ln(1 + r)
+    const rawYears = Math.log((targetPortfolio * r / annualSavings) + 1) / Math.log(1 + r);
 
-      if (error) {
-        toast({
-          title: "Sign Up Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        setIsSignUp(false);
-        setShowEmailVerification(true);
-        setPassword("");
-        setDisplayName("");
-      }
-    } catch (error) {
-      console.error("Sign up error:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
+    if (isNaN(rawYears) || !isFinite(rawYears) || rawYears < 0) {
+      setFireResult(null);
+      toast({ title: "Unable to calculate", description: "Try adjusting your inputs.", variant: "destructive" });
       return;
     }
 
-    setIsLoading(true);
-    try {
-      cleanupAuthState();
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          title: "Sign In Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else if (data.user) {
-        toast({
-          title: "Welcome back!",
-          description: "Redirecting to your dashboard...",
-        });
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.error("Sign in error:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    const years = Math.min(Math.ceil(rawYears), 100);
+    const currentYear = new Date().getFullYear();
+    setFireResult({ years, targetPortfolio, fireYear: currentYear + years });
   };
 
   // Hero section features
@@ -316,7 +245,7 @@ const LandingPageV2 = () => {
                 className="h-8 w-auto"
               />
             </Link>
-            <Button variant="outline" size="sm" onClick={() => setIsSignUp(false)}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
               Sign In
             </Button>
           </div>
@@ -390,123 +319,72 @@ const LandingPageV2 = () => {
               </div>
             </div>
 
-            {/* Right Side - 40% (2 columns) - Auth Form */}
+            {/* Right Side - 40% (2 columns) - FIRE Calculator */}
             <div className="lg:col-span-2">
               <Card className="shadow-xl border-border/50">
                 <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-2xl">
-                    {showEmailVerification
-                      ? "Check Your Email"
-                      : isSignUp
-                      ? "Start Your FIRE Journey Free"
-                      : "Welcome Back"}
-                  </CardTitle>
-                  <CardDescription>
-                    {showEmailVerification
-                      ? "We sent you a verification link"
-                      : isSignUp
-                      ? "Join investors tracking their path to financial independence"
-                      : "Sign in to your account"}
-                  </CardDescription>
+                  <CardTitle className="text-2xl">See Your FIRE Date</CardTitle>
+                  <CardDescription>Find out when you can retire</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  {showEmailVerification ? (
-                    <div className="text-center space-y-4">
-                      <p className="text-muted-foreground">
-                        Click the link in your email to verify your account, then
-                        sign in below.
-                      </p>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="annual-income">Current Annual Income ($)</Label>
+                    <Input
+                      id="annual-income"
+                      type="number"
+                      placeholder="80,000"
+                      value={annualIncome}
+                      onChange={(e) => setAnnualIncome(e.target.value)}
+                      min="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="passive-income">Desired Annual Passive Income ($)</Label>
+                    <Input
+                      id="passive-income"
+                      type="number"
+                      placeholder="50,000"
+                      value={desiredPassiveIncome}
+                      onChange={(e) => setDesiredPassiveIncome(e.target.value)}
+                      min="0"
+                    />
+                  </div>
+                  <Button size="lg" className="w-full" onClick={handleCalculate}>
+                    Calculate Your FIRE Date — Free
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    No credit card required. Always free.
+                  </p>
+
+                  {fireResult && (
+                    <div className="space-y-3 pt-4 border-t border-border/50">
+                      <div className="bg-primary/5 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground mb-1">Your FIRE Number</p>
+                        <p className="text-3xl font-bold gradient-text">
+                          ${fireResult.targetPortfolio.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="bg-accent/10 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground mb-1">Estimated Timeline</p>
+                        {fireResult.years >= 100 ? (
+                          <p className="text-lg font-semibold text-foreground">
+                            100+ years — consider increasing your savings rate.
+                          </p>
+                        ) : (
+                          <p className="text-2xl font-bold text-primary">
+                            ~{fireResult.years} years <span className="text-base font-normal text-muted-foreground">(by {fireResult.fireYear})</span>
+                          </p>
+                        )}
+                      </div>
                       <Button
-                        variant="outline"
-                        onClick={() => setShowEmailVerification(false)}
+                        size="lg"
                         className="w-full"
+                        onClick={() => navigate("/auth")}
                       >
-                        Go to Sign In
+                        Save Your Plan — Create Free Account
+                        <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
                     </div>
-                  ) : (
-                    <form
-                      onSubmit={isSignUp ? handleSignUp : handleSignIn}
-                      className="space-y-4"
-                    >
-                      {isSignUp && (
-                        <div>
-                          <Input
-                            type="text"
-                            placeholder="Display Name"
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            disabled={isLoading}
-                          />
-                        </div>
-                      )}
-                      <div>
-                        <Input
-                          type="email"
-                          placeholder="Email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          disabled={isLoading}
-                        />
-                      </div>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          disabled={isLoading}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                      <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            {isSignUp ? "Creating Account..." : "Signing In..."}
-                          </>
-                        ) : isSignUp ? (
-                          "Start Free - No Credit Card"
-                        ) : (
-                          "Sign In"
-                        )}
-                      </Button>
-                      <p className="text-center text-sm text-muted-foreground">
-                        {isSignUp ? (
-                          <>
-                            Already have an account?{" "}
-                            <button
-                              type="button"
-                              onClick={() => setIsSignUp(false)}
-                              className="text-primary hover:underline font-medium"
-                            >
-                              Sign in
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            Don't have an account?{" "}
-                            <button
-                              type="button"
-                              onClick={() => setIsSignUp(true)}
-                              className="text-primary hover:underline font-medium"
-                            >
-                              Create one
-                            </button>
-                          </>
-                        )}
-                      </p>
-                    </form>
                   )}
                 </CardContent>
               </Card>
@@ -738,10 +616,7 @@ const LandingPageV2 = () => {
           <Button
             size="lg"
             className="text-lg px-8 py-6 h-auto"
-            onClick={() => {
-              setIsSignUp(true);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
+            onClick={() => navigate("/auth")}
           >
             Get Started Free - No Credit Card Required
             <ArrowRight className="ml-2 h-5 w-5" />
