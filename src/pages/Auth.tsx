@@ -25,7 +25,7 @@ export const Auth = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      window.location.href = '/learning-academy';
+      window.location.href = '/dashboard';
     }
   }, [user]);
 
@@ -59,7 +59,7 @@ export const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
-        window.location.href = '/learning-academy';
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -92,7 +92,7 @@ export const Auth = () => {
         // Continue even if this fails
       }
 
-      const redirectUrl = `${window.location.origin}/learning-academy`;
+      const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -106,7 +106,7 @@ export const Auth = () => {
 
       if (data.user) {
         if (data.user.email_confirmed_at) {
-          window.location.href = '/learning-academy';
+          window.location.href = '/dashboard';
         } else {
           setMessage('Please check your email for a confirmation link to complete your registration.');
         }
@@ -157,7 +157,7 @@ export const Auth = () => {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Sign In | DivTrkr"
-        description="Sign in to your DivTrkr account to access the Learning Academy"
+        description="Sign in to your DivTrkr account to access your dividend dashboard"
         noIndex={true}
       />
       <Header />
