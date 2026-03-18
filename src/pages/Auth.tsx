@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 export const Auth = () => {
   const { user } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -111,6 +112,28 @@ export const Auth = () => {
           setMessage('Please check your email for a confirmation link to complete your registration.');
         }
       }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      if (error) throw error;
+      setMessage('Check your email for a password reset link.');
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -221,11 +244,13 @@ export const Auth = () => {
             <Card className="shadow-lg">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">
-                  {isSignUp ? 'Create Your Free Account' : 'Welcome Back'}
+                  {isForgotPassword ? 'Reset Your Password' : isSignUp ? 'Create Your Free Account' : 'Welcome Back'}
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  {isSignUp 
-                    ? 'Free dividend tracking — no credit card required' 
+                  {isForgotPassword
+                    ? "Enter your email and we'll send you a reset link"
+                    : isSignUp
+                    ? 'Free dividend tracking — no credit card required'
                     : 'Welcome back to your dividend dashboard'
                   }
                 </p>
@@ -244,7 +269,7 @@ export const Auth = () => {
                   </Alert>
                 )}
 
-                <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
+                <form onSubmit={isForgotPassword ? handleForgotPassword : isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -257,17 +282,30 @@ export const Auth = () => {
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+                  {!isForgotPassword && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        {!isSignUp && (
+                          <button
+                            type="button"
+                            onClick={() => { setIsForgotPassword(true); setError(''); setMessage(''); }}
+                            className="text-sm text-primary hover:underline"
+                          >
+                            Forgot password?
+                          </button>
+                        )}
+                      </div>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
 
                   {isSignUp && (
                     <div className="space-y-2">
@@ -284,28 +322,38 @@ export const Auth = () => {
                   )}
 
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Please wait...' : (isSignUp ? 'Create Free Account' : 'Sign In')}
+                    {loading ? 'Please wait...' : isForgotPassword ? 'Send Reset Link' : isSignUp ? 'Create Free Account' : 'Sign In'}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </form>
 
                 <Separator />
 
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSignUp(!isSignUp);
-                      setError('');
-                      setMessage('');
-                    }}
-                    className="text-primary hover:underline"
-                  >
-                    {isSignUp 
-                      ? 'Already have an account? Sign in' 
-                      : "Don't have an account? Sign up for free"
-                    }
-                  </button>
+                <div className="text-center space-y-2">
+                  {isForgotPassword ? (
+                    <button
+                      type="button"
+                      onClick={() => { setIsForgotPassword(false); setError(''); setMessage(''); }}
+                      className="text-primary hover:underline"
+                    >
+                      ← Back to sign in
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSignUp(!isSignUp);
+                        setError('');
+                        setMessage('');
+                      }}
+                      className="text-primary hover:underline"
+                    >
+                      {isSignUp 
+                        ? 'Already have an account? Sign in' 
+                        : "Don't have an account? Sign up for free"
+                      }
+                    </button>
+                  )}
                 </div>
 
                 <div className="text-center pt-4">
