@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/Header';
 import { SEOHead } from '@/components/SEOHead';
-import { BookOpen, TrendingUp, Target, Star, CheckCircle, ArrowRight } from 'lucide-react';
+import { Calendar, TrendingUp, Target, BarChart2, CheckCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Auth = () => {
@@ -124,33 +124,33 @@ export const Auth = () => {
 
   const features = [
     {
-      icon: BookOpen,
-      title: "Comprehensive Learning Modules",
-      description: "Master dividend fundamentals, FIRE strategy, and wealth-building techniques"
+      icon: Calendar,
+      title: "Dividend Calendar",
+      description: "Track ex-dividend dates and payment schedules for 150+ stocks and ETFs — never miss a payout"
     },
     {
       icon: TrendingUp,
-      title: "Expert-Curated Content",
-      description: "Learn from proven strategies that have helped thousands build wealth"
+      title: "FIRE Calculator",
+      description: "See exactly when your dividend income can replace your paycheck and set you free"
+    },
+    {
+      icon: BarChart2,
+      title: "Stock Screener",
+      description: "Filter 150+ dividend stocks by yield, payout ratio, sector, and growth rate"
     },
     {
       icon: Target,
-      title: "Practical Applications",
-      description: "Apply what you learn immediately with our dividend tracking tools"
-    },
-    {
-      icon: Star,
-      title: "Premium Value - Free Access",
-      description: "Get $197 worth of educational content completely free with your account"
+      title: "Income Projections",
+      description: "Project your dividend income over 5, 10, 20, and 30 years with DRIP reinvestment"
     }
   ];
 
   const benefits = [
-    "Understand dividend yield calculations and sustainability metrics",
-    "Learn the 25x rule and safe withdrawal rates for early retirement",
-    "Master the dividend snowball effect for compound growth",
-    "Access exclusive portfolio tracking and projection tools",
-    "Join a community of successful dividend investors"
+    "Personalized dividend calendar based on your actual holdings",
+    "FIRE date calculator — know exactly when dividends cover your expenses",
+    "Track 150+ dividend stocks, ETFs, and REITs in one place",
+    "Sync with Fidelity, Schwab, and Vanguard via Plaid",
+    "100% free — no subscription, no credit card required"
   ];
 
   return (
@@ -168,10 +168,10 @@ export const Auth = () => {
           <div className="max-w-lg">
             <div className="mb-8">
               <h1 className="text-4xl font-bold text-foreground mb-4">
-                Unlock Your Financial Future
+                Know Exactly When Your Dividends Will Set You Free
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Get exclusive access to our Learning Academy and discover the strategies that have helped thousands achieve financial independence through dividend investing.
+                Free dividend tracking tools for FIRE investors. Track your portfolio, never miss an ex-dividend date, and see your path to financial independence.
               </p>
             </div>
 
@@ -191,8 +191,8 @@ export const Auth = () => {
 
             <div className="bg-primary/5 p-6 rounded-lg border border-primary/10">
               <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Star className="h-5 w-5 text-primary" />
-                What You'll Learn (Normally $197 Value)
+                <CheckCircle className="h-5 w-5 text-primary" />
+                Everything included — 100% free
               </h3>
               <ul className="space-y-2">
                 {benefits.map((benefit, index) => (
@@ -211,10 +211,10 @@ export const Auth = () => {
           <div className="w-full max-w-md space-y-6">
             <div className="text-center lg:hidden mb-8">
               <h1 className="text-3xl font-bold text-foreground mb-2">
-                Unlock Premium Education
+                Free Dividend Tracker for FIRE Investors
               </h1>
               <p className="text-muted-foreground">
-                Sign up for free to access our Learning Academy
+                Track ex-dividend dates, project income, and plan your path to financial independence
               </p>
             </div>
 
@@ -225,8 +225,8 @@ export const Auth = () => {
                 </CardTitle>
                 <p className="text-muted-foreground">
                   {isSignUp 
-                    ? 'Join thousands learning to build wealth through dividends' 
-                    : 'Sign in to continue your learning journey'
+                    ? 'Free dividend tracking — no credit card required' 
+                    : 'Welcome back to your dividend dashboard'
                   }
                 </p>
               </CardHeader>
@@ -284,7 +284,7 @@ export const Auth = () => {
                   )}
 
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Please wait...' : (isSignUp ? 'Create Account & Start Learning' : 'Sign In')}
+                    {loading ? 'Please wait...' : (isSignUp ? 'Create Free Account' : 'Sign In')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </form>
@@ -319,12 +319,9 @@ export const Auth = () => {
             {/* Mobile Value Proposition */}
             <div className="lg:hidden bg-primary/5 p-6 rounded-lg border border-primary/10">
               <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Star className="h-5 w-5 text-primary" />
-                Premium Education - Free Access
+                <CheckCircle className="h-5 w-5 text-primary" />
+                Everything included — 100% free
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Get $197 worth of dividend investing education completely free with your account.
-              </p>
               <ul className="space-y-1">
                 {benefits.slice(0, 3).map((benefit, index) => (
                   <li key={index} className="flex items-start gap-2 text-xs text-muted-foreground">
