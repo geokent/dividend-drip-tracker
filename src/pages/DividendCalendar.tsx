@@ -890,16 +890,62 @@ const DividendCalendar = () => {
   return (
     <AppLayout>
       <SEOHead
-        title="Free Dividend Calendar 2026 - Ex-Dividend Dates & Payment Schedule | DivTrkr"
-        description="Track upcoming ex-dividend dates and payment schedules for 150+ dividend stocks. Free dividend calendar for income investors. Never miss a dividend payment."
-        keywords="dividend calendar 2026, ex-dividend dates, dividend payment schedule, dividend tracker, SCHD dividends, dividend income"
+        title="Free Dividend Calendar 2026 | Ex-Dividend Dates & Payment Schedule - DivTrkr"
+        description="Free dividend calendar with ex-dividend dates and payment schedules for 150+ stocks and ETFs. Filter by monthly or quarterly dividends. Never miss an ex-date again."
+        keywords="dividend calendar, ex dividend calendar, free dividend calendar, dividend calendar tool, ex dividend date calendar, monthly dividend calendar, dividend payment schedule, dividend dates, upcoming ex dividend dates, stock dividend calendar, dividend calendar 2026"
         canonicalUrl="https://www.divtrkr.com/dividend-calendar"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is an ex-dividend date?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The ex-dividend date is the cutoff date you must own a stock to receive the next dividend payment. If you buy on or after the ex-dividend date, you will not receive that dividend. Most stocks set the ex-dividend date 1-2 business days before the record date."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I use a dividend calendar?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A dividend calendar shows upcoming ex-dividend dates and payment dates for dividend-paying stocks and ETFs. Use it to track when you need to buy shares to qualify for upcoming dividends, plan your income schedule, and never miss a dividend payment."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the difference between ex-dividend date and payment date?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The ex-dividend date is when you must own the stock to qualify for the dividend. The payment date (also called the payable date) is when the dividend is actually deposited into your brokerage account, typically 2-4 weeks after the ex-dividend date."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Which stocks pay monthly dividends?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Popular monthly dividend payers include Realty Income (O), JEPI, JEPQ, SPYI, and many REITs. Monthly dividend stocks are popular with FIRE investors because they provide steady monthly income similar to a paycheck."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How much dividend income can I earn with $100k?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "With $100,000 invested in dividend stocks yielding an average of 4%, you could earn approximately $4,000 per year ($333/month) in dividend income. Higher-yield portfolios (6-8%) could generate $6,000-$8,000 annually. Use DivTrkr's FIRE Calculator to see exactly when your dividends could replace your paycheck."
+              }
+            }
+          ]
+        }}
       />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <PageHeader
-          title="2026 Dividend Calendar"
-          description="Track ex-dividend dates and payment schedules"
+          title="Free Dividend Calendar 2026"
+          description="Track upcoming ex-dividend dates and payment schedules for 150+ stocks and ETFs"
           icon={Calendar}
         />
 
@@ -1207,36 +1253,96 @@ const DividendCalendar = () => {
             )}
 
             {/* SEO Content Section */}
-            <div className="prose prose-gray dark:prose-invert max-w-none">
-              <h2>Understanding the Dividend Calendar</h2>
+            <div className="prose prose-gray dark:prose-invert max-w-none mt-8">
+              <h2>Free Dividend Calendar — Ex-Dividend Dates & Payment Schedules</h2>
               <p>
-                A dividend calendar is an essential tool for income-focused
-                investors pursuing the FIRE (Financial Independence, Retire Early)
-                movement. By tracking ex-dividend dates and payment schedules, you
-                can optimize your portfolio for consistent monthly income.
+                DivTrkr's free dividend calendar tracks upcoming ex-dividend dates and payment
+                dates for over 150 popular dividend stocks and ETFs. Whether you're building a
+                FIRE portfolio, managing retirement income, or just trying to never miss a
+                dividend payment, this tool keeps your entire dividend schedule in one place.
               </p>
 
-              <h3>Key Dates to Know</h3>
+              <h3>What Is an Ex-Dividend Date?</h3>
+              <p>
+                The <strong>ex-dividend date</strong> is the most important date in the dividend
+                calendar. You must own a stock <em>before</em> the ex-dividend date to receive
+                the upcoming dividend. If you buy on or after the ex-date, the seller — not you
+                — collects that payment.
+              </p>
+              <p>
+                Most brokerages settle trades in one business day (T+1), so you need to buy at
+                least one business day before the ex-dividend date to qualify. The payment
+                typically arrives 2–4 weeks later on the <strong>dividend payment date</strong>.
+              </p>
+
+              <h3>Ex-Dividend Date vs. Payment Date</h3>
               <ul>
                 <li>
-                  <strong>Ex-Dividend Date:</strong> The date by which you must own
-                  shares to receive the upcoming dividend. Buy before this date to
-                  qualify.
+                  <strong>Ex-Dividend Date:</strong> The cutoff. Own shares before this date to qualify for the dividend.
                 </li>
                 <li>
-                  <strong>Payment Date:</strong> When the dividend is actually paid
-                  to shareholders who qualified by holding before the ex-dividend
-                  date.
+                  <strong>Record Date:</strong> The official date the company checks its books. Usually 1 business day after the ex-date.
+                </li>
+                <li>
+                  <strong>Payment Date (Payable Date):</strong> When the dividend is deposited into your account. Typically 2–4 weeks after the ex-date.
                 </li>
               </ul>
 
-              <h3>Building Monthly Income</h3>
+              <h3>Monthly vs. Quarterly Dividend Stocks</h3>
               <p>
-                Many FIRE investors strategically combine monthly dividend payers
-                (like O, JEPI, JEPQ, and SPYI) with quarterly payers (like SCHD, AAPL, and
-                KO) to create a steady stream of passive income throughout the
-                year. This dividend calendar helps you visualize and plan your
-                income schedule.
+                Most dividend stocks pay <strong>quarterly dividends</strong> — four times per year.
+                But a growing group of ETFs and REITs pay <strong>monthly dividends</strong>, which
+                many FIRE investors prefer for predictable cash flow.
+              </p>
+              <p>Popular monthly dividend payers tracked on this calendar include:</p>
+              <ul>
+                <li><strong>Realty Income (O)</strong> — "The Monthly Dividend Company," a blue-chip REIT yielding ~5.8%</li>
+                <li><strong>JEPI</strong> — JPMorgan Equity Premium Income ETF, ~7% yield with covered call income</li>
+                <li><strong>JEPQ</strong> — JPMorgan Nasdaq Equity Premium Income ETF, ~9.8% yield</li>
+                <li><strong>SPYI</strong> — NEOS S&P 500 High Income ETF, ~11.5% yield</li>
+              </ul>
+              <p>
+                A common FIRE strategy is to combine monthly payers with quarterly stalwarts like
+                SCHD, Johnson &amp; Johnson (JNJ), and Coca-Cola (KO) to create a dividend income
+                stream that pays every month of the year.
+              </p>
+
+              <h3>How Much Dividend Income Can You Generate?</h3>
+              <p>
+                The amount of dividend income you earn depends on your portfolio size and average yield.
+                Here's a quick reference:
+              </p>
+              <ul>
+                <li><strong>$50,000 at 4% yield</strong> → ~$2,000/year ($167/month)</li>
+                <li><strong>$100,000 at 4% yield</strong> → ~$4,000/year ($333/month)</li>
+                <li><strong>$100,000 at 6% yield</strong> → ~$6,000/year ($500/month)</li>
+                <li><strong>$500,000 at 5% yield</strong> → ~$25,000/year ($2,083/month)</li>
+              </ul>
+              <p>
+                Use DivTrkr's <a href="/future-income-projects">FIRE Calculator</a> to project
+                exactly when your dividend income could replace your salary — and track your
+                progress toward financial independence.
+              </p>
+
+              <h3>How to Use This Dividend Calendar Tool</h3>
+              <ol>
+                <li><strong>Browse upcoming ex-dividend dates</strong> — filter by this week, this month, this quarter, or the full year</li>
+                <li><strong>Filter by sector or frequency</strong> — find monthly dividend payers, REITs, ETFs, and more</li>
+                <li><strong>Search by ticker or company name</strong> — instantly look up any stock's next ex-date</li>
+                <li><strong>Create a free account</strong> — connect your portfolio and see your personalized payout schedule with exact dollar amounts</li>
+              </ol>
+
+              <h3>Dividend Calendar for FIRE Investors</h3>
+              <p>
+                If you're pursuing Financial Independence, Retire Early (FIRE) through dividend
+                investing, a dividend calendar is one of the most practical tools you can use.
+                Knowing your ex-dividend dates lets you time purchases to qualify for upcoming
+                payments, and seeing your full annual payment schedule helps you plan spending
+                and reinvestment.
+              </p>
+              <p>
+                DivTrkr was built specifically for FIRE-focused dividend investors who want to
+                know one thing clearly: <em>when can your dividends replace your paycheck?</em>
               </p>
             </div>
           </>
