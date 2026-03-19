@@ -1,4 +1,12 @@
 import { useState, useEffect } from 'react';
+
+// Google Ads gtag type declaration
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
+  }
+}
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -106,6 +114,11 @@ export const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
+        // Fire Google Ads conversion event for sign-up
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'conversion', { send_to: 'AW-18028049081/Txn0CKqn8oscELnluJRD' });
+        }
+
         if (data.user.email_confirmed_at) {
           window.location.href = '/dashboard';
         } else {
