@@ -71,9 +71,14 @@ export const Header = () => {
                 </Button>
               </div>
             ) : (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/">Sign In</Link>
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/auth?signup=true">Sign Up</Link>
+                </Button>
+              </div>
             )}
           </div>
 
@@ -135,9 +140,14 @@ export const Header = () => {
                     </Button>
                   </div>
                 ) : (
-                  <Button variant="outline" size="sm" asChild className="w-full mx-3">
-                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
-                  </Button>
+                  <div className="space-y-2 px-3">
+                    <Button variant="outline" size="sm" asChild className="w-full">
+                      <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
+                    </Button>
+                    <Button size="sm" asChild className="w-full">
+                      <Link to="/auth?signup=true" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link>
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>

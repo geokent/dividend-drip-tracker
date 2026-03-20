@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 // Google Ads gtag type declaration
 declare global {
@@ -22,7 +23,8 @@ import { Link } from 'react-router-dom';
 
 export const Auth = () => {
   const { user } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
