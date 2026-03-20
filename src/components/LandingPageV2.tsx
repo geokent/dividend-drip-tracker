@@ -245,9 +245,14 @@ const LandingPageV2 = () => {
                 className="h-8 w-auto"
               />
             </Link>
-            <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
-              Sign In
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
+                Sign In
+              </Button>
+              <Button size="sm" onClick={() => navigate("/auth?signup=true")}>
+                Sign Up
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -297,6 +302,18 @@ const LandingPageV2 = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Primary CTAs */}
+              <div className="flex flex-wrap gap-3">
+                <Button size="lg" onClick={() => navigate("/auth?signup=true")}>
+                  Create Free Account
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+                <Button size="lg" variant="outline" onClick={() => navigate("/dividend-calendar")}>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  View Dividend Calendar
+                </Button>
               </div>
 
               {/* Trust Signals */}
@@ -392,7 +409,7 @@ const LandingPageV2 = () => {
                       <Button
                         size="lg"
                         className="w-full"
-                        onClick={() => navigate("/auth")}
+                        onClick={() => navigate("/auth?signup=true")}
                       >
                         Save Your Plan — Create Free Account
                         <ArrowRight className="h-4 w-4 ml-2" />
