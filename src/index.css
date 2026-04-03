@@ -126,11 +126,14 @@ All colors MUST be HSL.
 
   html {
     overflow-x: hidden;
+    max-width: 100%;
   }
 
   body {
     @apply bg-background text-foreground font-sans;
     overflow-x: hidden;
+    max-width: 100%;
+    position: relative;
   }
 }
 
