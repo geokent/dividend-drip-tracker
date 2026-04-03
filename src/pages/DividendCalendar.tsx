@@ -942,7 +942,7 @@ const DividendCalendar = () => {
         }}
       />
 
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="max-w-7xl">
         <PageHeader
           title="Free Dividend Calendar 2026"
           description="Track upcoming ex-dividend dates and payment schedules for 150+ stocks and ETFs"
@@ -954,12 +954,12 @@ const DividendCalendar = () => {
           <Alert className="mb-6 border-primary/50 bg-primary/5">
             <Lock className="h-4 w-4" />
             <AlertTitle>See Your Personal Dividend Calendar</AlertTitle>
-            <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-4 mt-1">
               <span>
-                Create a free account to track your own portfolio, see personalized payouts, 
+                Create a free account to track your own portfolio, see personalized payouts,
                 and calculate your total expected dividend income.
               </span>
-              <Button onClick={() => navigate('/auth')} className="shrink-0">
+              <Button onClick={() => navigate('/auth')} className="shrink-0 w-full sm:w-auto min-h-[44px]">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Create Free Account
               </Button>
@@ -1165,8 +1165,8 @@ const DividendCalendar = () => {
                           <TableHead className="text-right">Your Payout</TableHead>
                         </>
                       )}
-                      <TableHead className="text-center">Frequency</TableHead>
-                      <TableHead>Sector</TableHead>
+                      <TableHead className="text-center max-[480px]:hidden">Frequency</TableHead>
+                      <TableHead className="max-[480px]:hidden">Sector</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1212,7 +1212,7 @@ const DividendCalendar = () => {
                               </TableCell>
                             </>
                           )}
-                          <TableCell className="text-center">
+                          <TableCell className="text-center max-[480px]:hidden">
                             <Badge
                               variant={
                                 entry.frequency === "Monthly" ? "default" : "outline"
@@ -1221,7 +1221,7 @@ const DividendCalendar = () => {
                               {entry.frequency}
                             </Badge>
                           </TableCell>
-                          <TableCell>{entry.sector}</TableCell>
+                          <TableCell className="max-[480px]:hidden">{entry.sector}</TableCell>
                         </TableRow>
                       ))
                     )}
